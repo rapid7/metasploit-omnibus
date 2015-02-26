@@ -44,9 +44,8 @@ cd #{install_dir}/framework
 #{install_dir}/framework/#{bin}
 cd -
 EOF"
+		command "chmod +x #{install_dir}/bin/#{bin}"
 	}
-
-	command "chmod +x #{install_dir}/bin/msfconsole"
 
 	copy "#{project_dir}", "#{install_dir}/framework"
 
