@@ -10,11 +10,20 @@ relative_path "metasploit-framework-#{default_version}"
 dependency "bundler"
 dependency "liblzma"
 dependency "libpcap"
+dependency "libxslt"
 dependency "ruby"
 dependency "postgresql"
 dependency "sqlite"
 
+# This depends on extra system libraries on OS X
 whitelist_file "#{install_dir}//framework/data/isight.bundle"
+
+# This depends on Openssl 1.x
+whitelist_file "#{install_dir}/framework/data/john/run.linux.x64.mmx/john"
+whitelist_file "#{install_dir}/framework/data/john/run.linux.x64.mmx/calc_stat"
+whitelist_file "#{install_dir}/framework/data/john/run.linux.x64.mmx/genmkvpwd"
+whitelist_file "#{install_dir}/framework/data/john/run.linux.x64.mmx/tgtsnarf"
+whitelist_file "#{install_dir}/framework/data/john/run.linux.x64.mmx/mkvcalcproba"
 
 build do
 	command "mkdir #{install_dir}/bin"
@@ -49,5 +58,7 @@ EOF"
 
 	copy "#{project_dir}", "#{install_dir}/framework"
 
+	move "#{install_dir}/embedded/include/libxml2/libxml", "#{install_dir}/embedded/include/"
+	bundle "config build.nokogiri --use-system-libraries --with-xml2-config=#{install_dir}/embedded/bin/xml2-config --with-xslt-config=#{install_dir}/embedded/bin/xslt-config"
 	bundle "install"
 end
