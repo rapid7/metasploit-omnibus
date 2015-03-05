@@ -1,11 +1,11 @@
 name "metasploit-framework"
-default_version "master"
-#source git: "https://github.com/rapid7/metasploit-framework.git"
+default_version "release"
+source git: "https://github.com/rapid7/metasploit-framework.git"
 
-default_version "4.11.1"
-source url: "https://github.com/rapid7/metasploit-framework/archive/#{default_version}.tar.gz",
-       md5: "8194917a8b5e53f9f72e8ba55df8c8cf"
-relative_path "metasploit-framework-#{default_version}"
+#default_version "4.11.1"
+#source url: "https://github.com/rapid7/metasploit-framework/archive/#{default_version}.tar.gz",
+#       md5: "8194917a8b5e53f9f72e8ba55df8c8cf"
+#relative_path "metasploit-framework-#{default_version}"
 
 dependency "bundler"
 dependency "liblzma"
@@ -26,42 +26,38 @@ whitelist_file "#{install_dir}/framework/data/john/run.linux.x64.mmx/tgtsnarf"
 whitelist_file "#{install_dir}/framework/data/john/run.linux.x64.mmx/mkvcalcproba"
 
 build do
-	command "mkdir #{install_dir}/bin"
+  command "mkdir #{install_dir}/bin"
 
-	metasploit_bins = [
-	      'msfbinscan',
-	      'msfcli',
-	      'msfconsole',
-	      'msfd',
-	      'msfelfscan',
-	      'msfencode',
-	      'msfmachscan',
-	      'msfpayload',
-	      'msfpescan',
-	      'msfrop',
-	      'msfrpc',
-	      'msfrpcd',
-	      'msfupdate',
-	      'msfvenom'
-	]
+  patch source: '0001-add-omnibus-helper-scripts.patch'
+  copy "#{project_dir}", "#{install_dir}/framework"
+  move "#{install_dir}/framework/msfdb", "#{install_dir}/bin"
+  move "#{install_dir}/framework/msfwrapper", "#{install_dir}/bin"
 
-	metasploit_bins.each { |bin|
-		command "cat << EOF > #{install_dir}/bin/#{bin}
-#!/bin/sh
-pushd `dirname $0` > /dev/null
-SCRIPTDIR=`pwd -P`
-BIN=$SCRIPTDIR/../embedded/bin
-FRAMEWORK=$SCRIPTDIR/../framework
-popd > /dev/null
-(cd $FRAMEWORK; $BIN/bundle exec $BIN/ruby ./#{bin})
-EOF"
-		command "chmod +x #{install_dir}/bin/#{bin}"
-	}
+  command "chmod +x #{install_dir}/bin/*"
 
-	copy "#{project_dir}", "#{install_dir}/framework"
+  metasploit_bins = [
+        'msfbinscan',
+        'msfcli',
+        'msfconsole',
+        'msfd',
+        'msfelfscan',
+        'msfencode',
+        'msfmachscan',
+        'msfpayload',
+        'msfpescan',
+        'msfrop',
+        'msfrpc',
+        'msfrpcd',
+        'msfupdate',
+        'msfvenom'
+  ]
 
-	move "#{install_dir}/embedded/include/libxml2/libxml", "#{install_dir}/embedded/include/"
-	bundle "config build.nokogiri --use-system-libraries --with-xml2-config=#{install_dir}/embedded/bin/xml2-config --with-xslt-config=#{install_dir}/embedded/bin/xslt-config"
-	bundle "install"
-	command "chmod o+r #{install_dir}/embedded/lib/ruby/gems/2.1.0/gems/robots-0.10.1/lib/robots.rb"
+  metasploit_bins.each { |bin|
+    link "#{install_dir}/bin/msfwrapper", "#{install_dir}/bin/#{bin}"
+  }
+
+  move "#{install_dir}/embedded/include/libxml2/libxml", "#{install_dir}/embedded/include/"
+  bundle "config build.nokogiri --use-system-libraries --with-xml2-config=#{install_dir}/embedded/bin/xml2-config --with-xslt-config=#{install_dir}/embedded/bin/xslt-config"
+  bundle "install"
+  command "chmod o+r #{install_dir}/embedded/lib/ruby/gems/2.1.0/gems/robots-0.10.1/lib/robots.rb"
 end
