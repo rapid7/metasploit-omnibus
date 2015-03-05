@@ -47,11 +47,13 @@ build do
 
 	metasploit_bins.each { |bin|
 		command "cat << EOF > #{install_dir}/bin/#{bin}
-cd #{install_dir}/framework
-#{install_dir}/embedded/bin/bundle exec \
-#{install_dir}/embedded/bin/ruby \
-#{install_dir}/framework/#{bin}
-cd -
+#!/bin/sh
+pushd `dirname $0` > /dev/null
+SCRIPTDIR=`pwd -P`
+BIN=$SCRIPTDIR/../embedded/bin
+FRAMEWORK=$SCRIPTDIR/../framework
+popd > /dev/null
+(cd $FRAMEWORK; $BIN/bundle exec $BIN/ruby ./#{bin})
 EOF"
 		command "chmod +x #{install_dir}/bin/#{bin}"
 	}
