@@ -19,10 +19,11 @@ name "openssl"
 dependency "zlib"
 dependency "cacerts"
 dependency "makedepend" unless aix?
+dependency "patch" if solaris2?
 
-default_version "1.0.1k"
-source url: "http://www.openssl.org/source/openssl-1.0.1k.tar.gz",
-       md5: "d4f002bd22a56881340105028842ae1f"
+default_version "1.0.1m"
+source url: "https://www.openssl.org/source/openssl-1.0.1m.tar.gz",
+       md5: "d143d1555d842a069cb7cc34ba745a06"
 
 relative_path "openssl-#{version}"
 
@@ -106,28 +107,24 @@ build do
                          "-R#{install_dir}/embedded/lib",
                         "-static-libgcc"].join(" ")
                       when "solaris2"
-                        if Omnibus::Config.solaris_compiler == "gcc"
-                          if ohai["kernel"]["machine"] =~ /sun/
-                            ["/bin/sh ./Configure",
-                             "solaris-sparcv9-gcc",
-                             common_args,
-                            "-L#{install_dir}/embedded/lib",
-                            "-I#{install_dir}/embedded/include",
-                            "-R#{install_dir}/embedded/lib",
-                            "-static-libgcc"].join(" ")
-                          else
-                            # This should not require a /bin/sh, but without it we get
-                            # Errno::ENOEXEC: Exec format error
-                            ["/bin/sh ./Configure",
-                             "solaris-x86-gcc",
-                             common_args,
-                            "-L#{install_dir}/embedded/lib",
-                            "-I#{install_dir}/embedded/include",
-                            "-R#{install_dir}/embedded/lib",
-                            "-static-libgcc"].join(" ")
-                          end
+                        if ohai["kernel"]["machine"] =~ /sun/
+                          ["/bin/sh ./Configure",
+                           "solaris-sparcv9-gcc",
+                           common_args,
+                          "-L#{install_dir}/embedded/lib",
+                          "-I#{install_dir}/embedded/include",
+                          "-R#{install_dir}/embedded/lib",
+                          "-static-libgcc"].join(" ")
                         else
-                          raise "sorry, we don't support building openssl on non-gcc solaris builds right now."
+                          # This should not require a /bin/sh, but without it we get
+                          # Errno::ENOEXEC: Exec format error
+                          ["/bin/sh ./Configure",
+                           "solaris-x86-gcc",
+                           common_args,
+                          "-L#{install_dir}/embedded/lib",
+                          "-I#{install_dir}/embedded/include",
+                          "-R#{install_dir}/embedded/lib",
+                          "-static-libgcc"].join(" ")
                         end
                       else
                         config = if ohai["os"] == "linux" && ohai["kernel"]["machine"] == "ppc64"

@@ -17,13 +17,9 @@
 name "libtool"
 default_version "2.4"
 
-version "2.4" do
-  source md5: "b32b04148ecdd7344abc6fe8bd1bb021"
-end
-
-version "2.4.2" do
-  source md5: "d2f3b7d4627e69e13514a40e72a24d50"
-end
+version("2.4")   { source md5: "b32b04148ecdd7344abc6fe8bd1bb021" }
+version("2.4.2") { source md5: "d2f3b7d4627e69e13514a40e72a24d50" }
+version("2.4.6") { source md5: "addf44b646ddb4e3919805aa88fa7c5e" }
 
 source url: "http://ftp.gnu.org/gnu/libtool/libtool-#{version}.tar.gz"
 
@@ -31,6 +27,10 @@ relative_path "libtool-#{version}"
 
 build do
   env = with_standard_compiler_flags(with_embedded_path)
+
+  if version == "2.4" && ppc64le?
+    patch source: "v2.4.ppc64le-configure.patch", plevel: 1
+  end
 
   command "./configure" \
           " --prefix=#{install_dir}/embedded", env: env

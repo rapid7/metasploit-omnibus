@@ -25,6 +25,10 @@ relative_path "yaml-#{version}"
 build do
   env = with_standard_compiler_flags(with_embedded_path)
 
+  if version == "0.1.6" && ppc64le?
+    patch source: "v0.1.6.ppc64le-configure.patch", plevel: 1
+  end
+
   command "./configure --prefix=#{install_dir}/embedded --enable-shared", env: env
 
   make "-j #{workers}", env: env

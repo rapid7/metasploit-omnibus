@@ -18,6 +18,7 @@ name "ncurses"
 default_version "5.9"
 
 dependency "libtool" if aix?
+dependency "patch" if solaris2?
 
 source url: "http://ftp.gnu.org/gnu/ncurses/ncurses-5.9.tar.gz",
        md5: "8cb9c412e5f2d96bc6f459aa8c6282a1"
@@ -42,13 +43,6 @@ relative_path "ncurses-5.9"
 build do
   env = with_standard_compiler_flags(with_embedded_path)
   env.delete('CPPFLAGS')
-
-  # gcc4 from opencsw fails to compile ncurses
-  if solaris2?
-    env["PATH"] = "/opt/csw/gcc3/bin:/opt/csw/bin:/usr/local/bin:/usr/sfw/bin:/usr/ccs/bin:/usr/sbin:/usr/bin"
-    env["CC"]   = "/opt/csw/gcc3/bin/gcc"
-    env["CXX"]  = "/opt/csw/gcc3/bin/g++"
-  end
 
   if smartos?
     # SmartOS is Illumos Kernel, plus NetBSD userland with a GNU toolchain.
@@ -86,6 +80,10 @@ build do
     # upstream, but occurred shortly after the 5.9 release. We should be able
     # to remove this after upgrading to any release created after June 2012
     patch source: "ncurses-clang.patch"
+  end
+
+  if version == "5.9" && ppc64le?
+    patch source: "v5.9.ppc64le-configure.patch", plevel: 1
   end
 
   # build wide-character libraries
