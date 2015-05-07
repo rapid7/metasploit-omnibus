@@ -1,5 +1,8 @@
 language: ruby
-cache: bundler
+cache:
+  - bundler
+  directories:
+    - /var/cache/omnibus
 before_install:
   - bundle install --binstubs
   - sudo mkdir /var/cache/omnibus
