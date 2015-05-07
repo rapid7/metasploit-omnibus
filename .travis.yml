@@ -2,6 +2,10 @@ language: ruby
 cache: bundler
 before_install:
   - bundle install --binstubs
+  - sudo mkdir /var/cache/omnibus
+  - sudo chown travis /var/cache/omnibus
+  - sudo mkdir /opt/metasploit-framework
+  - sudo chown travis /opt/metasploit-framework
 script:
   - ./bin/omnibus build metasploit
 rvm:
