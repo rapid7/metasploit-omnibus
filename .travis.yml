@@ -1,0 +1,9 @@
+language: ruby
+before_install:
+  - bundle install --binstubs
+script:
+  - ./bin/omnibus build metasploit
+rvm:
+  - '2.1'
+#notifications:
+#  irc: "irc.freenode.org#msfnotify"
