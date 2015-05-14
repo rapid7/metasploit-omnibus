@@ -15,7 +15,7 @@
 #
 
 name "postgresql"
-default_version "9.2.9"
+default_version "9.4.0"
 
 dependency "zlib"
 dependency "openssl"
