@@ -21,7 +21,7 @@ index 0000000..2fe3c53
 +#set -e
 +# set -x
 +
-+BASE=/opt/metasploit
++BASE=/opt/metasploit-framework
 +BIN=$BASE/embedded/bin
 +DB=$BASE/db
 +FRAMEWORK=$BASE/framework
@@ -187,6 +187,6 @@ index 0000000..30d6b0b
 +
 +start_db
 +(cd $FRAMEWORK; $BIN/bundle exec $BIN/ruby ./$cmd)
--- 
+--
 2.3.1
 
