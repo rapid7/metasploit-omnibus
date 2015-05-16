@@ -5,29 +5,50 @@ This project creates full-stack platform-specific packages for
 edition. It only contains the framework command-line interface and the
 associated tools and modules.
 
-Installation
+Building the package locally
 ------------
-You must have a sane Ruby 1.9+ environment with Bundler installed. Ensure all
-the required gems are installed:
+In general, a build environment needs a working C/C++ compiler, Ruby 1.9 or higher and the ruby development headers, bundler, git, bison and flex. A quad-core CPU and 4GB of ram are recommended to build quickly.
 
+The following steps should produce a successful build with Ubuntu and other Debian derivatives, starting from a fresh installation:
 ```shell
-$ bundle install --binstubs
+# install required packages to build on Ubuntu / Debian systems
+sudo apt-get -y install build-essential git ruby bundler ruby-dev bison flex
 ```
 
-Usage
------
-### Build
-
-You create a platform-specific package using the `build project` command:
-
+Next setup git if you need to.
 ```shell
-$ bin/omnibus build metasploit
+# setup git (ignore if you already have it configured)
+git config --global user.name "Nobody"
+git config --global user.email "nobody@example.com"
 ```
 
-The platform/architecture type of the package created will match the platform
-where the `build project` command is invoked. For example, running this command
-on a MacBook Pro will generate a Mac OS X package. After the build completes
-packages will be available in the `pkg/` folder.
+Configure the omnibus cache and target directories if you want to build as non-root user (recommended).
+```shell
+# setup build directories you can write to
+sudo mkdir -p /var/cache/omnibus
+sudo mkdir -p /opt/metasploit-framework
+sudo chown `whoami` /var/cache/omnibus
+sudo chown `whoami` /opt/metasploit-framework
+```
+
+Checkout the metasploit-framework installer builder and install omnibus' dependencies.
+```shell
+# checkout the builder repository
+git clone https://github.com/rapid7/metasploit-omnibus.git
+cd metasploit-omnibus
+# install omnibus' dependencies
+bundle install --binstubs
+```
+
+Finally, build the installer itself:
+```shell
+# build the metasploit-framework package
+bin/omnibus build metasploit
+```
+when complete, there will be a new installable .deb file under the 'pkg' directory.
+
+From OS X, first install XCode and the command line development tools. I use ruby, bundler, git, bison and flex from the Mac Homebrew project. The rest of the steps are identical to building on Ubuntu. A .pkg file will be under the pkg directory instead.
+```
 
 ### Clean
 
