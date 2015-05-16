@@ -20,6 +20,7 @@ default_version "9.4.0"
 dependency "zlib"
 dependency "openssl"
 dependency "libedit"
+dependency "libuuid"
 dependency "ncurses"
 
 version "9.1.9" do
