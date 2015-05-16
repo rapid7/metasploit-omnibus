@@ -48,7 +48,6 @@ bin/omnibus build metasploit
 when complete, there will be a new installable .deb file under the 'pkg' directory.
 
 From OS X, first install XCode and the command line development tools. I use ruby, bundler, git, bison and flex from the Mac Homebrew project. The rest of the steps are identical to building on Ubuntu. A .pkg file will be under the pkg directory instead.
-```
 
 ### Clean
 
