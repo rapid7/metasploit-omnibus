@@ -1,8 +1,8 @@
 name "metasploit-framework"
-default_version "release"
 source git: "https://github.com/rapid7/metasploit-framework.git"
+default_version "4.11.2"
 
-#default_version "4.11.1"
+#default_version "release"
 #source url: "https://github.com/rapid7/metasploit-framework/archive/#{default_version}.tar.gz",
 #       md5: "8194917a8b5e53f9f72e8ba55df8c8cf"
 #relative_path "metasploit-framework-#{default_version}"
