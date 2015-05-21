@@ -44,13 +44,10 @@ build do
 
   metasploit_bins = [
         'msfbinscan',
-        'msfcli',
         'msfconsole',
         'msfd',
         'msfelfscan',
-        'msfencode',
         'msfmachscan',
-        'msfpayload',
         'msfpescan',
         'msfrop',
         'msfrpc',
