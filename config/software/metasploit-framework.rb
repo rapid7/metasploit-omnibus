@@ -60,8 +60,6 @@ build do
     link "#{install_dir}/bin/msfwrapper", "#{install_dir}/bin/#{bin}"
   }
 
-  move "#{install_dir}/embedded/include/libxml2/libxml", "#{install_dir}/embedded/include/"
-  bundle "config build.nokogiri --use-system-libraries --with-xml2-config=#{install_dir}/embedded/bin/xml2-config --with-xslt-config=#{install_dir}/embedded/bin/xslt-config"
   bundle "install"
   command "chmod o+r #{install_dir}/embedded/lib/ruby/gems/2.1.0/gems/robots-0.10.1/lib/robots.rb"
 end
