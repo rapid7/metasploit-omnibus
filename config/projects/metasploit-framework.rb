@@ -1,4 +1,4 @@
-name "metasploit"
+name "metasploit-framework"
 maintainer "Brent Cook <bcook@rapid7.com>"
 homepage "https://rapid7.com"
 

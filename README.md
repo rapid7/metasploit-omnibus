@@ -1,4 +1,4 @@
-metasploit Omnibus project
+metasploit-framework Omnibus project
 ==========================
 This project creates full-stack platform-specific packages for
 `metasploit-framework`. This is not the same as the Metasploit Community
@@ -43,7 +43,7 @@ bundle install --binstubs
 Finally, build the installer itself:
 ```shell
 # build the metasploit-framework package
-bin/omnibus build metasploit
+bin/omnibus build metasploit-framework
 ```
 when complete, there will be a new installable .deb file under the 'pkg' directory.
 
@@ -55,7 +55,7 @@ You can clean up all temporary files generated during the build process with
 the `clean` command:
 
 ```shell
-$ bin/omnibus clean metasploit
+$ bin/omnibus clean metasploit-framework
 ```
 
 Adding the `--purge` purge option removes __ALL__ files generated during the
@@ -63,7 +63,7 @@ build including the project install directory (`/opt/metasploit-framework`) and
 the package cache directory (`/var/cache/omnibus/pkg`):
 
 ```shell
-$ bin/omnibus clean metasploit --purge
+$ bin/omnibus clean metasploit-framework --purge
 ```
 
 ### Publish
@@ -115,10 +115,10 @@ section:
 
 ```shell
 $ bundle exec kitchen login ubuntu-1204
-[vagrant@ubuntu...] $ cd metasploit
+[vagrant@ubuntu...] $ cd metasploit-omnibus
 [vagrant@ubuntu...] $ bundle install
 [vagrant@ubuntu...] $ ...
-[vagrant@ubuntu...] $ bin/omnibus build metasploit
+[vagrant@ubuntu...] $ bin/omnibus build metasploit-framework
 ```
 
 For a complete list of all commands and platforms, run `kitchen list` or
