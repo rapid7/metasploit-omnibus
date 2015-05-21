@@ -27,12 +27,18 @@ whitelist_file "#{install_dir}/framework/data/john/run.linux.x64.mmx/tgtsnarf"
 whitelist_file "#{install_dir}/framework/data/john/run.linux.x64.mmx/mkvcalcproba"
 
 build do
-  command "mkdir #{install_dir}/bin"
 
-  patch source: '0001-add-omnibus-helper-scripts.patch'
   copy "#{project_dir}", "#{install_dir}/framework"
-  move "#{install_dir}/framework/msfdb", "#{install_dir}/bin"
-  move "#{install_dir}/framework/msfwrapper", "#{install_dir}/bin"
+  touch "#{install_dir}/framework/.apt"
+  mkdir "#{install_dir}/bin"
+  erb source: 'msfdb.erb',
+      dest: "#{install_dir}/bin/msfdb",
+      mode: 0755,
+      vars: { install_dir: install_dir }
+  erb source: 'msfwrapper.erb',
+      dest: "#{install_dir}/bin/msfwrapper",
+      mode: 0755,
+      vars: { install_dir: install_dir }
 
   command "chmod +x #{install_dir}/bin/*"
 

@@ -1,0 +1,32 @@
+#!/bin/bash
+cmd=`basename $0`
+
+if [ $cmd = "msfrunner" ]; then
+  echo "This script wraps metasploit framework commands to run in the correct environment."
+  echo " Do not run it directly."
+  exit 1
+fi
+
+pushd `dirname $0` > /dev/null
+SCRIPTDIR=`pwd -P`
+BIN=$SCRIPTDIR/../embedded/bin
+FRAMEWORK=$SCRIPTDIR/../framework
+
+LOCALCONF=~/.msf4
+DB=$LOCALCONF/db
+DBCONF=$LOCALCONF/database.yml
+popd > /dev/null
+
+start_db() {
+  if [ -e $DB -a -e $DBCONF ]; then
+    $BIN/pg_ctl -D $DB status > /dev/null
+    if [ $? != 0 ]; then
+      echo Starting Postgresql
+      $BIN/pg_ctl -D $DB -l $DB/log start > /dev/null
+      sleep 2
+    fi
+  fi
+}
+
+start_db
+(cd $FRAMEWORK; $BIN/bundle exec $BIN/ruby ./$cmd)
