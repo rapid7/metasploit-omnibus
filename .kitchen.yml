@@ -3,7 +3,7 @@ driver:
   forward_agent: yes
   customize:
     cpus: 2
-    memory: 2048
+    memory: 4096
   synced_folders:
     - ['.', '/home/vagrant/metasploit']
 
@@ -45,4 +45,4 @@ suites:
         build_user:          vagrant
         build_user_group:    vagrant
         build_user_password: vagrant
-        install_dir:         /opt/metasploit
+        install_dir:         /opt/metasploit-framework

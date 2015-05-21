@@ -59,7 +59,7 @@ $ bin/omnibus clean metasploit
 ```
 
 Adding the `--purge` purge option removes __ALL__ files generated during the
-build including the project install directory (`/opt/metasploit`) and
+build including the project install directory (`/opt/metasploit-framework`) and
 the package cache directory (`/var/cache/omnibus/pkg`):
 
 ```shell
