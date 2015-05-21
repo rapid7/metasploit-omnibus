@@ -5,21 +5,16 @@ This project creates full-stack platform-specific packages for
 edition. It only contains the framework command-line interface and the
 associated tools and modules.
 
-Building the package locally
+Building the package
 ------------
-In general, a build environment needs a working C/C++ compiler, Ruby 1.9 or higher and the ruby development headers, bundler, git, bison and flex. A quad-core CPU and 4GB of ram are recommended to build quickly.
+
+## Building on Ubuntu / Debian systems
+In general, a build environment needs a working C/C++ compiler, Ruby 1.9 or higher and the ruby development headers, bundler, git, bison and flex. A quad-core CPU and 4GB of ram are recommended.
 
 The following steps should produce a successful build with Ubuntu and other Debian derivatives, starting from a fresh installation:
 ```shell
 # install required packages to build on Ubuntu / Debian systems
-sudo apt-get -y install build-essential git ruby bundler ruby-dev bison flex
-```
-
-Next setup git if you need to.
-```shell
-# setup git (ignore if you already have it configured)
-git config --global user.name "Nobody"
-git config --global user.email "nobody@example.com"
+sudo apt-get -y install build-essential git ruby bundler ruby-dev bison flex autoconf automake
 ```
 
 Configure the omnibus cache and target directories if you want to build as non-root user (recommended).
@@ -29,6 +24,13 @@ sudo mkdir -p /var/cache/omnibus
 sudo mkdir -p /opt/metasploit-framework
 sudo chown `whoami` /var/cache/omnibus
 sudo chown `whoami` /opt/metasploit-framework
+```
+
+Next setup git if you need to.
+```shell
+# setup git (ignore if you already have it configured)
+git config --global user.name "Nobody"
+git config --global user.email "nobody@example.com"
 ```
 
 Checkout the metasploit-framework installer builder and install omnibus' dependencies.
@@ -47,6 +49,7 @@ bin/omnibus build metasploit-framework
 ```
 when complete, there will be a new installable .deb file under the 'pkg' directory.
 
+## Building on OS X
 From OS X, first install XCode and the command line development tools. I use ruby, bundler, git, bison and flex from the Mac Homebrew project. The rest of the steps are identical to building on Ubuntu. A .pkg file will be under the pkg directory instead.
 
 ### Clean

@@ -11,6 +11,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.provision "shell", inline: 'sudo gem install bundler'
   config.vm.provision "shell", inline: 'sudo mkdir -p /var/cache/omnibus'
   config.vm.provision "shell", inline: 'sudo mkdir -p /opt/metasploit-framework'
+  config.vm.provision "shell", inline: 'sudo apt-get -y remove ruby1.8'
+  config.vm.provision "shell", inline: 'sudo apt-get -y autoremove'
   config.vm.provision "shell", inline: 'sudo chown vagrant /var/cache/omnibus'
   config.vm.provision "shell", inline: 'sudo chown vagrant /opt/metasploit-framework'
 
