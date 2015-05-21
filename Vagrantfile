@@ -6,8 +6,9 @@ VAGRANTFILE_API_VERSION = "2"
 
 # This Vagrantfile configures an image suitable for building a new metasploit-installer package.
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
-  config.vm.box = "ubuntu/trusty64"
-  config.vm.provision "shell", inline: 'sudo apt-get -y install build-essential git ruby bundler ruby-dev bison flex'
+  config.vm.box = "ubuntu/precise64"
+  config.vm.provision "shell", inline: 'sudo apt-get -y install build-essential git ruby1.9.1 ruby1.9.1-dev bison flex'
+  config.vm.provision "shell", inline: 'sudo gem install bundler'
   config.vm.provision "shell", inline: 'sudo mkdir -p /var/cache/omnibus'
   config.vm.provision "shell", inline: 'sudo mkdir -p /opt/metasploit-framework'
   config.vm.provision "shell", inline: 'sudo chown vagrant /var/cache/omnibus'
