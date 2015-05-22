@@ -15,6 +15,8 @@ dependency "nokogiri"
 dependency "ruby"
 dependency "postgresql"
 dependency "sqlite"
+dependency "nmap"
+dependency "john"
 
 # This depends on extra system libraries on OS X
 whitelist_file "#{install_dir}//framework/data/isight.bundle"
