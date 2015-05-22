@@ -1,5 +1,6 @@
-#!/bin/bash
+#!/bin/sh
 #set -e
+#set -x
 
 BASE=/opt/metasploit-framework
 BIN=$BASE/embedded/bin
@@ -8,6 +9,12 @@ FRAMEWORK=$BASE/framework
 LOCALCONF=~/.msf4
 DB=$LOCALCONF/db
 DBCONF=$LOCALCONF/database.yml
+DBPORT=5433
+PG_CTL=$BIN/pg_ctl
+
+if [ -e $DBCONF ]; then
+  DBPORT=`awk '/port/ {print $2}' < $DBCONF`
+fi
 
 pw_gen() {
   $BIN/openssl rand -base64 32
@@ -15,12 +22,11 @@ pw_gen() {
 
 start_db() {
   if [ -e $DB ]; then
-    $BIN/pg_ctl -D $DB status > /dev/null
-    if [ $? == 0 ]; then
+    if $PG_CTL -o "-p $DBPORT" -D $DB status > /dev/null; then
       echo "Database already started at $DB"
     else
       echo Starting Postgresql
-      $BIN/pg_ctl -D $DB -l $DB/log start > /dev/null
+      $PG_CTL -o "-p $DBPORT" -D $DB -l $DB/log start > /dev/null
       sleep 2
     fi
   else
@@ -29,11 +35,10 @@ start_db() {
 }
 
 stop_db() {
-  $BIN/pg_ctl -D $DB status > /dev/null
-  if [ $? == 0 ]; then
-    $BIN/pg_ctl -D $DB stop
+  if $PG_CTL -o "-p $DBPORT" -D $DB status > /dev/null; then
+    $PG_CTL -o "-p $DBPORT" -D $DB stop > /dev/null
   else
-    echo "Database not running at $DB, doing nothing"
+    echo "Database is no longer running at $DB"
   fi
 }
 
@@ -59,7 +64,7 @@ development: &pgsql
   username: $MSF_USER
   password: $MSF_PASS
   host: localhost
-  port: 5432
+  port: $DBPORT
   pool: 5
   timeout: 5
 
@@ -81,15 +86,17 @@ EOF
   echo "host    \"msf\"      \"${MSF_USER}\"      127.0.0.1/32           md5" >> $DB/pg_hba.conf
   echo "host    \"msftest\"  \"${MSFTEST_USER}\"  127.0.0.1/32           md5" >> $DB/pg_hba.conf
 
+  echo "port = $DBPORT" >> $DB/postgresql.conf
+
   start_db
 
   echo "Creating database users"
-  $BIN/psql postgres -c \
+  $BIN/psql -p $DBPORT postgres -c \
     "create user $MSF_USER with password '$MSF_PASS';" > /dev/null
-  $BIN/psql postgres -c \
+  $BIN/psql -p $DBPORT postgres -c \
     "create user $MSFTEST_USER with password '$MSFTEST_PASS';" > /dev/null
-  $BIN/psql postgres -c "alter user msftest createdb;" > /dev/null
-  $BIN/createdb -O $MSF_USER msf -h localhost
+  $BIN/psql -p $DBPORT postgres -c "alter user msftest createdb;" > /dev/null
+  $BIN/createdb -p $DBPORT -O $MSF_USER msf -h localhost
 
   echo "Creating initial database schema"
   (cd $FRAMEWORK; $BIN/bundle exec $BIN/rake db:migrate >/dev/null 2>&1)
@@ -111,18 +118,21 @@ reinit_db() {
 }
 
 usage() {
+  PROG=`basename $0`
+  echo
   echo "Manage a metasploit framework database"
   echo
-  echo "  $0 init      # initialize the database"
-  echo "  $0 reinit    # delete and reinitialize the database"
-  echo "  $0 delete    # delete database and stop using it"
-  echo "  $0 start     # start the database"
-  echo "  $0 stop      # stop the database"
+  echo "  $PROG init    # initialize the database"
+  echo "  $PROG reinit  # delete and reinitialize the database"
+  echo "  $PROG         # delete database and stop using it"
+  echo "  $PROG start   # start the database"
+  echo "  $PROG stop    # stop the database"
+  echo
+  exit
 }
 
 if [ "$#" -ne 1 ]; then
   usage
-  exit
 fi
 
 case $1 in
@@ -131,5 +141,5 @@ case $1 in
   delete) delete_db ;;
   start) start_db ;;
   stop) stop_db ;;
-  *) usage ;;
+  *) echo "Error: unrecognized action '${1}'"; usage ;;
 esac
