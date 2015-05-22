@@ -10,7 +10,8 @@ fi
 CWD=`pwd`
 cd `dirname $0`
 SCRIPTDIR=`pwd -P`
-BIN=$SCRIPTDIR/../embedded/bin
+EMBEDDED=$SCRIPTDIR/../embedded
+BIN=$EMBEDDED/bin
 FRAMEWORK=$SCRIPTDIR/../framework
 
 LOCALCONF=~/.msf4
@@ -30,4 +31,8 @@ start_db() {
 }
 
 start_db
-(cd $FRAMEWORK; $BIN/bundle exec $BIN/ruby ./$cmd)
+(
+ cd $FRAMEWORK
+ PATH=$BIN:$EMBEDDED/john:$SCRIPTDIR
+ $BIN/bundle exec $BIN/ruby ./$cmd
+)
