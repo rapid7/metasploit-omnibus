@@ -13,7 +13,7 @@ DBPORT=5433
 PG_CTL=$BIN/pg_ctl
 
 if [ -e $DBCONF ]; then
-  DBPORT=`awk '/port/ {print $2}' < $DBCONF`
+  DBPORT=`awk '/port:/ {print $2}' < $DBCONF`
 fi
 
 pw_gen() {
