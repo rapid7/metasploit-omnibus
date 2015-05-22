@@ -7,6 +7,8 @@ source url: "https://nmap.org/dist/nmap-6.47.tar.bz2"
 
 relative_path "nmap-#{version}"
 
+dependency "openssl"
+
 build do
   env = with_standard_compiler_flags(with_embedded_path)
   command "./configure --prefix=#{install_dir}/embedded", env: env
