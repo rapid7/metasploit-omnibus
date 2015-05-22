@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 cmd=`basename $0`
 
 if [ $cmd = "msfrunner" ]; then
@@ -7,7 +7,8 @@ if [ $cmd = "msfrunner" ]; then
   exit 1
 fi
 
-pushd `dirname $0` > /dev/null
+CWD=`pwd`
+cd `dirname $0`
 SCRIPTDIR=`pwd -P`
 BIN=$SCRIPTDIR/../embedded/bin
 FRAMEWORK=$SCRIPTDIR/../framework
@@ -15,7 +16,7 @@ FRAMEWORK=$SCRIPTDIR/../framework
 LOCALCONF=~/.msf4
 DB=$LOCALCONF/db
 DBCONF=$LOCALCONF/database.yml
-popd > /dev/null
+cd $CWD
 
 start_db() {
   if [ -e $DB -a -e $DBCONF ]; then
