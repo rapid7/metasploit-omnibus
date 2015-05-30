@@ -15,7 +15,7 @@
 #
 
 name "ruby-windows"
-default_version "1.9.3-p484"
+default_version "2.1.6"
 
 relative_path "ruby-#{version}-i386-mingw32"
 
@@ -33,6 +33,10 @@ end
 
 version "2.1.5" do
   source md5: "fe6b596fc47f503b0c0c01ebed16cf65"
+end
+
+version "2.1.6" do
+  source md5: "e3c345a73e5523677a1f301caa4142eb"
 end
 
 version "2.2.1" do
