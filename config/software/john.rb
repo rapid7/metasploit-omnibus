@@ -1,9 +1,9 @@
 name "john"
 default_version "1.8.0-jumbo-1"
 
-version("1.8.0-jumbo-1") { source md5: "1d6b22ec41a12cdcd62ad6eae3e77345" }
+version("1.8.0-jumbo-1") { source md5: "69f6a26037ad56676116ea2114f35a79" }
 
-source url: "http://www.openwall.com/john/j/john-1.8.0-jumbo-1.tar.xz"
+source url: "http://www.openwall.com/john/j/john-1.8.0-jumbo-1.tar.gz"
 
 relative_path "john-#{version}/src"
 
