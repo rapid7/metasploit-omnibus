@@ -1,14 +1,10 @@
 #!/bin/sh
 cmd=`basename $0`
 
-if [ $cmd = "msfrunner" ]; then
+if [ $cmd = "msfwrapper" ]; then
   echo "This script wraps metasploit framework commands to run in the correct environment."
   echo " Do not run it directly."
   exit 1
-fi
-
-if [ $cmd = "msfconsole" ]; then
-    cmd="$cmd -L"
 fi
 
 CWD=`pwd`
@@ -23,18 +19,73 @@ DB=$LOCALCONF/db
 DBCONF=$LOCALCONF/database.yml
 cd $CWD
 
+add_path() {
+  PROFILE=~/.profile
+  if [ -e ~/.bash_profile ]; then
+    PROFILE=~/.bash_profile
+  fi
+  echo "PATH=\$PATH:$SCRIPTDIR" >> $PROFILE
+  echo "export PATH=\$PATH:$SCRIPTDIR" >> $PROFILE
+  echo "You may need to start a new terminal or log in again for this to take effect."
+}
+
+check_db() {
+  if [ ! -e $LOCALCONF/database.yml ]; then
+    while true; do
+      read -p "Would you like to use and setup a new database (recommended)? " yn
+      case $yn in
+        [Yy]* ) $SCRIPTDIR/msfdb init; break;;
+        [Nn]* ) break;;
+            * ) echo "Please answer yes or no.";;
+      esac
+    done
+  fi
+}
+
+check_path() {
+  if [ "`which msfconsole`" != "$CWD/msfconsole" ]; then
+    while true; do
+      read -p "Would you like to add $cmd and other programs to your default PATH? " yn
+        case $yn in
+          [Yy]* ) add_path; break;;
+          [Nn]* ) break;;
+              * ) echo "Please answer yes or no.";;
+        esac
+      done
+  fi
+}
+
 start_db() {
   if [ -e $DB -a -e $DBCONF ]; then
     $BIN/pg_ctl -D $DB status > /dev/null
     if [ $? != 0 ]; then
-      echo Starting Postgresql
-      $BIN/pg_ctl -D $DB -l $DB/log start > /dev/null
+      $SCRIPTDIR/msfdb init
       sleep 2
     fi
   fi
 }
 
+if [ ! -e $LOCALCONF/initial_setup_complete ]; then
+    mkdir -p $LOCALCONF
+    echo
+    echo " ** Welcome to Metasploit Framework Initial Setup **"
+    echo "    Please answer a few questions to get started."
+    echo
+    check_path
+    echo
+    check_db
+    echo
+    echo " ** Metasploit Framework Initial Setup Complete **"
+    echo
+    touch $LOCALCONF/initial_setup_complete
+fi
+
 start_db
+
+if [ $cmd = "msfconsole" ]; then
+    cmd="$cmd -L"
+fi
+
 (
  cd $FRAMEWORK
  PATH=$BIN:$EMBEDDED/john:$SCRIPTDIR
