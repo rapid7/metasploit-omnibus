@@ -7,6 +7,10 @@ if [ $cmd = "msfrunner" ]; then
   exit 1
 fi
 
+if [ $cmd = "msfconsole" ]; then
+    cmd="$cmd -L"
+fi
+
 CWD=`pwd`
 cd `dirname $0`
 SCRIPTDIR=`pwd -P`
@@ -34,5 +38,5 @@ start_db
 (
  cd $FRAMEWORK
  PATH=$BIN:$EMBEDDED/john:$SCRIPTDIR
- $BIN/bundle exec $BIN/ruby ./$cmd
+ $BIN/bundle exec $BIN/ruby ./$cmd $*
 )
