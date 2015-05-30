@@ -19,19 +19,19 @@ dependency "nmap"
 dependency "john"
 
 # This depends on extra system libraries on OS X
-whitelist_file "#{install_dir}//framework/data/isight.bundle"
+whitelist_file "#{install_dir}//embedded/framework/data/isight.bundle"
 
 # This depends on Openssl 1.x
-whitelist_file "#{install_dir}/framework/data/john/run.linux.x64.mmx/john"
-whitelist_file "#{install_dir}/framework/data/john/run.linux.x64.mmx/calc_stat"
-whitelist_file "#{install_dir}/framework/data/john/run.linux.x64.mmx/genmkvpwd"
-whitelist_file "#{install_dir}/framework/data/john/run.linux.x64.mmx/tgtsnarf"
-whitelist_file "#{install_dir}/framework/data/john/run.linux.x64.mmx/mkvcalcproba"
+whitelist_file "#{install_dir}/embedded/framework/data/john/run.linux.x64.mmx/john"
+whitelist_file "#{install_dir}/embedded/framework/data/john/run.linux.x64.mmx/calc_stat"
+whitelist_file "#{install_dir}/embedded/framework/data/john/run.linux.x64.mmx/genmkvpwd"
+whitelist_file "#{install_dir}/embedded/framework/data/john/run.linux.x64.mmx/tgtsnarf"
+whitelist_file "#{install_dir}/embedded/framework/data/john/run.linux.x64.mmx/mkvcalcproba"
 
 build do
 
-  copy "#{project_dir}", "#{install_dir}/framework"
-  touch "#{install_dir}/framework/.apt"
+  patch source: "no-git.diff", plevel: 1
+  copy "#{project_dir}", "#{install_dir}/embedded/framework"
   mkdir "#{install_dir}/bin"
   erb source: 'msfdb.erb',
       dest: "#{install_dir}/bin/msfdb",
