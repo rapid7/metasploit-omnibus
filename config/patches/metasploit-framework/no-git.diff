@@ -1,0 +1,14 @@
+diff --git a/metasploit-framework.gemspec b/metasploit-framework.gemspec
+index ba444f6..be8601e 100644
+--- a/metasploit-framework.gemspec
++++ b/metasploit-framework.gemspec
+@@ -24,9 +24,6 @@ Gem::Specification.new do |spec|
+   spec.homepage      = 'https://www.metasploit.com'
+   spec.license       = 'BSD-3-clause'
+ 
+-  spec.files         = `git ls-files`.split($/).reject { |file|
+-    file =~ /^config/
+-  }
+   spec.bindir = '.'
+   spec.executables   = [
+       'msfbinscan',
