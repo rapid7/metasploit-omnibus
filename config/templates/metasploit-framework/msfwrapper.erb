@@ -88,6 +88,6 @@ fi
 
 (
  cd $FRAMEWORK
- PATH=$BIN:$EMBEDDED/john:$SCRIPTDIR
+ PATH=$BIN:$EMBEDDED/john:$SCRIPTDIR:$PATH
  $BIN/bundle exec $BIN/ruby ./$cmd $*
 )
