@@ -89,6 +89,11 @@ start_db
 
 (
  cd $FRAMEWORK
+ unset GEM_HOME
+ unset GEM_PATH
+ unset GEM_ROOT
+ unset RUBY_ENGINE
+ unset RUBY_ROOT
  PATH=$BIN:$EMBEDDED/john:$SCRIPTDIR:$PATH
  $BIN/bundle exec $BIN/ruby ./$cmd $*
 )
