@@ -22,16 +22,13 @@ dependency "john"
 whitelist_file "#{install_dir}//embedded/framework/data/isight.bundle"
 
 # This depends on Openssl 1.x
-whitelist_file "#{install_dir}/embedded/framework/data/john/run.linux.x64.mmx/john"
-whitelist_file "#{install_dir}/embedded/framework/data/john/run.linux.x64.mmx/calc_stat"
-whitelist_file "#{install_dir}/embedded/framework/data/john/run.linux.x64.mmx/genmkvpwd"
-whitelist_file "#{install_dir}/embedded/framework/data/john/run.linux.x64.mmx/tgtsnarf"
-whitelist_file "#{install_dir}/embedded/framework/data/john/run.linux.x64.mmx/mkvcalcproba"
+whitelist_file "#{install_dir}/embedded/framework/data/john/.*"
+whitelist_file "#{install_dir}/embedded/lib/ruby/gems/2.1.0/gems/metasploit-payloads.*"
 
 build do
 
-  patch source: "no-git.diff", plevel: 1
   copy "#{project_dir}", "#{install_dir}/embedded/framework"
+  patch source: "no-git.diff", plevel: 1, target: "#{install_dir}/embedded/framework/metasploit-framework.gemspec"
   mkdir "#{install_dir}/bin"
   erb source: 'msfdb.erb',
       dest: "#{install_dir}/bin/msfdb",
@@ -61,6 +58,7 @@ build do
   metasploit_bins.each { |bin|
     link "#{install_dir}/bin/msfwrapper", "#{install_dir}/bin/#{bin}"
   }
+  link "#{install_dir}/bin/nmap", "#{install_dir}/embedded/bin/nmap"
 
   bundle "install"
   command "chmod o+r #{install_dir}/embedded/lib/ruby/gems/2.1.0/gems/robots-0.10.1/lib/robots.rb"
