@@ -82,9 +82,10 @@ fi
 
 start_db
 
-if [ $cmd = "msfconsole" ]; then
-    cmd="$cmd -L"
-fi
+# Uncomment to enable libedit support
+#if [ $cmd = "msfconsole" ]; then
+#    cmd="$cmd -L"
+#fi
 
 (
  cd $FRAMEWORK
