@@ -12,6 +12,7 @@ function error_exit
   exit 1
 }
 
-echo "Thank you for installing metasploit!"
+echo "Thank you for installing Metasploit Framework!"
+echo "Run /opt/metasploit-framework/bin/msfconsole to get started"
 
 exit 0
