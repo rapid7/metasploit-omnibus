@@ -41,3 +41,15 @@ RUN gem install bundler --no-ri --no-rdoc
 RUN git clone https://github.com/rapid7/metasploit-omnibus.git
 RUN cd metasploit-omnibus && bundle install --binstubs
 RUN rm -fr metasploit-omnibus
+
+ENV JENKINS_HOME /var/jenkins_home
+RUN useradd -d "$JENKINS_HOME" -u 1001 -m -s /bin/sh jenkins
+VOLUME "$JENKINS_HOME"
+RUN cp ~/.gitconfig "$JENKINS_HOME"
+RUN chown -R jenkins "$JENKINS_HOME"
+
+RUN mkdir -p /var/cache/omnibus
+RUN mkdir -p /opt/metasploit-framework
+RUN chown jenkins /var/cache/omnibus
+RUN chown jenkins /opt/metasploit-framework
+RUN chown -R jenkins /var/lib/gems/
