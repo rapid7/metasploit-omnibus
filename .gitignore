@@ -9,3 +9,7 @@ pkg/*
 bin/*
 files/**/cache/
 vendor/cookbooks
+
+# RVM management
+.ruby-version
+.ruby-gemset
