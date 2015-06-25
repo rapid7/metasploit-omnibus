@@ -46,3 +46,16 @@ RUN source /etc/profile.d/chef-ruby.sh && gem install bundler --no-ri --no-rdoc
 RUN git clone https://github.com/rapid7/metasploit-omnibus.git
 RUN cd metasploit-omnibus && /opt/chef/embedded/bin/bundle install --binstubs
 RUN rm -fr metasploit-omnibus
+
+ENV JENKINS_HOME /var/jenkins_home
+RUN useradd -d "$JENKINS_HOME" -u 1001 -m -s /bin/sh jenkins
+RUN cp ~/.gitconfig "$JENKINS_HOME"
+RUN chown -R jenkins "$JENKINS_HOME"
+
+RUN mkdir -p /var/cache/omnibus
+RUN mkdir -p /opt/metasploit-framework
+RUN chown jenkins /var/cache/omnibus
+RUN chown jenkins /opt/metasploit-framework
+RUN chown -R jenkins /opt/chef/embedded/lib/ruby/gems
+
+ENV PATH /opt/chef/embedded/bin:$PATH
