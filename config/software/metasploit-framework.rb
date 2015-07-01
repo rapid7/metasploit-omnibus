@@ -56,7 +56,6 @@ build do
   metasploit_bins.each { |bin|
     link "#{install_dir}/bin/msfwrapper", "#{install_dir}/bin/#{bin}"
   }
-  link "#{install_dir}/bin/nmap", "#{install_dir}/embedded/bin/nmap"
 
   bundle "install"
   command "chmod o+r #{install_dir}/embedded/lib/ruby/gems/2.1.0/gems/robots-0.10.1/lib/robots.rb"
