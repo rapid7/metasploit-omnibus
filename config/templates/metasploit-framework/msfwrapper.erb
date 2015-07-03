@@ -8,7 +8,8 @@ if [ $cmd = "msfwrapper" ]; then
 fi
 
 CWD=`pwd`
-cd `dirname $0`
+SCRIPT=`readlink -f $0`
+cd `dirname $SCRIPT`
 SCRIPTDIR=`pwd -P`
 EMBEDDED=$SCRIPTDIR/../embedded
 BIN=$EMBEDDED/bin
