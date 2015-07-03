@@ -44,7 +44,7 @@ check_db() {
 }
 
 check_path() {
-  if [ "`which msfconsole`" != "$CWD/msfconsole" ]; then
+  if [ "`which msfconsole`" = "" ]; then
     while true; do
       read -p "Would you like to add $cmd and other programs to your default PATH? " yn
         case $yn in
