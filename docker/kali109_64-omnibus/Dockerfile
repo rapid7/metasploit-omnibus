@@ -30,14 +30,15 @@ RUN git clone https://github.com/rapid7/metasploit-omnibus.git
 RUN cd metasploit-omnibus && bundle install --binstubs
 RUN rm -fr metasploit-omnibus
 
-ENV JENKINS_HOME /var/jenkins_home
-RUN cp ~/.gitconfig "$JENKINS_HOME"
-RUN chown -R jenkins "$JENKINS_HOME"
-
-RUN mkdir -p /var/cache/omnibus
-RUN mkdir -p /opt/metasploit-framework
-RUN chown jenkins /var/cache/omnibus
-RUN chown jenkins /opt/metasploit-framework
-RUN chown -R jenkins /var/lib/gems/
+ENV JENKINS_HOME /home/jenkins
+RUN mkdir -p "$JENKINS_HOME" && \
+	cp ~/.gitconfig "$JENKINS_HOME" && \
+	chown -R jenkins "$JENKINS_HOME" && \
+	mkdir -p /var/cache/omnibus && \
+	mkdir -p /opt/metasploit-framework && \
+	chown jenkins /var/cache/omnibus && \
+	chown jenkins /opt/metasploit-framework && \
+	chown -R jenkins /var/lib/gems
 RUN echo "jenkins    ALL=NOPASSWD: ALL" > /etc/sudoers.d/jenkins
 RUN chmod 440 /etc/sudoers.d/jenkins
+RUN apt-get remove -y libpq-dev libpq5
