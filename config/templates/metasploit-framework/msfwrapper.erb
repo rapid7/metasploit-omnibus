@@ -66,6 +66,11 @@ start_db() {
   fi
 }
 
+if test "`find $SCRIPT -mmin +20160`"; then
+	echo "This copy of metasploit-framework is more than two weeks old."
+	echo " Consider running 'msfupdate' to update to the latest version."
+fi
+
 if [ ! -e $LOCALCONF/initial_setup_complete ]; then
     mkdir -p $LOCALCONF
     echo
