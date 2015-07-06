@@ -15,7 +15,7 @@
 #
 
 name "libedit"
-default_version "20120601-3.0"
+default_version "20141030-3.1"
 
 dependency "ncurses"
 
