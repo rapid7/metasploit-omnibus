@@ -12,4 +12,12 @@ function error_exit
   exit 1
 }
 
+BINS="msfbinscan msfconsole msfd msfelfscan msfmachscan msfpescan msfrop msfrpc msfrpcd msfupdate msfvenom"
+
+if [ -x /usr/sbin/update-alternatives ] ; then
+	for BIN in $BINS; do
+		update-alternatives --remove $BIN /opt/metasploit-framework/bin/msfwrapper
+	done
+fi
+
 exit 0

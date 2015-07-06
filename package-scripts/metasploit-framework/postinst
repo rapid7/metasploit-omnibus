@@ -13,6 +13,16 @@ function error_exit
 }
 
 echo "Thank you for installing Metasploit Framework!"
-echo "Run /opt/metasploit-framework/bin/msfconsole to get started"
+
+BINS="msfbinscan msfconsole msfd msfelfscan msfmachscan msfpescan msfrop msfrpc msfrpcd msfupdate msfvenom"
+
+if [ -x /usr/sbin/update-alternatives ] ; then
+	for BIN in $BINS; do
+		update-alternatives --install /usr/bin/$BIN $BIN /opt/metasploit-framework/bin/msfwrapper 100
+	done
+	echo "Run msfconsole to get started"
+else
+	echo "Run /opt/metasploit-framework/bin/msfconsole to get started"
+fi
 
 exit 0
