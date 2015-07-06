@@ -32,6 +32,10 @@ build do
       dest: "#{install_dir}/bin/msfdb",
       mode: 0755,
       vars: { install_dir: install_dir }
+  erb source: 'msfupdate.erb',
+      dest: "#{install_dir}/bin/msfupdate",
+      mode: 0755,
+      vars: { install_dir: install_dir }
   erb source: 'msfwrapper.erb',
       dest: "#{install_dir}/bin/msfwrapper",
       mode: 0755,
@@ -49,7 +53,6 @@ build do
         'msfrop',
         'msfrpc',
         'msfrpcd',
-        'msfupdate',
         'msfvenom'
   ]
 
