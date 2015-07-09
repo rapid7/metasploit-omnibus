@@ -5,6 +5,11 @@ This project creates full-stack platform-specific packages for
 edition. It only contains the framework command-line interface and the
 associated tools and modules.
 
+Installing the package
+------------
+
+We are currently running nightly builds for .deb packages, with more to come soon. See USAGE.md for installation instructions.
+
 Building the package
 ------------
 
