@@ -1,6 +1,8 @@
+# Using the metasploit-framework Omnibus package
+
 Using the metasploit-framework omnibus package is simple. It is a native package that integrates well with your operating system, but does not depend on any packages outside of your base operating system. It also tries to avoid modifying or upgrading and system packages, so it should peacefully co-exist with the rest of your software.
 
-# Quick Start
+## Quick Start
 
 To quickly install the latest version of the metasploit-omnibus package, this one-liner will add the nightly build repository, import the Rapid7 GPG key and install the package:
 
@@ -56,7 +58,7 @@ Creating initial database schema
 msf >
 ```
 
-# Post Installation Information
+## Post Installation Information
 
 The main binaries are installed under /opt/metasploit-framework/bin. You can either add this to your PATH, or run directly, e.g. /opt/metasploit-framework/bin/msfconsole, or on Linux distributions, these will be linked directly to /usr/bin so you can run them straight away.
 
@@ -85,11 +87,11 @@ If you want to build your own installer package or modify it, see the instructio
 
 The .deb packages built on Kali Linux 1.0.9, which is based on a stable Debian release. As such, they also work on newer versions of Debian and Ubunt
 
-# Centos / Redhat / Fedora packages
+## Centos / Redhat / Fedora packages
 
 The .rpm was built on Centos 5.11, and should work on newer Redhat, Fedora and Centos releases as well.
 
-# OS X packages
+## OS X packages
 
 The .pkg was built on OS X, and has only been tested on 10.10 so far. To install it, simply run the file and follow the prompts.
 
