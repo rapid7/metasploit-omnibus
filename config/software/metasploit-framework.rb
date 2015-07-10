@@ -40,6 +40,13 @@ build do
       dest: "#{install_dir}/bin/msfwrapper",
       mode: 0755,
       vars: { install_dir: install_dir }
+  erb source: 'version.yml.erb',
+      dest: "#{install_dir}/embedded/framework/version.yml",
+      mode: 0644,
+      vars: {
+        git_hash: `git -C #{project_dir} rev-parse HEAD`.strip,
+        date: Time.new.strftime("%Y%m%d")
+      }
 
   command "chmod +x #{install_dir}/bin/*"
 
