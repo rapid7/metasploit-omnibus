@@ -15,10 +15,10 @@
 #
 
 name "openssl"
-default_version "2.2.0"
+default_version "2.2.1"
 
 source url: "http://ftp5.usa.openbsd.org/pub/OpenBSD/LibreSSL/libressl-#{version}.tar.gz",
-       md5: '277e4bd258fd4fb2aadaed760320c566'
+       md5: '6605ef36e39110bd3da21ec9cf7d2da5'
 
 relative_path "libressl-#{version}"
 
@@ -27,7 +27,7 @@ build do
 
   configure_command = "./configure" \
                       " --prefix=#{install_dir}/embedded" \
-		      " --disable-asm"
+                      " --disable-asm"
 
   command configure_command, env: env
 
