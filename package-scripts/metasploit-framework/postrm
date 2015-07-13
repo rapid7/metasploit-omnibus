@@ -1,9 +1,7 @@
-#!/bin/bash
+#!/bin/sh
 #
 # Perform necessary metasploit removal steps
 # after package is uninstalled.
 #
-
-echo "metasploit has been uninstalled!"
 
 exit 0

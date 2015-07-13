@@ -1,10 +1,10 @@
-#!/bin/bash
+#!/bin/sh
 #
 # Perform necessary metasploit setup steps
 # prior to installing package.
 #
 
-PROGNAME=$(basename $0)
+PROGNAME=`basename $0`
 
 function error_exit
 {
