@@ -4,14 +4,6 @@
 # prior to installing package.
 #
 
-PROGNAME=`basename $0`
-
-function error_exit
-{
-  echo "${PROGNAME}: ${1:-"Unknown Error"}" 1>&2
-  exit 1
-}
-
 BINS="msfbinscan msfconsole msfd msfelfscan msfmachscan msfpescan msfrop msfrpc msfrpcd msfvenom"
 
 if [ -x /usr/sbin/update-alternatives ] ; then
