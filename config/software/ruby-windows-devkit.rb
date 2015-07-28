@@ -33,18 +33,21 @@ build do
   env = with_standard_compiler_flags(with_embedded_path)
 
   embedded_dir = "#{install_dir}/embedded"
+  devkit_dir = "#{install_dir}/devkit"
+
+  mkdir devkit_dir
 
   version "4.5.2-20111229-1559" do
-    command "DevKit-tdm-32-#{version}-sfx.exe -y -o#{windows_safe_path(embedded_dir)}", env: env
+    command "DevKit-tdm-32-#{version}-sfx.exe -y -o#{windows_safe_path(devkit_dir)}", env: env
   end
 
   version "4.7.2-20130224-1151" do
-    command "DevKit-mingw64-32-#{version}-sfx.exe -y -o#{windows_safe_path(embedded_dir)}", env: env
+    command "DevKit-mingw64-32-#{version}-sfx.exe -y -o#{windows_safe_path(devkit_dir)}", env: env
   end
 
-  command "echo - #{install_dir}/embedded > config.yml", cwd: embedded_dir
-  ruby "dk.rb install", env: env, cwd: embedded_dir
+  command "echo - #{embedded_dir} > config.yml", cwd: devkit_dir
+  ruby "#{devkit_dir}/dk.rb install", env: env, cwd: devkit_dir
 
   # may gems that ship with native extensions assume tar will be available in the PATH
-  copy "#{install_dir}/embedded/mingw/bin/bsdtar.exe", "#{install_dir}/embedded/mingw/bin/tar.exe"
+  copy "#{install_dir}/devkit/mingw/bin/bsdtar.exe", "#{install_dir}/devkit/mingw/bin/tar.exe"
 end
