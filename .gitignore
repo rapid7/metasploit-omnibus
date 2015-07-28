@@ -3,6 +3,7 @@
 .DS_Store
 .kitchen/
 .kitchen.local.yml
+local/*
 vendor/bundle
 pkg/*
 .vagrant
