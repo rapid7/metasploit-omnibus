@@ -15,10 +15,11 @@
 #
 
 name "bundler"
-default_version "1.9.4"
+default_version "1.7.7"
 
 if windows?
   dependency "ruby-windows"
+  dependency "rubygems"
 else
   dependency "rubygems"
 end
