@@ -8,9 +8,9 @@ if [ $cmd = "msfwrapper" ]; then
 fi
 
 CWD=`pwd`
-SCRIPT=`readlink -f $0`
-cd `dirname $SCRIPT`
-SCRIPTDIR=`pwd -P`
+SCRIPTDIR=<%= install_dir %>/bin
+SCRIPT=$SCRIPTDIR/msfwrapper
+cd $SCRIPTDIR
 EMBEDDED=$SCRIPTDIR/../embedded
 BIN=$EMBEDDED/bin
 FRAMEWORK=$EMBEDDED/framework
