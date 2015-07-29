@@ -1,15 +1,8 @@
 #!/bin/sh
 cmd=`basename $0`
 
-if [ $cmd = "msfwrapper" ]; then
-  echo "This script wraps metasploit framework commands to run in the correct environment."
-  echo " Do not run it directly."
-  exit 1
-fi
-
 CWD=`pwd`
 SCRIPTDIR=<%= install_dir %>/bin
-SCRIPT=$SCRIPTDIR/msfwrapper
 cd $SCRIPTDIR
 EMBEDDED=$SCRIPTDIR/../embedded
 BIN=$EMBEDDED/bin
@@ -66,7 +59,7 @@ start_db() {
   fi
 }
 
-if test "`find $SCRIPT -mmin +20160`"; then
+if test "`find $0 -mmin +20160`"; then
 	echo "This copy of metasploit-framework is more than two weeks old."
 	echo " Consider running 'msfupdate' to update to the latest version."
 fi

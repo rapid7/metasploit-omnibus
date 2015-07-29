@@ -25,6 +25,7 @@ whitelist_file "#{install_dir}/embedded/lib/ruby/gems/2.1.0/gems/metasploit-payl
 
 build do
   copy "#{project_dir}", "#{install_dir}/embedded/framework"
+  patch source: "no-git.diff", plevel: 1, target: "#{install_dir}/embedded/framework/metasploit-framework.gemspec"
 
   erb source: 'version.yml.erb',
       dest: "#{install_dir}/embedded/framework/version.yml",
