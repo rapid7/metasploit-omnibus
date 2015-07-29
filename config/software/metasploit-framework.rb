@@ -8,13 +8,17 @@ default_version "master"
 #relative_path "metasploit-framework-#{default_version}"
 
 dependency "bundler"
-dependency "liblzma"
-dependency "libpcap"
-dependency "libxslt"
-dependency "nokogiri"
-dependency "ruby"
-dependency "postgresql"
-dependency "sqlite"
+if windows?
+  dependency "postgresql-windows"
+else
+  dependency "liblzma"
+  dependency "libpcap"
+  dependency "libxslt"
+  dependency "nokogiri"
+  dependency "ruby"
+  dependency "postgresql"
+  dependency "sqlite"
+end
 
 # This depends on extra system libraries on OS X
 whitelist_file "#{install_dir}//embedded/framework/data/isight.bundle"
@@ -41,5 +45,15 @@ build do
       }
 
   bundle "install"
+
+  if windows?
+    delete "#{install_dir}/devkit"
+    delete "#{install_dir}/embedded/share"
+    delete "#{install_dir}/embedded/include"
+    #command "#{install_dir}/embedded/bin/ruby.exe -e \"File.delete(*Dir.glob('#{install_dir}/framework/data/**/*.dll'))\""
+    #command "#{install_dir}/embedded/bin/ruby.exe -e 'Dir.glob(\"#{install_dir}/framework/data/**/*.dll\").each{ |p|  system(\"7z a #{install_dir}/embedded/dll_files.7z #{p}\"); File.delete(p) }'"
+  end
+
   command "chmod o+r #{install_dir}/embedded/lib/ruby/gems/2.1.0/gems/robots-0.10.1/lib/robots.rb"
+
 end
