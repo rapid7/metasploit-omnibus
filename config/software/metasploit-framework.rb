@@ -24,22 +24,8 @@ whitelist_file "#{install_dir}/embedded/framework/data/john/.*"
 whitelist_file "#{install_dir}/embedded/lib/ruby/gems/2.1.0/gems/metasploit-payloads.*"
 
 build do
-
   copy "#{project_dir}", "#{install_dir}/embedded/framework"
-  patch source: "no-git.diff", plevel: 1, target: "#{install_dir}/embedded/framework/metasploit-framework.gemspec"
-  mkdir "#{install_dir}/bin"
-  erb source: 'msfdb.erb',
-      dest: "#{install_dir}/bin/msfdb",
-      mode: 0755,
-      vars: { install_dir: install_dir }
-  erb source: 'msfupdate.erb',
-      dest: "#{install_dir}/bin/msfupdate",
-      mode: 0755,
-      vars: { install_dir: install_dir }
-  erb source: 'msfwrapper.erb',
-      dest: "#{install_dir}/bin/msfwrapper",
-      mode: 0755,
-      vars: { install_dir: install_dir }
+
   erb source: 'version.yml.erb',
       dest: "#{install_dir}/embedded/framework/version.yml",
       mode: 0644,
@@ -47,25 +33,6 @@ build do
         git_hash: `git -C #{project_dir} rev-parse HEAD`.strip,
         date: Time.new.strftime("%Y%m%d")
       }
-
-  command "chmod +x #{install_dir}/bin/*"
-
-  metasploit_bins = [
-        'msfbinscan',
-        'msfconsole',
-        'msfd',
-        'msfelfscan',
-        'msfmachscan',
-        'msfpescan',
-        'msfrop',
-        'msfrpc',
-        'msfrpcd',
-        'msfvenom'
-  ]
-
-  metasploit_bins.each { |bin|
-    link "#{install_dir}/bin/msfwrapper", "#{install_dir}/bin/#{bin}"
-  }
 
   bundle "install"
   command "chmod o+r #{install_dir}/embedded/lib/ruby/gems/2.1.0/gems/robots-0.10.1/lib/robots.rb"
