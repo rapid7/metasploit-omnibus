@@ -59,27 +59,34 @@ start_db() {
   fi
 }
 
+init() {
+  if [ ! -e $LOCALCONF/initial_setup_complete ]; then
+      mkdir -p $LOCALCONF
+      echo
+      echo " ** Welcome to Metasploit Framework Initial Setup **"
+      echo "    Please answer a few questions to get started."
+      echo
+      check_path
+      echo
+      check_db
+      echo
+      echo " ** Metasploit Framework Initial Setup Complete **"
+      echo
+      touch $LOCALCONF/initial_setup_complete
+  fi
+
+  start_db
+}
+
 if test "`find $0 -mmin +20160`"; then
 	echo "This copy of metasploit-framework is more than two weeks old."
 	echo " Consider running 'msfupdate' to update to the latest version."
 fi
 
-if [ ! -e $LOCALCONF/initial_setup_complete ]; then
-    mkdir -p $LOCALCONF
-    echo
-    echo " ** Welcome to Metasploit Framework Initial Setup **"
-    echo "    Please answer a few questions to get started."
-    echo
-    check_path
-    echo
-    check_db
-    echo
-    echo " ** Metasploit Framework Initial Setup Complete **"
-    echo
-    touch $LOCALCONF/initial_setup_complete
+# Skip initialization if we're root
+if [ "`id -u`" -gt 0 ]; then
+  init
 fi
-
-start_db
 
 # Uncomment to enable libedit support
 #if [ $cmd = "msfconsole" ]; then
