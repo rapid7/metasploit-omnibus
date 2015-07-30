@@ -32,7 +32,7 @@ start_db() {
     if $PG_CTL -o "-p $DBPORT" -D $DB status > /dev/null; then
       echo "Database already started at $DB"
     else
-      echo Starting Postgresql
+      echo "Starting database at $DB"
       $PG_CTL -o "-p $DBPORT" -D $DB -l $DB/log start > /dev/null
       sleep 2
     fi
@@ -51,7 +51,8 @@ stop_db() {
 
 init_db() {
   if [ -e $DB ]; then
-    echo "A database appears to exist at $DB, skipping initialization"
+    echo "Found a database at $DB, checking to see if it is started"
+    start_db
     return
   fi
 
@@ -87,7 +88,7 @@ EOF
 
   chmod 640 $DBCONF
 
-  echo Creating database at $DB
+  echo "Creating database at $DB"
   mkdir $DB
   $BIN/initdb --auth-host=trust --auth-local=trust -E UTF8 $DB > /dev/null
   echo "host    \"msf\"      \"${MSF_USER}\"      127.0.0.1/32           md5" >> $DB/pg_hba.conf
