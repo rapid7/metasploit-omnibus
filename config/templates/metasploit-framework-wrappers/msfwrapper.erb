@@ -78,7 +78,7 @@ init() {
   start_db
 }
 
-if test "`find $0 -mmin +20160`"; then
+if [ -n "`find $0 -mmin +20160`" ]; then
 	echo "This copy of metasploit-framework is more than two weeks old."
 	echo " Consider running 'msfupdate' to update to the latest version."
 fi
