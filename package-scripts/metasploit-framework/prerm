@@ -4,13 +4,11 @@
 # prior to installing package.
 #
 
-BINS="msfbinscan msfconsole msfd msfelfscan msfmachscan msfpescan msfrop msfrpc msfrpcd msfvenom"
+BINS="msfbinscan msfconsole msfd msfdb msfelfscan msfmachscan msfpescan msfrop msfrpc msfrpcd msfupdate msfvenom"
 
 if [ -x /usr/sbin/update-alternatives ] ; then
 	for BIN in $BINS; do
-		update-alternatives --remove $BIN /opt/metasploit-framework/bin/msfwrapper
-		update-alternatives --remove msfdb /opt/metasploit-framework/bin/msfdb
-		update-alternatives --remove msfupdate /opt/metasploit-framework/bin/msfupdate
+		update-alternatives --remove $BIN /opt/metasploit-framework/bin/$BIN
 	done
 fi
 

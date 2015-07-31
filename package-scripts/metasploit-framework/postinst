@@ -4,15 +4,11 @@
 # after package is installed.
 #
 
-echo "Thank you for installing Metasploit Framework!"
-
-BINS="msfbinscan msfconsole msfd msfelfscan msfmachscan msfpescan msfrop msfrpc msfrpcd msfvenom"
+BINS="msfbinscan msfconsole msfd msfdb msfelfscan msfmachscan msfpescan msfrop msfrpc msfrpcd msfupdate msfvenom"
 
 if [ -x /usr/sbin/update-alternatives -o -x /usr/bin/update-alternatives ] ; then
 	for BIN in $BINS; do
-		update-alternatives --install /usr/bin/$BIN $BIN /opt/metasploit-framework/bin/msfwrapper 100
-		update-alternatives --install /usr/bin/msfdb msfdb /opt/metasploit-framework/bin/msfdb 100
-		update-alternatives --install /usr/bin/msfupdate msfupdate /opt/metasploit-framework/bin/msfupdate 100
+		update-alternatives --install /usr/bin/$BIN $BIN /opt/metasploit-framework/bin/$BIN 100
 	done
 	echo "Run msfconsole to get started"
 else
