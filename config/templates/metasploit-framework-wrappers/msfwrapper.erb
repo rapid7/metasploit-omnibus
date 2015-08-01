@@ -93,13 +93,10 @@ fi
 #    cmd="$cmd -L"
 #fi
 
-(
- cd $FRAMEWORK
- unset GEM_HOME
- unset GEM_PATH
- unset GEM_ROOT
- unset RUBY_ENGINE
- unset RUBY_ROOT
- PATH=$BIN:$SCRIPTDIR:$PATH
- $BIN/bundle exec $BIN/ruby ./$cmd "$*"
-)
+unset GEM_HOME
+unset GEM_PATH
+unset GEM_ROOT
+unset RUBY_ENGINE
+unset RUBY_ROOT
+PATH=$BIN:$SCRIPTDIR:$PATH
+$BIN/ruby $FRAMEWORK/$cmd "$*"
