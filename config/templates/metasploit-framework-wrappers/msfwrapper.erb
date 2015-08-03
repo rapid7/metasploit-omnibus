@@ -52,7 +52,7 @@ check_path() {
 start_db() {
   if [ -e $DB -a -e $DBCONF ]; then
     $BIN/pg_ctl -D $DB status > /dev/null
-    if [ $? != 0 ]; then
+    if [ $? -ne 0 ]; then
       $SCRIPTDIR/msfdb init
       sleep 2
     fi
