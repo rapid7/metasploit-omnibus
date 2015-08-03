@@ -85,7 +85,7 @@ if [ -f /etc/redhat-release ] ; then
     PKGTYPE=rpm
 else
     uname -sv | grep 'Darwin' > /dev/null
-    if [ "$?" = "0" ]; then
+    if [ $? -eq 0 ]; then
         PKGTYPE=pkg
     else
         PKGTYPE=deb
