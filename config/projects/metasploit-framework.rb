@@ -4,7 +4,7 @@ homepage "https://rapid7.com"
 
 install_dir "#{default_root}/metasploit-framework"
 
-build_version Omnibus::BuildVersion.semver
+build_version Omnibus::BuildVersion.semver + "-1rapid7"
 build_iteration 1
 
 dependency "metasploit-framework-wrappers"
