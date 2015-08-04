@@ -26,7 +26,6 @@ whitelist_file "#{install_dir}/embedded/lib/ruby/gems/2.1.0/gems/metasploit-payl
 build do
   copy "#{project_dir}", "#{install_dir}/embedded/framework"
   patch source: "no-git.diff", plevel: 1, target: "#{install_dir}/embedded/framework/metasploit-framework.gemspec"
-  patch source: "0001-derive-major-minor-patch-versions-from-tags-or-versi.patch", plevel: 1, target: "#{install_dir}/embedded/framework/lib/metasploit/framework/version.rb"
 
   major, minor, patch = Omnibus::BuildVersion.semver.split('.')
 
