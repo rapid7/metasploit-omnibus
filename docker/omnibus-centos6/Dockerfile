@@ -30,9 +30,10 @@ RUN yum install -y \
     rpm-build \
     fakeroot \
     git \
-    ccache
-RUN yum clean all
-
+    ccache \
+    createrepo \
+    expect \
+	&& yum clean all
 
 RUN curl -L https://www.opscode.com/chef/install.sh | bash
 RUN git config --global user.email "packager@myco" && \
@@ -49,13 +50,25 @@ RUN rm -fr metasploit-omnibus
 
 ENV JENKINS_HOME /var/jenkins_home
 RUN useradd -d "$JENKINS_HOME" -u 1001 -m -s /bin/sh jenkins
-RUN cp ~/.gitconfig "$JENKINS_HOME"
-RUN chown -R jenkins "$JENKINS_HOME"
 
 RUN mkdir -p /var/cache/omnibus
 RUN mkdir -p /opt/metasploit-framework
 RUN chown jenkins /var/cache/omnibus
 RUN chown jenkins /opt/metasploit-framework
 RUN chown -R jenkins /opt/chef/embedded/lib/ruby/gems
+
+RUN echo "#!/usr/bin/expect -f" > /usr/bin/signrpm && \
+	echo "spawn rpm --addsign {*}\$argv" >> /usr/bin/signrpm && \
+	echo "expect -exact \"Enter pass phrase: \"" >> /usr/bin/signrpm && \
+	echo "send -- \"\r\"" >> /usr/bin/signrpm && \
+	echo "expect eof" >> /usr/bin/signrpm
+RUN chmod 755 /usr/bin/signrpm
+
+RUN cp ~/.gitconfig "$JENKINS_HOME"
+RUN echo "%_signature gpg" > "$JENKINS_HOME/.rpmmacros" && \
+	echo "%_gpg_name 35AF4DDB" >> "$JENKINS_HOME/.rpmmacros" && \
+	echo "%__gpg_check_password_cmd /bin/true" >> "$JENKINS_HOME/.rpmmacros" && \
+	echo "%__gpg_sign_cmd %{__gpg} gpg --batch --no-verbose --no-armor --use-agent --no-secmem-warning -u \"%{_gpg_name}\" -sbo %{__signature_filename} %{__plaintext_filename}" >> "$JENKINS_HOME/.rpmmacros"
+RUN chown -R jenkins "$JENKINS_HOME"
 
 ENV PATH /opt/chef/embedded/bin:$PATH

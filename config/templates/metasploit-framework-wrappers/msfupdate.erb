@@ -1,7 +1,7 @@
 #!/bin/sh
 
 print_pgp_key() {
-	cat <<-EOF
+  cat <<-EOF
 -----BEGIN PGP PUBLIC KEY BLOCK-----
 Version: GnuPG v1
 
@@ -58,23 +58,38 @@ EOF
 }
 
 install_deb() {
-	LIST_FILE=/etc/apt/sources.list.d/metasploit-framework.list
-	if [ ! -f $LIST_FILE ]; then
-		echo -n "Adding metasploit-framework to your repository list.."
-		echo "deb $DOWNLOAD_URI/apt lucid main" > $LIST_FILE
-		print_pgp_key | apt-key add -
-	fi
-	echo -n "Updating package cache.."
-	apt-get update > /dev/null
-	echo "OK"
-	echo "Checking for and installing update.."
-	apt-get install metasploit-framework
+  LIST_FILE=/etc/apt/sources.list.d/metasploit-framework.list
+  if [ ! -f $LIST_FILE ]; then
+    echo -n "Adding metasploit-framework to your repository list.."
+    echo "deb $DOWNLOAD_URI/apt lucid main" > $LIST_FILE
+    print_pgp_key | apt-key add -
+  fi
+  echo -n "Updating package cache.."
+  apt-get update > /dev/null
+  echo "OK"
+  echo "Checking for and installing update.."
+  apt-get install metasploit-framework
 
 }
 
 install_rpm() {
-	echo "Checking for and installing update.."
-	yum install metasploit-framework
+  echo "Checking for and installing update.."
+  REPO_FILE=/etc/yum.repos.d/metasploit-framework.repo
+  GPG_KEY_FILE=/etc/pki/rpm-gpg/RPM-GPG-KEY-Metasploit
+  if [ ! -f $REPO_FILE ]; then
+    echo -n "Adding metasploit-framework to your repository list.."
+
+    sh -c "cat > /etc/yum.repos.d/metasploit-framework.repo <<EOF
+[metasploit]
+name=Metasploit
+baseurl=$DOWNLOAD_URI/rpm
+gpgcheck=1
+gpgkey=file://$GPG_KEY_FILE
+enabled=1
+EOF"
+    print_pgp_key > ${GPG_KEY_FILE}
+  fi
+  yum install -y metasploit-framework
 }
 
 DOWNLOAD_URI=http://downloads.metasploit.com/data/releases/metasploit-framework
@@ -82,37 +97,37 @@ PKGTYPE=unknown
 ID=`id -u`
 
 if [ -f /etc/redhat-release ] ; then
-    PKGTYPE=rpm
+  PKGTYPE=rpm
 else
-    uname -sv | grep 'Darwin' > /dev/null
-    if [ $? -eq 0 ]; then
-        PKGTYPE=pkg
-    else
-        PKGTYPE=deb
-    fi
+  uname -sv | grep 'Darwin' > /dev/null
+  if [ $? -eq 0 ]; then
+    PKGTYPE=pkg
+  else
+    PKGTYPE=deb
+  fi
 fi
 
 if [ $PKGTYPE != "pkg" -a "$ID" != "0" ]; then
-    SUDO=`which sudo`
-    if [ $? -ne 0 ]; then
-        echo "This script must be executed as the 'root' user or with sudo"
-        exit 1
-    else
-		echo "Switching to root user to update the package"
-        sudo -E $0 $@
-        exit 0
-    fi
+  SUDO=`which sudo`
+  if [ $? -ne 0 ]; then
+    echo "This script must be executed as the 'root' user or with sudo"
+    exit 1
+  else
+    echo "Switching to root user to update the package"
+    sudo -E $0 $@
+    exit 0
+  fi
 fi
 
 case $PKGTYPE in
-    deb)
-		install_deb
-        ;;
-    rpm)
-		install_rpm
-        ;;
-    *)
-        #installer -verboseR -pkg "metasploit-framework*.pkg" -target /
-        echo "Automatic updates are not yet supported on OS X."
-        echo "Please download and install the latest package manually."
+  deb)
+    install_deb
+    ;;
+  rpm)
+    install_rpm
+    ;;
+  *)
+    #installer -verboseR -pkg "metasploit-framework*.pkg" -target /
+    echo "Automatic updates are not yet supported on OS X."
+    echo "Please download and install the latest package manually."
 esac
