@@ -15,7 +15,7 @@
 #
 
 name "ncurses"
-default_version "5.9-20150530"
+default_version "5.9"
 
 dependency "libtool" if aix?
 dependency "patch" if solaris2?
