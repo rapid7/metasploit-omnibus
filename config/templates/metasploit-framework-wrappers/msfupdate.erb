@@ -108,7 +108,7 @@ else
 fi
 
 if [ $PKGTYPE != "pkg" -a "$ID" != "0" ]; then
-  SUDO=`which sudo`
+  hash sudo 2>/dev/null
   if [ $? -ne 0 ]; then
     echo "This script must be executed as the 'root' user or with sudo"
     exit 1
