@@ -8,11 +8,11 @@ default_version "master"
 #relative_path "metasploit-framework-#{default_version}"
 
 dependency "bundler"
+dependency "pcaprub"
 if windows?
   dependency "postgresql-windows"
 else
   dependency "liblzma"
-  dependency "libpcap"
   dependency "libxslt"
   dependency "nokogiri"
   dependency "ruby"
@@ -50,10 +50,10 @@ build do
     delete "#{install_dir}/devkit"
     delete "#{install_dir}/embedded/share"
     delete "#{install_dir}/embedded/include"
-    #command "#{install_dir}/embedded/bin/ruby.exe -e \"File.delete(*Dir.glob('#{install_dir}/framework/data/**/*.dll'))\""
-    #command "#{install_dir}/embedded/bin/ruby.exe -e 'Dir.glob(\"#{install_dir}/framework/data/**/*.dll\").each{ |p|  system(\"7z a #{install_dir}/embedded/dll_files.7z #{p}\"); File.delete(p) }'"
+    delete "#{install_dir}/embedded/framework/.git"
+  else
+    command "chmod o+r #{install_dir}/embedded/lib/ruby/gems/2.1.0/gems/robots-0.10.1/lib/robots.rb"
   end
 
-  command "chmod o+r #{install_dir}/embedded/lib/ruby/gems/2.1.0/gems/robots-0.10.1/lib/robots.rb"
 
 end

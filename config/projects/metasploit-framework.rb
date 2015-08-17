@@ -7,7 +7,11 @@ install_dir "#{default_root}/metasploit-framework"
 build_version Omnibus::BuildVersion.semver + "-1rapid7"
 build_iteration 1
 
-dependency "metasploit-framework-wrappers"
+if windows?
+  dependency "metasploit-framework-wrappers-windows"
+else
+  dependency "metasploit-framework-wrappers"
+end
 
 exclude "**/.git"
 exclude "**/bundler/git"

@@ -1,4 +1,5 @@
 *.gem
+*~
 .bundle
 .DS_Store
 .kitchen/
