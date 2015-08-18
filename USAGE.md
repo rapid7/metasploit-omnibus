@@ -7,7 +7,7 @@ Using the metasploit-framework omnibus package is simple. It is a native package
 To quickly install the latest version of the metasploit-omnibus package, this one-liner will add the nightly build repository, import the Rapid7 GPG key and install the package:
 
 ```
-curl https://raw.githubusercontent.com/rapid7/metasploit-omnibus/master/config/templates/metasploit-framework/msfupdate.erb > msfinstall && chmod 755 msfinstall && ./msfinstall
+curl https://raw.githubusercontent.com/rapid7/metasploit-omnibus/master/config/templates/metasploit-framework-wrappers/msfupdate.erb > msfinstall && chmod 755 msfinstall && ./msfinstall
 ```
 
 After installing the package, you can simply run 'msfconsole' to start the Metasploit Framework console. An initial configuration script will then run, helping you configure the initial database and setup your PATH if desired. The out-of-box setup should look something like this:
