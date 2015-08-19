@@ -59,17 +59,25 @@ EOF
 
 install_deb() {
   LIST_FILE=/etc/apt/sources.list.d/metasploit-framework.list
+  PREF_FILE=/etc/apt/preferences.d/pin-metasploit.pref
   if [ ! -f $LIST_FILE ]; then
     echo -n "Adding metasploit-framework to your repository list.."
     echo "deb $DOWNLOAD_URI/apt lucid main" > $LIST_FILE
     print_pgp_key | apt-key add -
+  fi
+  if [ ! -f $PREF_FILE ]; then
+    mkdir -p /etc/apt/preferences.d/
+    cat > $PREF_FILE <<EOF
+Package: metasploit*
+Pin: origin downloads.metasploit.com
+Pin-Priority: 1000
+EOF
   fi
   echo -n "Updating package cache.."
   apt-get update > /dev/null
   echo "OK"
   echo "Checking for and installing update.."
   apt-get install metasploit-framework
-
 }
 
 install_rpm() {
@@ -79,14 +87,14 @@ install_rpm() {
   if [ ! -f $REPO_FILE ]; then
     echo -n "Adding metasploit-framework to your repository list.."
 
-    sh -c "cat > /etc/yum.repos.d/metasploit-framework.repo <<EOF
+    cat > /etc/yum.repos.d/metasploit-framework.repo <<EOF
 [metasploit]
 name=Metasploit
 baseurl=$DOWNLOAD_URI/rpm
 gpgcheck=1
 gpgkey=file://$GPG_KEY_FILE
 enabled=1
-EOF"
+EOF
     print_pgp_key > ${GPG_KEY_FILE}
   fi
   yum install -y metasploit-framework
