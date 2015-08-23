@@ -15,7 +15,7 @@
 #
 
 name "libxml2"
-default_version "2.9.1"
+default_version "2.9.2"
 
 dependency "zlib"
 dependency "libiconv"
@@ -23,6 +23,10 @@ dependency "liblzma"
 
 version "2.7.8" do
   source md5: "8127a65e8c3b08856093099b52599c86"
+end
+
+version "2.9.2" do
+  source md5: "9e6a9aca9d155737868b3dc5fd82f788"
 end
 
 version "2.9.1" do

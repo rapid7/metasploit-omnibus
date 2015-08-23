@@ -49,7 +49,7 @@ build do
 
   # On 64-bit centos, libffi libraries are places under /embedded/lib64
   # move them over to lib
-  if rhel? && _64_bit?
+  if (rhel? || suse?) && _64_bit?
     # Can't use 'move' here since that uses FileUtils.mv, which on < Ruby 2.2.0-dev
     # returns ENOENT on moving symlinks with broken (in this case, already moved) targets.
     # http://comments.gmane.org/gmane.comp.lang.ruby.cvs/49907

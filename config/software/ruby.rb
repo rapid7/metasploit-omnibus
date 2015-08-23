@@ -15,7 +15,7 @@
 #
 
 name "ruby"
-default_version "2.1.6"
+default_version "2.1.7"
 
 dependency "zlib"
 dependency "ncurses"
@@ -39,6 +39,10 @@ version("2.1.3")      { source md5: "74a37b9ad90e4ea63c0eed32b9d5b18f" }
 version("2.1.4")      { source md5: "89b2f4a197621346f6724a3c35535b19" }
 version("2.1.5")      { source md5: "df4c1b23f624a50513c7a78cb51a13dc" }
 version("2.1.6")      { source md5: "6e5564364be085c45576787b48eeb75f" }
+version("2.1.7")      { source md5: "2e143b8e19b056df46479ae4412550c9" }
+version("2.2.0")      { source md5: "cd03b28fd0b555970f5c4fd481700852" }
+version("2.2.1")      { source md5: "b49fc67a834e4f77249eb73eecffb1c9" }
+version("2.2.2")      { source md5: "326e99ddc75381c7b50c85f7089f3260" }
 
 source url: "http://cache.ruby-lang.org/pub/ruby/#{version.match(/^(\d+\.\d+)/)[0]}/ruby-#{version}.tar.gz"
 
