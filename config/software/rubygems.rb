@@ -98,7 +98,7 @@ build do
   if windows?
     # After installing ruby, we need to rerun the command that patches devkit
     # functionality into rubygems.
-    embedded_dir = "#{install_dir}/embedded"
+    embedded_dir = "#{install_dir}/devkit"
     ruby "dk.rb install", env: env, cwd: embedded_dir
   end
 end
