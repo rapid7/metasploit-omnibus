@@ -1,6 +1,6 @@
 GIT
   remote: git://github.com/rapid7/omnibus.git
-  revision: 11fc37dabbada64c562e954eb3494ef6f8f34450
+  revision: 08c4b8e72a616c62b7079e7d96b89b57dfaad2fa
   specs:
     omnibus (4.0.0)
       chef-sugar (~> 3.0)
