@@ -42,3 +42,9 @@ RUN mkdir -p "$JENKINS_HOME" && \
 RUN echo "jenkins    ALL=NOPASSWD: ALL" > /etc/sudoers.d/jenkins
 RUN chmod 440 /etc/sudoers.d/jenkins
 RUN apt-get remove -y libpq-dev libpq5
+
+RUN curl -sSL https://rvm.io/mpapis.asc | gpg --import -
+RUN curl -sSL https://get.rvm.io | bash -s stable
+RUN /bin/bash -l -c "rvm requirements"
+RUN /bin/bash -l -c "rvm install 2.1"
+RUN /bin/bash -l -c "gem install bundler --no-ri --no-rdoc"
