@@ -31,12 +31,14 @@
 
     <Directory Id="TARGETDIR" Name="SourceDir">
       <Directory Id="WINDOWSVOLUME">
-<% hierarchy.each.with_index do |(name, id), index| -%>
-        <%= '  '*index %><Directory Id="<%= id %>" Name="<%= name %>">
-<% end -%>
-<% hierarchy.keys.each.with_index do |_, index| -%>
-        <%= '  '*(hierarchy.size - index-1) %></Directory>
-<% end -%>
+        <Directory Id="PROJECTLOCATION" Name="metasploit-framework" >
+          <Directory Id="PROJECTLOCATIONBIN" Name="bin" >
+            <Component Id="MsfBinPath" Guid="{080A880D-BA94-4CF8-9015-5B2063073E02}" >
+              <Environment Id="ClientPathEnvironment"
+                           Name="PATH" Action="set" Part="last" System="yes" Value="[PROJECTLOCATIONBIN]" />
+            </Component>
+          </Directory>
+        </Directory>
       </Directory>
     </Directory>
 
@@ -45,6 +47,7 @@
     <!-- Set the components defined in our fragment files that will be used for our feature  -->
     <Feature Id="ProjectFeature" Title="!(loc.FeatureMainName)" Absent="disallow" AllowAdvertise="no" Level="1" ConfigurableDirectory="<%= wix_install_dir %>">
       <ComponentGroupRef Id="ProjectDir" />
+      <ComponentRef Id="MsfBinPath" />
     </Feature>
 
     <!-- UI Stuff -->
