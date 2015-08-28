@@ -1,5 +1,5 @@
 FROM ubuntu:precise
-MAINTAINER Brent Cook
+MAINTAINER Rapid7 Release Engineering <r7_re@rapid7.com>
 
 VOLUME /pkg
 RUN apt-get update && apt-get install -y \

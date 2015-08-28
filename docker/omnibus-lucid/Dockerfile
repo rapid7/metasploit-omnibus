@@ -1,5 +1,5 @@
 FROM ubuntu:lucid
-MAINTAINER Brent Cook
+MAINTAINER Rapid7 Release Engineering <r7_re@rapid7.com>
 
 RUN apt-get update
 RUN apt-get -y install python-software-properties

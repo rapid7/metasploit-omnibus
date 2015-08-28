@@ -1,5 +1,5 @@
 FROM rapid7/build:kali109_64
-MAINTAINER Brent Cook
+MAINTAINER Rapid7 Release Engineering <r7_re@rapid7.com>
 
 RUN rm -fr /var/lib/apt/lists && \
     apt-get update && \
