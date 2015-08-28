@@ -3,8 +3,7 @@
 setlocal enabledelayedexpansion
 
 for /F %%i in ("%0") do set CMD=%%~ni
-set SCRIPTDIR=<%= install_dir %>/bin
-set SCRIPTDIR=C:/metasploit-framework/bin
+set SCRIPTDIR="%~dp0"
 set EMBEDDED=%SCRIPTDIR%/../embedded
 set BIN=%EMBEDDED%/bin
 set FRAMEWORK=%EMBEDDED%/framework
@@ -15,6 +14,6 @@ set GEM_ROOT=
 set RUBY_ENGINE=
 set RUBY_ROOT=
 
-set PATH=%BIN%;%SCRIPTDIR%;%PATH%
-%BIN%/ruby %FRAMEWORK%/%CMD% %*
+set PATH=%BIN%;"%SCRIPTDIR%;%PATH%
+"%BIN%/ruby" "%FRAMEWORK%/%CMD%" %*
 endlocal
