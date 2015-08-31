@@ -17,6 +17,11 @@ build do
       mode: 0755,
       vars: { install_dir: install_dir }
 
+  erb source: 'msfremove.erb',
+      dest: "#{install_dir}/bin/msfremove",
+      mode: 0755,
+      vars: { install_dir: install_dir }
+
   command "chmod +x #{install_dir}/bin/*"
 
   metasploit_bins = [

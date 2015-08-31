@@ -1,0 +1,86 @@
+#!/bin/sh
+
+INSTALL_DIR="<%= install_dir %>"
+COUNT=0
+
+check_platform()
+{
+  if [ "`uname -s`" = "Darwin" ]; then
+    return 0
+  else
+    return 1
+  fi
+}
+
+check_root()
+{
+  if [ "`id -u`" -eq 0 ]; then
+    return 0
+  else
+    return 1
+  fi
+}
+
+check_install_dir()
+{
+  if [ -n "$INSTALL_DIR" ]; then
+    return 0
+  else
+    return 1
+  fi
+}
+
+rm_pkg()
+{
+  rm -rf "$INSTALL_DIR"/* &&
+  pkgutil --forget "$1" > /dev/null &&
+  : $((COUNT=COUNT+1))
+}
+
+prompt_rm()
+{
+  while true; do
+    printf "Remove package %s? " "$1"
+    read REPLY
+
+    case "$REPLY" in
+      [Yy]*)
+        echo "Removing package $1"
+        rm_pkg "$1"
+        break
+        ;;
+      [Nn]*)
+        echo "Skipping package $1"
+        break
+        ;;
+      *)
+        echo "Ah ah ah! You didn't say the magic word!"
+    esac
+  done
+}
+
+list_pkgs()
+{
+  for PKG in `pkgutil --pkgs='.*metasploit.*'`; do
+    prompt_rm "$PKG"
+  done
+}
+
+if ! check_platform; then
+  echo "Sorry, only OS X is supported at this time!"
+  exit 1
+fi
+
+if ! check_root; then
+  echo "got root?"
+  exit 1
+fi
+
+if ! check_install_dir; then
+  echo "\$INSTALL_DIR is unset!"
+  exit 1
+fi
+
+
+list_pkgs
+echo "$COUNT package(s) removed"
