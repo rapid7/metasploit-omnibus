@@ -100,6 +100,26 @@ EOF
   yum install -y metasploit-framework
 }
 
+install_pkg()
+{
+  (
+    cd ~/Downloads
+
+    echo "Downloading package..."
+    curl -O "$DOWNLOAD_URI/osx/metasploitframework-latest.pkg"
+
+    echo "Checking signature..."
+
+    if pkgutil --check-signature metasploitframework-latest.pkg; then
+      echo "Installing package..."
+      installer -pkg metasploitframework-latest.pkg -target /
+    fi
+
+    echo "Cleaning up..."
+    rm -fv metasploitframework-latest.pkg
+  )
+}
+
 DOWNLOAD_URI=http://downloads.metasploit.com/data/releases/metasploit-framework
 PKGTYPE=unknown
 ID=`id -u`
@@ -115,9 +135,8 @@ else
   fi
 fi
 
-if [ $PKGTYPE != "pkg" -a "$ID" != "0" ]; then
-  hash sudo 2>/dev/null
-  if [ $? -ne 0 ]; then
+if [ "$ID" -ne 0 ]; then
+  if ! hash sudo 2>/dev/null; then
     echo "This script must be executed as the 'root' user or with sudo"
     exit 1
   else
@@ -135,7 +154,5 @@ case $PKGTYPE in
     install_rpm
     ;;
   *)
-    #installer -verboseR -pkg "metasploit-framework*.pkg" -target /
-    echo "Automatic updates are not yet supported on OS X."
-    echo "Please download and install the latest package manually."
+    install_pkg
 esac
