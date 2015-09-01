@@ -35,8 +35,7 @@ start_db() {
       echo "Starting database at $DB"
       $PG_CTL -o "-p $DBPORT" -D $DB -l $DB/log start > /dev/null
       sleep 2
-      $BIN/pg_ctl -D $DB status > /dev/null
-      if [ $? -ne 0 ]; then
+      if ! $BIN/pg_ctl -D $DB status > /dev/null; then
         echo -n "The database failed to start: "
         tail -n 1 $DB/log
         while true; do

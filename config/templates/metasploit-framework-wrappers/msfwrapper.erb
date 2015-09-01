@@ -37,8 +37,7 @@ check_db() {
 }
 
 check_path() {
-  hash $cmd 2>/dev/null
-  if [ $? != 0 ]; then
+  if ! hash $cmd 2>/dev/null; then
     while true; do
       read -p "Would you like to add $cmd and other programs to your default PATH? " yn
         case $yn in
@@ -52,8 +51,7 @@ check_path() {
 
 start_db() {
   if [ -e $DB -a -e $DBCONF ]; then
-    $BIN/pg_ctl -D $DB status > /dev/null
-    if [ $? -ne 0 ]; then
+    if ! $BIN/pg_ctl -D $DB status > /dev/null; then
       $SCRIPTDIR/msfdb init
       sleep 2
     fi
