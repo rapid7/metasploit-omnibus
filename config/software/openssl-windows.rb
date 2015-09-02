@@ -46,7 +46,6 @@ build do
   ruby "-e \"require 'openssl'; puts 'OpenSSL patch version check expecting <= #{version}'; exit(1) if OpenSSL::OPENSSL_VERSION.split(' ')[1] >= '#{version}'\""
 
   tmpdir = File.join(Omnibus::Config.cache_dir, "openssl-cache")
-  msvcr = File.join(Omnibus::Config.source_dir, "msvcr120.dll")
 
   # Ensure the directory exists
   mkdir tmpdir
@@ -58,7 +57,6 @@ build do
   command "7z.exe x #{File.join(tmpdir, "openssl-#{version}-x86-windows.tar")} -o#{tmpdir} -r -y", env: env
 
   # Copy over the required dlls into embedded/bin
-  copy msvcr, "#{install_dir}/embedded/bin/"
   copy "#{tmpdir}/bin/libeay32.dll", "#{install_dir}/embedded/bin/"
   copy "#{tmpdir}/bin/ssleay32.dll", "#{install_dir}/embedded/bin/"
 end
