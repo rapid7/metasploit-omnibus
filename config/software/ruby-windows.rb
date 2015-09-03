@@ -49,7 +49,7 @@ build do
 
   sync "#{project_dir}/", "#{install_dir}/embedded"
 
-  msvcr = File.join(Omnibus::Config.source_dir, "msvcr120.dll")
+  msvcr = File.join(Omnibus::Config.cache_dir, "msvcr120.dll")
   copy msvcr, "#{install_dir}/embedded/bin/"
 
   # Ruby 2.X dl.rb gives an annoying warning message on Windows:
