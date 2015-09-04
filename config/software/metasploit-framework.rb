@@ -28,7 +28,7 @@ whitelist_file "#{install_dir}/embedded/framework/data/john/.*"
 whitelist_file "#{install_dir}/embedded/lib/ruby/gems/2.1.0/gems/metasploit-payloads.*"
 
 build do
-  command "git clone --depth 1 #{source[:git]} #{install_dir}/embedded/framework"
+  copy "#{project_dir}", "#{install_dir}/embedded/framework"
   patch source: "no-git.diff", plevel: 1, target: "#{install_dir}/embedded/framework/metasploit-framework.gemspec"
 
   major, minor, patch = Omnibus::BuildVersion.semver.split('.')
@@ -40,7 +40,7 @@ build do
         major: major,
         minor: minor,
         patch: patch,
-        git_hash: `git -C #{install_dir}/embedded/framework rev-parse HEAD`.strip,
+        git_hash: `git ls-remote #{source[:git]} HEAD`.strip.split(' ')[0],
         date: Time.new.strftime("%Y%m%d")
       }
 
