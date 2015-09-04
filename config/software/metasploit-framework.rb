@@ -28,7 +28,7 @@ whitelist_file "#{install_dir}/embedded/framework/data/john/.*"
 whitelist_file "#{install_dir}/embedded/lib/ruby/gems/2.1.0/gems/metasploit-payloads.*"
 
 build do
-  copy "#{project_dir}", "#{install_dir}/embedded/framework"
+  command "git clone --depth 1 #{source[:git]} #{install_dir}/embedded/framework"
   patch source: "no-git.diff", plevel: 1, target: "#{install_dir}/embedded/framework/metasploit-framework.gemspec"
 
   major, minor, patch = Omnibus::BuildVersion.semver.split('.')
@@ -40,7 +40,7 @@ build do
         major: major,
         minor: minor,
         patch: patch,
-        git_hash: `git -C #{project_dir} rev-parse HEAD`.strip,
+        git_hash: `git -C #{install_dir}/embedded/framework rev-parse HEAD`.strip,
         date: Time.new.strftime("%Y%m%d")
       }
 
@@ -48,12 +48,7 @@ build do
 
   if windows?
     delete "#{install_dir}/devkit"
-    delete "#{install_dir}/embedded/share"
-    delete "#{install_dir}/embedded/include"
-    delete "#{install_dir}/embedded/framework/.git"
   else
     command "chmod o+r #{install_dir}/embedded/lib/ruby/gems/2.1.0/gems/robots-0.10.1/lib/robots.rb"
   end
-
-
 end
