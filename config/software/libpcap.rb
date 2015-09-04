@@ -27,6 +27,7 @@ build do
   env = with_standard_compiler_flags(with_embedded_path)
 
   command "./configure" \
+          " --disable-bluetooth --disable-canusb --disable-can --disable-dbus" \
           " --prefix=#{install_dir}/embedded", env: env
 
   make "-j #{workers}", env: env
