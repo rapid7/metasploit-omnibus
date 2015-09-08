@@ -1,90 +1,96 @@
-#!/bin/sh
-#set -e
-#set -x
+#!/usr/bin/env ruby
+
+require 'fileutils'
+require 'securerandom'
 
 # Bomb out if we're root
-if [ "`id -u`" -eq 0 ]; then
-  echo "Please run `basename $0` as a non-root user"
-  exit 1
-fi
+if Process.uid.zero?
+  puts "Please run #{File.basename($0)} as a non-root user"
+  abort
+end
 
-BASE=<%= install_dir %>
-EMBEDDED=$BASE/embedded
-BIN=$EMBEDDED/bin
-FRAMEWORK=$EMBEDDED/framework
+@base = '<%= install_dir %>'
+@embedded = "#{@base}/embedded"
+@bin = "#{@embedded}/bin"
+@framework = "#{@embedded}/framework"
 
-LOCALCONF=~/.msf4
-DB=$LOCALCONF/db
-DBCONF=$LOCALCONF/database.yml
-DBPORT=5433
-PG_CTL=$BIN/pg_ctl
+@localconf = "#{ENV['HOME']}/.msf4"
+@db = "#{@localconf}/db"
+@dbconf = "#{@localconf}/database.yml"
+@dbport = 5433
+@pg_ctl = "#{@bin}/pg_ctl"
 
-if [ -e $DBCONF ]; then
-  DBPORT=`awk '/port:/ {print $2}' < $DBCONF`
-fi
+def pw_gen
+  SecureRandom.base64(32)
+end
 
-pw_gen() {
-  $BIN/openssl rand -base64 32
-}
+def tail(file)
+  File.readlines(file).last.to_s.strip
+end
 
-start_db() {
-  if [ -e $DB ]; then
-    if $PG_CTL -o "-p $DBPORT" -D $DB status > /dev/null; then
-      echo "Database already started at $DB"
+def start_db
+  if Dir.exist?(@db)
+    if system("#{@pg_ctl} -o \"-p #{@dbport}\" -D #{@db} status > /dev/null")
+      puts "Database already started at #{@db}"
     else
-      echo "Starting database at $DB"
-      $PG_CTL -o "-p $DBPORT" -D $DB -l $DB/log start > /dev/null
-      sleep 2
-      if ! $BIN/pg_ctl -D $DB status > /dev/null; then
-        echo -n "The database failed to start: "
-        tail -n 1 $DB/log
-        while true; do
-          read -p "If your database is corrupt, would you to reinitialize it? " yn
-          case $yn in
-            [Yy]* ) reinit_db; break;;
-            [Nn]* ) break;;
-                * ) echo "Please answer yes or no.";;
-          esac
-        done
-      fi
-    fi
+      puts "Starting database at #{@db}"
+      system("#{@pg_ctl} -o \"-p #{@dbport}\" -D #{@db} -l #{@db}/log start > /dev/null")
+      sleep(2)
+      unless system("#{@pg_ctl} -D #{@db} status > /dev/null")
+        print 'The database failed to start: '
+        puts tail("#{@db}/log")
+        loop do
+          print 'If your database is corrupt, would you to reinitialize it? '
+          yn = STDIN.gets
+          case yn
+          when /^[Yy]/
+            reinit_db
+            break
+          when /^[Nn]/
+            break
+          else
+            puts 'Please answer yes or no.'
+          end
+        end
+      end
+    end
   else
-    echo "No database found at $DB, not starting"
-  fi
-}
+    puts "No database found at #{@db}, not starting"
+  end
+end
 
-stop_db() {
-  if $PG_CTL -o "-p $DBPORT" -D $DB status > /dev/null; then
-    $PG_CTL -o "-p $DBPORT" -D $DB stop > /dev/null
+def stop_db
+  if system("#{@pg_ctl} -o \"-p #{@dbport}\" -D #{@db} status > /dev/null")
+    system("#{@pg_ctl} -o \"-p #{@dbport}\" -D #{@db} stop > /dev/null")
   else
-    echo "Database is no longer running at $DB"
-  fi
-}
+    puts "Database is no longer running at #{@db}"
+  end
+end
 
-init_db() {
-  if [ -e $DB ]; then
-    echo "Found a database at $DB, checking to see if it is started"
+def init_db
+  if Dir.exist?(@db)
+    puts "Found a database at #{@db}, checking to see if it is started"
     start_db
     return
-  fi
+  end
 
-  MSF_USER=msf
-  MSFTEST_USER=msftest
+  msf_user = 'msf'
+  msftest_user = 'msftest'
 
   # Generate new database passwords
-  MSF_PASS=$(pw_gen)
-  MSFTEST_PASS=$(pw_gen)
-  PGSQL_PASS=$(pw_gen)
+  msf_pass = pw_gen
+  msftest_pass = pw_gen
 
   # Write a default database config file
-  cat > $DBCONF <<-EOF
+  File.open(@dbconf, 'w') do |f|
+    f.puts <<EOF
 development: &pgsql
   adapter: postgresql
   database: msf
-  username: $MSF_USER
-  password: $MSF_PASS
+  username: #{msf_user}
+  password: #{msf_pass}
   host: localhost
-  port: $DBPORT
+  port: #{@dbport}
   pool: 5
   timeout: 5
 
@@ -94,72 +100,90 @@ production: &production
 test:
   <<: *pgsql
   database: msftest
-  username: $MSFTEST_USER
-  password: $MSFTEST_PASS
+  username: #{msftest_user}
+  password: #{msftest_pass}
 EOF
+  end
 
-  chmod 640 $DBCONF
+  File.chmod(0640, @dbconf)
 
-  echo "Creating database at $DB"
-  mkdir $DB
-  $BIN/initdb --auth-host=trust --auth-local=trust -E UTF8 $DB > /dev/null
-  echo "host    \"msf\"      \"${MSF_USER}\"      127.0.0.1/32           md5" >> $DB/pg_hba.conf
-  echo "host    \"msftest\"  \"${MSFTEST_USER}\"  127.0.0.1/32           md5" >> $DB/pg_hba.conf
+  puts "Creating database at #{@db}"
+  Dir.mkdir(@db)
+  system("#{@bin}/initdb --auth-host=trust --auth-local=trust -E UTF8 #{@db} > /dev/null")
 
-  echo "port = $DBPORT" >> $DB/postgresql.conf
+  File.open("#{@db}/pg_hba.conf", 'a') do |f|
+    f.puts "host    \"msf\"      \"#{msf_user}\"      127.0.0.1/32           md5"
+    f.puts "host    \"msftest\"  \"#{msftest_user}\"  127.0.0.1/32           md5"
+  end
+
+  File.open("#{@db}/postgresql.conf", 'a') do |f|
+    f.puts "port = #{@dbport}"
+  end
 
   start_db
 
-  echo "Creating database users"
-  $BIN/psql -p $DBPORT postgres -c \
-    "create user $MSF_USER with password '$MSF_PASS';" > /dev/null
-  $BIN/psql -p $DBPORT postgres -c \
-    "create user $MSFTEST_USER with password '$MSFTEST_PASS';" > /dev/null
-  $BIN/psql -p $DBPORT postgres -c "alter user msftest createdb;" > /dev/null
-  $BIN/createdb -p $DBPORT -O $MSF_USER msf -h localhost
+  puts 'Creating database users'
+  system("#{@bin}/psql -p #{@dbport} postgres -c \
+    \"create user #{msf_user} with password '#{msf_pass}';\" > /dev/null")
+  system("#{@bin}/psql -p #{@dbport} postgres -c \
+    \"create user #{msftest_user} with password '#{msftest_pass}';\" > /dev/null")
+  system("#{@bin}/psql -p #{@dbport} postgres -c \"alter user msf createdb;\" > /dev/null")
+  system("#{@bin}/psql -p #{@dbport} postgres -c \"alter user msftest createdb;\" > /dev/null")
+  system("#{@bin}/createdb -p #{@dbport} -O #{msf_user} msf -h localhost")
 
-  echo "Creating initial database schema"
-  (cd $FRAMEWORK; $BIN/bundle exec $BIN/rake db:migrate >/dev/null 2>&1)
-}
+  puts 'Creating initial database schema'
+  Dir.chdir(@framework) do
+    system("#{@bin}/bundle exec #{@bin}/rake db:migrate >/dev/null 2>&1")
+  end
+end
 
-delete_db() {
-  if [ -e $DB ]; then
-    echo "Deleting all data at $DB"
+def delete_db
+  if Dir.exist?(@db)
+    puts "Deleting all data at #{@db}"
     stop_db
-    rm -fr $DB $DBCONF
+    FileUtils.rm_rf([@db, @dbconf])
   else
-    echo "No data at $DB, doing nothing"
-  fi
-}
+    puts "No data at #{@db}, doing nothing"
+  end
+end
 
-reinit_db() {
+def reinit_db
   delete_db
   init_db
-}
+end
 
-usage() {
-  PROG=`basename $0`
-  echo
-  echo "Manage a metasploit framework database"
-  echo
-  echo "  $PROG init    # initialize the database"
-  echo "  $PROG reinit  # delete and reinitialize the database"
-  echo "  $PROG delete  # delete database and stop using it"
-  echo "  $PROG start   # start the database"
-  echo "  $PROG stop    # stop the database"
-  echo
+def usage
+  prog = File.basename($0)
+  puts <<EOF
+
+Manage a metasploit framework database
+
+  #{prog} init    # initialize the database
+  #{prog} reinit  # delete and reinitialize the database
+  #{prog} delete  # delete database and stop using it
+  #{prog} start   # start the database
+  #{prog} stop    # stop the database
+
+EOF
   exit
-}
+end
 
-if [ "$#" -ne 1 ]; then
+if ARGV.length != 1
   usage
-fi
+end
 
-case $1 in
-  init) init_db ;;
-  reinit) reinit_db ;;
-  delete) delete_db ;;
-  start) start_db ;;
-  stop) stop_db ;;
-  *) echo "Error: unrecognized action '${1}'"; usage ;;
-esac
+case ARGV[0]
+when 'init'
+  init_db
+when 'reinit'
+  reinit_db
+when 'delete'
+  delete_db
+when 'start'
+  start_db
+when 'stop'
+  stop_db
+else
+  puts "Error: unrecognized action '#{ARGV[0]}'"
+  usage
+end
