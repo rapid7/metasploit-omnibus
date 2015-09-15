@@ -1,0 +1,7 @@
+#!/bin/sh
+
+INSTALL_DIR="<%= install_dir %>"
+PATH="$INSTALL_DIR/embedded/bin:$PATH"
+export PATH
+
+ruby "$INSTALL_DIR/embedded/framework/msfdb" "$@"
