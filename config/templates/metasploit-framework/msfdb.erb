@@ -1,0 +1,233 @@
+#!/usr/bin/env ruby
+
+require 'fileutils'
+require 'securerandom'
+
+# Bomb out if we're root
+if Process.uid.zero?
+  puts "Please run #{File.basename($0)} as a non-root user"
+  abort
+end
+
+@base = '<%= install_dir %>'
+@embedded = "#{@base}/embedded"
+@bin = "#{@embedded}/bin"
+@framework = "#{@embedded}/framework"
+
+@localconf = "#{ENV['HOME']}/.msf4"
+@db = "#{@localconf}/db"
+@dbconf = "#{@localconf}/database.yml"
+@dbport = 5433
+@pg_ctl = "#{@bin}/pg_ctl"
+
+def pw_gen
+  SecureRandom.base64(32)
+end
+
+def tail(file)
+  File.readlines(file).last.to_s.strip
+end
+
+def status_db
+  if Dir.exist?(@db)
+    if system("#{@pg_ctl} -o \"-p #{@dbport}\" -D #{@db} status > /dev/null")
+      puts "Database started at #{@db}"
+    else
+      puts "Database is not running at #{@db}"
+    end
+  else
+    puts "No database found at #{@db}"
+  end
+end
+
+def start_db
+  if Dir.exist?(@db)
+    if system("#{@pg_ctl} -o \"-p #{@dbport}\" -D #{@db} status > /dev/null")
+      puts "Database already started at #{@db}"
+    else
+      puts "Starting database at #{@db}"
+      system("#{@pg_ctl} -o \"-p #{@dbport}\" -D #{@db} -l #{@db}/log start > /dev/null")
+      sleep(2)
+      unless system("#{@pg_ctl} -o \"-p #{@dbport}\" -D #{@db} status > /dev/null")
+        print 'The database failed to start: '
+        puts tail("#{@db}/log")
+        loop do
+          print 'If your database is corrupt, would you to reinitialize it? '
+          yn = STDIN.gets
+          case yn
+          when /^[Yy]/
+            reinit_db
+            break
+          when /^[Nn]/
+            break
+          else
+            puts 'Please answer yes or no.'
+          end
+        end
+      end
+    end
+  else
+    puts "No database found at #{@db}, not starting"
+  end
+end
+
+def stop_db
+  if system("#{@pg_ctl} -o \"-p #{@dbport}\" -D #{@db} status > /dev/null")
+    puts "Stopping database at #{@db}"
+    system("#{@pg_ctl} -o \"-p #{@dbport}\" -D #{@db} stop > /dev/null")
+  else
+    puts "Database is no longer running at #{@db}"
+  end
+end
+
+def init_db
+  if Dir.exist?(@db)
+    puts "Found a database at #{@db}, checking to see if it is started"
+    start_db
+    return
+  end
+
+  if File.exist?(@dbconf)
+    loop do
+      print "Found a database config at #{@dbconf}, do you want to overwrite it? "
+      yn = STDIN.gets
+      case yn
+      when /^[Yy]/
+        break
+      when /^[Nn]/
+        return
+      else
+        puts 'Please answer yes or no.'
+      end
+    end
+  end
+
+  msf_user = 'msf'
+  msftest_user = 'msftest'
+
+  # Generate new database passwords
+  msf_pass = pw_gen
+  msftest_pass = pw_gen
+
+  # Write a default database config file
+  File.open(@dbconf, 'w') do |f|
+    f.puts <<EOF
+development: &pgsql
+  adapter: postgresql
+  database: msf
+  username: #{msf_user}
+  password: #{msf_pass}
+  host: localhost
+  port: #{@dbport}
+  pool: 5
+  timeout: 5
+
+production: &production
+  <<: *pgsql
+
+test:
+  <<: *pgsql
+  database: msftest
+  username: #{msftest_user}
+  password: #{msftest_pass}
+EOF
+  end
+
+  File.chmod(0640, @dbconf)
+
+  puts "Creating database at #{@db}"
+  Dir.mkdir(@db)
+  system("#{@bin}/initdb --auth-host=trust --auth-local=trust -E UTF8 #{@db} > /dev/null")
+
+  File.open("#{@db}/pg_hba.conf", 'a') do |f|
+    f.puts "host    \"msf\"      \"#{msf_user}\"      127.0.0.1/32           md5"
+    f.puts "host    \"msftest\"  \"#{msftest_user}\"  127.0.0.1/32           md5"
+  end
+
+  File.open("#{@db}/postgresql.conf", 'a') do |f|
+    f.puts "port = #{@dbport}"
+  end
+
+  start_db
+
+  puts 'Creating database users'
+  system("#{@bin}/psql -p #{@dbport} postgres -c \
+    \"create user #{msf_user} with password '#{msf_pass}';\" > /dev/null")
+  system("#{@bin}/psql -p #{@dbport} postgres -c \
+    \"create user #{msftest_user} with password '#{msftest_pass}';\" > /dev/null")
+  system("#{@bin}/psql -p #{@dbport} postgres -c \"alter user msf createdb;\" > /dev/null")
+  system("#{@bin}/psql -p #{@dbport} postgres -c \"alter user msftest createdb;\" > /dev/null")
+  system("#{@bin}/createdb -p #{@dbport} -O #{msf_user} msf -h localhost")
+
+  puts 'Creating initial database schema'
+  Dir.chdir(@framework) do
+    system("#{@bin}/bundle exec #{@bin}/rake db:migrate >/dev/null 2>&1")
+  end
+end
+
+def delete_db
+  if Dir.exist?(@db)
+    puts "Deleting all data at #{@db}"
+    stop_db
+    FileUtils.rm_rf(@db)
+    loop do
+    print "Delete #{@dbconf}? "
+      yn = STDIN.gets
+      case yn
+      when /^[Yy]/
+        File.delete(@dbconf)
+        break
+      when /^[Nn]/
+        break
+      else
+        puts 'Please answer yes or no.'
+      end
+    end
+  else
+    puts "No data at #{@db}, doing nothing"
+  end
+end
+
+def reinit_db
+  delete_db
+  init_db
+end
+
+def usage
+  prog = File.basename($0)
+  puts <<EOF
+
+Manage a metasploit framework database
+
+  #{prog} init    # initialize the database
+  #{prog} reinit  # delete and reinitialize the database
+  #{prog} delete  # delete database and stop using it
+  #{prog} status  # check database status
+  #{prog} start   # start the database
+  #{prog} stop    # stop the database
+
+EOF
+  exit
+end
+
+if ARGV.length != 1
+  usage
+end
+
+case ARGV[0]
+when 'init'
+  init_db
+when 'reinit'
+  reinit_db
+when 'delete'
+  delete_db
+when 'status'
+  status_db
+when 'start'
+  start_db
+when 'stop'
+  stop_db
+else
+  puts "Error: unrecognized action '#{ARGV[0]}'"
+  usage
+end

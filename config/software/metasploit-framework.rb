@@ -44,6 +44,11 @@ build do
         date: Time.new.strftime("%Y%m%d")
       }
 
+  erb source: 'msfdb.erb',
+      dest: "#{install_dir}/embedded/framework/msfdb",
+      mode: 0755,
+      vars: { install_dir: install_dir }
+
   bundle "install"
 
   if windows?
