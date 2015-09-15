@@ -156,7 +156,20 @@ def delete_db
   if Dir.exist?(@db)
     puts "Deleting all data at #{@db}"
     stop_db
-    FileUtils.rm_rf([@db, @dbconf])
+    FileUtils.rm_rf(@db)
+    loop do
+    print "Delete #{@dbconf}? "
+      yn = STDIN.gets
+      case yn
+      when /^[Yy]/
+        File.delete(@dbconf)
+        break
+      when /^[Nn]/
+        break
+      else
+        puts 'Please answer yes or no.'
+      end
+    end
   else
     puts "No data at #{@db}, doing nothing"
   end
