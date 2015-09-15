@@ -74,6 +74,21 @@ def init_db
     return
   end
 
+  if File.exist?(@dbconf)
+    loop do
+      print "Found a database config at #{@dbconf}, do you want to overwrite it? "
+      yn = STDIN.gets
+      case yn
+      when /^[Yy]/
+        break
+      when /^[Nn]/
+        return
+      else
+        puts 'Please answer yes or no.'
+      end
+    end
+  end
+
   msf_user = 'msf'
   msftest_user = 'msftest'
 
