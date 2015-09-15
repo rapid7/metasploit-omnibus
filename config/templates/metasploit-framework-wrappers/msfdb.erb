@@ -61,6 +61,7 @@ end
 
 def stop_db
   if system("#{@pg_ctl} -o \"-p #{@dbport}\" -D #{@db} status > /dev/null")
+    puts "Stopping database at #{@db}"
     system("#{@pg_ctl} -o \"-p #{@dbport}\" -D #{@db} stop > /dev/null")
   else
     puts "Database is no longer running at #{@db}"
