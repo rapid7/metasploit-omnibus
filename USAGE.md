@@ -71,6 +71,7 @@ Manage a metasploit framework database
   msfdb init    # initialize the database
   msfdb reinit  # delete and reinitialize the database
   msfdb delete  # delete database and stop using it
+  msfdb status  # check database status
   msfdb start   # start the database
   msfdb stop    # stop the database
 ```
