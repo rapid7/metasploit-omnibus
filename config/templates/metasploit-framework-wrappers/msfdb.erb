@@ -28,6 +28,18 @@ def tail(file)
   File.readlines(file).last.to_s.strip
 end
 
+def status_db
+  if Dir.exist?(@db)
+    if system("#{@pg_ctl} -o \"-p #{@dbport}\" -D #{@db} status > /dev/null")
+      puts "Database started at #{@db}"
+    else
+      puts "Database is not running at #{@db}"
+    end
+  else
+    puts "No database found at #{@db}"
+  end
+end
+
 def start_db
   if Dir.exist?(@db)
     if system("#{@pg_ctl} -o \"-p #{@dbport}\" -D #{@db} status > /dev/null")
@@ -36,7 +48,7 @@ def start_db
       puts "Starting database at #{@db}"
       system("#{@pg_ctl} -o \"-p #{@dbport}\" -D #{@db} -l #{@db}/log start > /dev/null")
       sleep(2)
-      unless system("#{@pg_ctl} -D #{@db} status > /dev/null")
+      unless system("#{@pg_ctl} -o \"-p #{@dbport}\" -D #{@db} status > /dev/null")
         print 'The database failed to start: '
         puts tail("#{@db}/log")
         loop do
@@ -190,6 +202,7 @@ Manage a metasploit framework database
   #{prog} init    # initialize the database
   #{prog} reinit  # delete and reinitialize the database
   #{prog} delete  # delete database and stop using it
+  #{prog} status  # check database status
   #{prog} start   # start the database
   #{prog} stop    # stop the database
 
@@ -208,6 +221,8 @@ when 'reinit'
   reinit_db
 when 'delete'
   delete_db
+when 'status'
+  status_db
 when 'start'
   start_db
 when 'stop'
