@@ -23,10 +23,12 @@ end
 
 def run_cmd(cmd)
   exit_status = 0
-  Open3.popen3(cmd) {|stdin, stdout, stderr, wait_thr|
+
+  Open3.popen3(cmd) do |stdin, stdout, stderr, wait_thr|
     exit_status = wait_thr.value
-  }
-  return exit_status
+  end
+
+  exit_status
 end
 
 def run_psql(cmd)
