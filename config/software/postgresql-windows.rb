@@ -30,5 +30,6 @@ build do
   copy "#{project_dir}/bin/*", "#{install_dir}/embedded/bin"
   copy "#{project_dir}/lib/*", "#{install_dir}/embedded/lib"
   copy "#{project_dir}/include/*", "#{install_dir}/embedded/include"
+  copy "#{project_dir}/share/*", "#{install_dir}/embedded/share"
 
 end
