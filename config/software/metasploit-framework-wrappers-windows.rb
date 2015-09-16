@@ -7,12 +7,12 @@ dependency "metasploit-framework"
 build do
   mkdir "#{install_dir}/bin"
 
-  erb source: 'msfdb.erb',
-      dest: "#{install_dir}/bin/msfdb",
+  erb source: 'msfdb.bat.erb',
+      dest: "#{install_dir}/bin/msfdb.bat",
       mode: 0755,
       vars: { install_dir: install_dir }
 
-#  erb source: 'msfupdate.erb',
+#  erb source: 'msfupdate.bat.erb',
 #      dest: "#{install_dir}/bin/msfupdate",
 #      mode: 0755,
 #      vars: { install_dir: install_dir }

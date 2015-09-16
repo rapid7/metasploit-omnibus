@@ -1,10 +1,11 @@
 #!/usr/bin/env ruby
 
 require 'fileutils'
+require 'open3'
 require 'securerandom'
 
 # Bomb out if we're root
-if Process.uid.zero?
+if !Gem.win_platform? && Process.uid.zero?
   puts "Please run #{File.basename($0)} as a non-root user"
   abort
 end
@@ -20,6 +21,20 @@ end
 @dbport = 5433
 @pg_ctl = "#{@bin}/pg_ctl"
 
+def run_cmd(cmd)
+  exit_status = 0
+
+  Open3.popen3(cmd) do |stdin, stdout, stderr, wait_thr|
+    exit_status = wait_thr.value
+  end
+
+  exit_status
+end
+
+def run_psql(cmd)
+  run_cmd("#{@bin}/psql -p #{@dbport} -c \"#{cmd};\" postgres")
+end
+
 def pw_gen
   SecureRandom.base64(32)
 end
@@ -30,7 +45,7 @@ end
 
 def status_db
   if Dir.exist?(@db)
-    if system("#{@pg_ctl} -o \"-p #{@dbport}\" -D #{@db} status > /dev/null")
+    if !run_cmd("#{@pg_ctl} -o \"-p #{@dbport}\" -D #{@db} status").nil?
       puts "Database started at #{@db}"
     else
       puts "Database is not running at #{@db}"
@@ -42,13 +57,13 @@ end
 
 def start_db
   if Dir.exist?(@db)
-    if system("#{@pg_ctl} -o \"-p #{@dbport}\" -D #{@db} status > /dev/null")
+    if run_cmd("#{@pg_ctl} -o \"-p #{@dbport}\" -D #{@db} status")
       puts "Database already started at #{@db}"
     else
       puts "Starting database at #{@db}"
-      system("#{@pg_ctl} -o \"-p #{@dbport}\" -D #{@db} -l #{@db}/log start > /dev/null")
+      run_cmd("#{@pg_ctl} -o \"-p #{@dbport}\" -D #{@db} -l #{@db}/log start")
       sleep(2)
-      unless system("#{@pg_ctl} -o \"-p #{@dbport}\" -D #{@db} status > /dev/null")
+      unless run_cmd("#{@pg_ctl} -o \"-p #{@dbport}\" -D #{@db} status")
         print 'The database failed to start: '
         puts tail("#{@db}/log")
         loop do
@@ -72,9 +87,9 @@ def start_db
 end
 
 def stop_db
-  if system("#{@pg_ctl} -o \"-p #{@dbport}\" -D #{@db} status > /dev/null")
+  if run_cmd("#{@pg_ctl} -o \"-p #{@dbport}\" -D #{@db} status")
     puts "Stopping database at #{@db}"
-    system("#{@pg_ctl} -o \"-p #{@dbport}\" -D #{@db} stop > /dev/null")
+    run_cmd("#{@pg_ctl} -o \"-p #{@dbport}\" -D #{@db} stop")
   else
     puts "Database is no longer running at #{@db}"
   end
@@ -137,7 +152,7 @@ EOF
 
   puts "Creating database at #{@db}"
   Dir.mkdir(@db)
-  system("#{@bin}/initdb --auth-host=trust --auth-local=trust -E UTF8 #{@db} > /dev/null")
+  run_cmd("#{@bin}/initdb --auth-host=trust --auth-local=trust -E UTF8 #{@db}")
 
   File.open("#{@db}/pg_hba.conf", 'a') do |f|
     f.puts "host    \"msf\"      \"#{msf_user}\"      127.0.0.1/32           md5"
@@ -151,17 +166,15 @@ EOF
   start_db
 
   puts 'Creating database users'
-  system("#{@bin}/psql -p #{@dbport} postgres -c \
-    \"create user #{msf_user} with password '#{msf_pass}';\" > /dev/null")
-  system("#{@bin}/psql -p #{@dbport} postgres -c \
-    \"create user #{msftest_user} with password '#{msftest_pass}';\" > /dev/null")
-  system("#{@bin}/psql -p #{@dbport} postgres -c \"alter user msf createdb;\" > /dev/null")
-  system("#{@bin}/psql -p #{@dbport} postgres -c \"alter user msftest createdb;\" > /dev/null")
-  system("#{@bin}/createdb -p #{@dbport} -O #{msf_user} msf -h localhost")
+  run_psql("create user #{msf_user} with password '#{msf_pass}'")
+  run_psql("create user #{msftest_user} with password '#{msftest_pass}'")
+  run_psql("alter user msf createdb")
+  run_psql("alter user msftest createdb")
+  run_cmd("#{@bin}/createdb -p #{@dbport} -O #{msf_user} -h localhost msf")
 
   puts 'Creating initial database schema'
   Dir.chdir(@framework) do
-    system("#{@bin}/bundle exec #{@bin}/rake db:migrate >/dev/null 2>&1")
+    run_cmd("#{@bin}/bundle exec #{@bin}/rake db:migrate")
   end
 end
 
