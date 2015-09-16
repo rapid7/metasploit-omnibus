@@ -22,13 +22,13 @@ end
 @pg_ctl = "#{@bin}/pg_ctl"
 
 def run_cmd(cmd)
-  exit_status = 0
+  exitstatus = 0
 
   Open3.popen3(cmd) do |stdin, stdout, stderr, wait_thr|
-    exit_status = wait_thr.value
+    exitstatus = wait_thr.value.exitstatus
   end
 
-  exit_status
+  exitstatus
 end
 
 def run_psql(cmd)
@@ -45,7 +45,7 @@ end
 
 def status_db
   if Dir.exist?(@db)
-    if !run_cmd("#{@pg_ctl} -o \"-p #{@dbport}\" -D #{@db} status").nil?
+    if run_cmd("#{@pg_ctl} -o \"-p #{@dbport}\" -D #{@db} status") == 0
       puts "Database started at #{@db}"
     else
       puts "Database is not running at #{@db}"
@@ -57,7 +57,7 @@ end
 
 def start_db
   if Dir.exist?(@db)
-    if run_cmd("#{@pg_ctl} -o \"-p #{@dbport}\" -D #{@db} status")
+    if run_cmd("#{@pg_ctl} -o \"-p #{@dbport}\" -D #{@db} status") == 0
       puts "Database already started at #{@db}"
     else
       puts "Starting database at #{@db}"
@@ -87,7 +87,7 @@ def start_db
 end
 
 def stop_db
-  if run_cmd("#{@pg_ctl} -o \"-p #{@dbport}\" -D #{@db} status")
+  if run_cmd("#{@pg_ctl} -o \"-p #{@dbport}\" -D #{@db} status") == 0
     puts "Stopping database at #{@db}"
     run_cmd("#{@pg_ctl} -o \"-p #{@dbport}\" -D #{@db} stop")
   else
