@@ -82,9 +82,14 @@ if [ -n "`find $FRAMEWORK/$cmd -mmin +20160`" ]; then
   echo " Consider running 'msfupdate' to update to the latest version."
 fi
 
-# Skip initialization if we're root
-if [ "`id -u`" -gt 0 ]; then
-  init
+# If we are on an updated Kali system, try to use the system database
+if [ -e /usr/share/metasploit-framework/config/database.yml \
+	 -a ! -e $LOCALCONF/database.yml ]; then
+    cmd="$cmd -y /usr/share/metasploit-framework/config/database.yml"
+else # Skip initialization if we're root
+    if [ "`id -u`" -gt 0 ]; then
+      init
+    fi
 fi
 
 # Uncomment to enable libedit support
