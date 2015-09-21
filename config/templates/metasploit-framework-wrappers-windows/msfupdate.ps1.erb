@@ -1,0 +1,11 @@
+$source = "http://windows.metasploit.com/metasploitframework-latest.msi"
+$destination = "$env:userprofile\Downloads\metasploitframework-latest.msi"
+
+Write-Output "Downloading latest Metasploit Framework"
+Import-Module BitsTransfer
+Start-BitsTransfer -Source $source -Destination $destination
+
+Write-Output "Updating Metasploit Framework"
+Start-Process "$env:userprofile\Downloads\metasploitframework-latest.msi" /qn -Wait
+
+Write-Output "Update Complete"
