@@ -15,10 +15,10 @@
 #
 
 name "openssl"
-default_version "2.2.3"
+default_version "2.2.4"
 
 source url: "http://ftp5.usa.openbsd.org/pub/OpenBSD/LibreSSL/libressl-#{version}.tar.gz",
-       md5: '9a3c3c9a1c0bd6fb2659ca003de3f725'
+       sha256: '6b409859be8654afc3862549494e097017e64c8d167f12584383586306ef9a7e'
 
 relative_path "libressl-#{version}"
 

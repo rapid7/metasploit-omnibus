@@ -15,15 +15,15 @@
 #
 
 name "postgresql-windows"
-default_version "9.4.4"
+default_version "9.4.5"
 
-version "9.4.4" do
-  source md5: "3f200b6b47f23d499d85dd43b6dd4f04"
+version "9.4.5" do
+  source sha256: "6d2163611b6b159246896898dd1ee23cf29972c9a0449a8aac9c126cfc88a87f"
 end
 
 relative_path "pgsql"
 
-source url: "http://get.enterprisedb.com/postgresql/postgresql-#{version}-3-windows-binaries.zip"
+source url: "http://get.enterprisedb.com/postgresql/postgresql-#{version}-1-windows-binaries.zip"
 
 build do
 

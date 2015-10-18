@@ -1,0 +1,32 @@
+--- Makefile.in~	2015-10-07 12:24:16.000000000 -0700
++++ Makefile.in	2015-10-07 12:25:50.000000000 -0700
+@@ -130,22 +130,22 @@
+ 	$(srcdir)/mkinstalldirs $(INSTALL_ROOT)$(libdir) \
+ 		$(INSTALL_ROOT)$(includedir) $(INSTALL_ROOT)$(man3dir) \
+ 		$(INSTALL_ROOT)$(infodir)
+-	$(LIBTOOL) $(INSTALL) -c libgdbm.la $(INSTALL_ROOT)$(libdir)/libgdbm.la
+-	$(INSTALL_DATA) -o $(BINOWN) -g $(BINGRP) gdbm.h \
++	$(LIBTOOL) cp libgdbm.la $(INSTALL_ROOT)$(libdir)/libgdbm.la
++	cp gdbm.h \
+ 		$(INSTALL_ROOT)$(includedir)/gdbm.h
+-	$(INSTALL_DATA) -o $(BINOWN) -g $(BINGRP) $(srcdir)/gdbm.3 \
++	cp $(srcdir)/gdbm.3 \
+ 		$(INSTALL_ROOT)$(man3dir)/gdbm.3
+-	$(INSTALL_DATA) -o $(BINOWN) -g $(BINGRP) $(srcdir)/gdbm.info \
++	cp $(srcdir)/gdbm.info \
+ 		$(INSTALL_ROOT)$(infodir)/gdbm.info
+ 
+ install-compat:
+ 	$(srcdir)/mkinstalldirs $(INSTALL_ROOT)$(libdir) \
+ 		$(INSTALL_ROOT)$(includedir)
+-	$(LIBTOOL) $(INSTALL) -c libgdbm_compat.la \
++	$(LIBTOOL) cp libgdbm_compat.la \
+ 		$(INSTALL_ROOT)$(libdir)/libgdbm_compat.la
+-	$(INSTALL_DATA) -o $(BINOWN) -g $(BINGRP) $(srcdir)/dbm.h \
++	cp $(srcdir)/dbm.h \
+ 		$(INSTALL_ROOT)$(includedir)/dbm.h
+-	$(INSTALL_DATA) -o $(BINOWN) -g $(BINGRP) $(srcdir)/ndbm.h \
++	cp $(srcdir)/ndbm.h \
+ 		$(INSTALL_ROOT)$(includedir)/ndbm.h
+ 
+ #libgdbm.a: $(OBJS) gdbm.h
