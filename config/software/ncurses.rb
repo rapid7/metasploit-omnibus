@@ -15,7 +15,7 @@
 #
 
 name "ncurses"
-default_version "5.9"
+default_version "6.0-20150810"
 
 dependency "libtool" if aix?
 dependency "patch" if solaris2?
@@ -23,6 +23,7 @@ dependency "patch" if solaris2?
 version("5.9") { source md5: "8cb9c412e5f2d96bc6f459aa8c6282a1", url: "http://ftp.gnu.org/gnu/ncurses/ncurses-5.9.tar.gz" }
 version("5.9-20150530") { source md5: "bb2cbe1d788d3ab0138fc2734e446b43", url: "ftp://invisible-island.net/ncurses/current/ncurses-5.9-20150530.tgz" }
 version("6.0-20150613") { source md5: "0c6a0389d004c78f4a995bc61884a563", url: "ftp://invisible-island.net/ncurses/current/ncurses-6.0-20150613.tgz" }
+version("6.0-20150810") { source sha256: "85d4a615731bc71075416fc3bea15a56740bed42b3596bbb126226af4111c65c", url: "ftp://invisible-island.net/ncurses/current/ncurses-6.0-20150810.tgz" }
 
 relative_path "ncurses-#{version}"
 
@@ -74,6 +75,10 @@ build do
     # upstream, but occurred shortly after the 5.9 release. We should be able
     # to remove this after upgrading to any release created after June 2012
     patch source: "ncurses-clang.patch"
+  end
+
+  if openbsd?
+    patch source: "patch-ncurses_tinfo_lib__baudrate.c", plevel: 0
   end
 
   if version == "5.9" && ppc64le?

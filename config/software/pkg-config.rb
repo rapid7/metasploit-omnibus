@@ -34,6 +34,12 @@ build do
     patch source: "v0.28.ppc64le-configure.patch", plevel: 1
   end
 
+  # pkg-config (at least up to 0.28) includes an older version of
+  # libcharset/lib/config.charset that doesn't know about openbsd
+  if openbsd?
+    patch source: "openbsd-charset.patch", plevel: 1
+  end
+
   command "./configure" \
           " --prefix=#{install_dir}/embedded" \
           " --disable-debug" \
@@ -52,4 +58,10 @@ build do
 
   make "-j #{workers}", env: env
   make "-j #{workers} install", env: env
+
+  # ensure charset.alias gets installed on openbsd else pkg-config will
+  # exit with byte conversion errors.
+  if openbsd?
+    copy "#{project_dir}/glib/glib/libcharset/charset.alias", "#{install_dir}/embedded/lib/charset.alias"
+  end
 end
