@@ -15,7 +15,7 @@
 #
 
 name "bundler"
-default_version "1.7.7"
+default_version "1.10.6"
 
 if windows?
   dependency "ruby-windows"
