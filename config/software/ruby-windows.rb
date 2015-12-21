@@ -15,7 +15,7 @@
 #
 
 name "ruby-windows"
-default_version "2.1.6"
+default_version "2.1.7"
 
 relative_path "ruby-#{version}-i386-mingw32"
 
@@ -39,6 +39,10 @@ version "2.1.6" do
   source md5: "e3c345a73e5523677a1f301caa4142eb"
 end
 
+version "2.1.7" do
+  source sha256: "cf6e9f4bb156e70df4dcb5052011296edeb16bf02a4a4e476899a03ceed9a248"
+end
+
 version "2.2.1" do
   source md5: "9f1beca535b2e60098d826eb7cb1b972"
 end
@@ -49,7 +53,7 @@ build do
 
   sync "#{project_dir}/", "#{install_dir}/embedded"
 
-  msvcr = File.join(Omnibus::Config.cache_dir, "msvcr120.dll")
+  msvcr = File.expand_path(File.join(Omnibus::Config.cache_dir, "msvcr120.dll"))
   copy msvcr, "#{install_dir}/embedded/bin/"
 
   # Ruby 2.X dl.rb gives an annoying warning message on Windows:
