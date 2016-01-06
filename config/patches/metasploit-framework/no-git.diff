@@ -1,5 +1,5 @@
 diff --git a/metasploit-framework.gemspec b/metasploit-framework.gemspec
-index ba444f6..be8601e 100644
+index ca49e3c..cd7b3a7 100644
 --- a/metasploit-framework.gemspec
 +++ b/metasploit-framework.gemspec
 @@ -24,9 +24,6 @@ Gem::Specification.new do |spec|
@@ -7,8 +7,8 @@ index ba444f6..be8601e 100644
    spec.license       = 'BSD-3-clause'
  
 -  spec.files         = `git ls-files`.split($/).reject { |file|
--    file =~ /^config/
+-    file =~ /^documentation|^data\/gui|^external/
 -  }
    spec.bindir = '.'
-   spec.executables   = [
-       'msfbinscan',
+   if ENV['CREATE_BINSTUBS']
+     spec.executables   = [
