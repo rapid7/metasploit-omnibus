@@ -4,9 +4,14 @@ MAINTAINER John E. Vincent
 VOLUME /pkg
 
 RUN rpm -ivh http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
-RUN yum install -y centos-release-SCL
+RUN yum upgrade -y && yum clean all
+RUN yum install -y centos-release-SCL && yum clean all
+RUN rpm --import http://apt.sw.be/RPM-GPG-KEY.dag.txt
+RUN curl -O http://apt.sw.be/redhat/el6/en/x86_64/rpmforge/RPMS/rpmforge-release-0.5.3-1.el6.rf.x86_64.rpm && \
+    rpm -i rpmforge-release-0.5.3-1.el6.rf.x86_64.rpm && \
+    rm rpmforge-release-0.5.3-1.el6.rf.x86_64.rpm
 
-RUN yum install -y \
+RUN yum --enablerepo=rpmforge-extras install -y \
     autoconf \
     bison \
     flex \
