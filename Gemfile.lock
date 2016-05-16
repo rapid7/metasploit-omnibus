@@ -1,6 +1,6 @@
 GIT
   remote: git://github.com/rapid7/omnibus.git
-  revision: 071c13998b0407f4a4844a0ab06fe9160bd1cbea
+  revision: 41829826b3260eb5675c8635ecf7460baa0d5e93
   branch: master
   specs:
     omnibus (5.4.0)
