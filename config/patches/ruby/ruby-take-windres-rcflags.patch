@@ -1,0 +1,12 @@
+--- a/cygwin/GNUmakefile.in
++++ b/cygwin/GNUmakefile.in
+@@ -2,7 +2,7 @@ include Makefile
+ 
+ ENABLE_SHARED=@ENABLE_SHARED@
+ DLLWRAP = @DLLWRAP@ --target=@target_os@ --driver-name="$(CC)"
+-WINDRES = @WINDRES@ --preprocessor="$(CPP) -xc" -DRC_INVOKED
++WINDRES = @WINDRES@ $(RCFLAGS) --preprocessor="$(CPP) -xc" -DRC_INVOKED
+ 
+ ifeq (@target_os@,cygwin)
+   DLL_BASE_NAME := $(LIBRUBY_SO:.dll=)
+

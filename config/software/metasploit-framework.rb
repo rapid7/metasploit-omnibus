@@ -53,7 +53,5 @@ build do
 
   if windows?
     delete "#{install_dir}/devkit"
-  else
-    command "chmod o+r #{install_dir}/embedded/lib/ruby/gems/2.1.0/gems/robots-0.10.1/lib/robots.rb"
   end
 end

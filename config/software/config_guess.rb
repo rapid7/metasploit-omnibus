@@ -1,5 +1,5 @@
 #
-# Copyright 2012-2016 Chef Software, Inc.
+# Copyright 2015 Chef Software, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,20 +14,21 @@
 # limitations under the License.
 #
 
-name "bundler"
+name "config_guess"
+default_version "master"
 
-license "MIT"
-license_file "https://raw.githubusercontent.com/bundler/bundler/master/LICENSE.md"
+source git: "http://git.savannah.gnu.org/r/config.git"
 
-dependency "rubygems"
+# http://savannah.gnu.org/projects/config
+license "GPL-3.0 (with exception)"
+license_file "config.guess"
+license_file "config.sub"
+
+relative_path "config_guess-#{version}"
 
 build do
-  env = with_standard_compiler_flags(with_embedded_path)
+  mkdir "#{install_dir}/embedded/lib/config_guess"
 
-  v_opts = "--version '#{version}'" unless version.nil?
-  gem [
-    "install bundler",
-    v_opts,
-    "--no-ri --no-rdoc",
-  ].compact.join(" "), env: env
+  copy "#{project_dir}/config.guess", "#{install_dir}/embedded/lib/config_guess/config.guess"
+  copy "#{project_dir}/config.sub", "#{install_dir}/embedded/lib/config_guess/config.sub"
 end

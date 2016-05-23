@@ -18,19 +18,18 @@
 name "ruby-windows-devkit-bash"
 default_version "3.1.23-4-msys-1.0.18"
 
+license "GPL-3.0"
+license_file "http://www.gnu.org/licenses/gpl-3.0.txt"
+
 dependency "ruby-windows-devkit"
 source url: "https://github.com/opscode/msys-bash/releases/download/bash-#{version}/bash-#{version}-bin.tar.lzma",
        md5: "22d5dbbd9bd0b3e0380d7a0e79c3108e"
 
+relative_path 'bin'
+
 build do
-  temp_directory = File.join(Omnibus::Config.cache_dir, "bash-cache")
-  mkdir temp_directory
-  # First extract the tar file out of lzma archive.
-  command "7z.exe x #{project_file} -o#{temp_directory} -r -y"
-  # Now extract the files out of tar archive.
-  command "7z.exe x #{File.join(temp_directory, "bash-#{version}-bin.tar")} -o#{temp_directory} -r -y"
   # Copy over the required bins into embedded/bin
   ["bash.exe", "sh.exe"].each do |exe|
-    copy "#{temp_directory}/bin/#{exe}", "#{install_dir}/embedded/bin/#{exe}"
+    copy "#{exe}", "#{install_dir}/embedded/bin/#{exe}"
   end
 end

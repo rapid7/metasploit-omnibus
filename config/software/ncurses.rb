@@ -17,13 +17,18 @@
 name "ncurses"
 default_version "6.0-20150810"
 
-dependency "libtool" if aix?
-dependency "patch" if solaris2?
+license "MIT"
+license_file "http://invisible-island.net/ncurses/ncurses-license.html"
+license_file "http://invisible-island.net/ncurses/ncurses.faq.html"
 
-version("5.9") { source md5: "8cb9c412e5f2d96bc6f459aa8c6282a1", url: "http://ftp.gnu.org/gnu/ncurses/ncurses-5.9.tar.gz" }
+dependency "libtool" if aix?
+dependency "config_guess"
+dependency "patch" if solaris_10?
+
+version("5.9") { source md5: "8cb9c412e5f2d96bc6f459aa8c6282a1", url: "https://ftp.gnu.org/gnu/ncurses/ncurses-5.9.tar.gz" }
 version("5.9-20150530") { source md5: "bb2cbe1d788d3ab0138fc2734e446b43", url: "ftp://invisible-island.net/ncurses/current/ncurses-5.9-20150530.tgz" }
 version("6.0-20150613") { source md5: "0c6a0389d004c78f4a995bc61884a563", url: "ftp://invisible-island.net/ncurses/current/ncurses-6.0-20150613.tgz" }
-version("6.0-20150810") { source sha256: "85d4a615731bc71075416fc3bea15a56740bed42b3596bbb126226af4111c65c", url: "ftp://invisible-island.net/ncurses/current/ncurses-6.0-20150810.tgz" }
+version("6.0-20150810") { source md5: "78bfcb4634a87b4cda390956586f8f1f", url: "ftp://invisible-island.net/ncurses/current/ncurses-6.0-20150810.tgz" }
 
 relative_path "ncurses-#{version}"
 
@@ -51,17 +56,27 @@ build do
     # These patches are taken from NetBSD pkgsrc and provide GCC 4.7.0
     # compatibility:
     # http://ftp.netbsd.org/pub/pkgsrc/current/pkgsrc/devel/ncurses/patches/
-    patch source: "patch-aa", plevel: 0
-    patch source: "patch-ab", plevel: 0
-    patch source: "patch-ac", plevel: 0
-    patch source: "patch-ad", plevel: 0
-    patch source: "patch-cxx_cursesf.h", plevel: 0
-    patch source: "patch-cxx_cursesm.h", plevel: 0
+    patch source: "patch-aa", plevel: 0, env: env
+    patch source: "patch-ab", plevel: 0, env: env
+    patch source: "patch-ac", plevel: 0, env: env
+    patch source: "patch-ad", plevel: 0, env: env
+    patch source: "patch-cxx_cursesf.h", plevel: 0, env: env
+    patch source: "patch-cxx_cursesm.h", plevel: 0, env: env
 
     # Opscode patches - <someara@opscode.com>
     # The configure script from the pristine tarball detects xopen_source_extended incorrectly.
     # Manually working around a false positive.
-    patch source: "ncurses-5.9-solaris-xopen_source_extended-detection.patch", plevel: 0
+    patch source: "ncurses-5.9-solaris-xopen_source_extended-detection.patch", plevel: 0, env: env
+  end
+
+  update_config_guess
+
+  # AIX's old version of patch doesn't like the patches here
+  unless aix?
+    if version == "5.9"
+      # Patch to add support for GCC 5, doesn't break previous versions
+      patch source: "ncurses-5.9-gcc-5.patch", plevel: 1, env: env
+    end
   end
 
   if mac_os_x? ||
@@ -74,15 +89,11 @@ build do
     # Patches ncurses for clang compiler. Changes have been accepted into
     # upstream, but occurred shortly after the 5.9 release. We should be able
     # to remove this after upgrading to any release created after June 2012
-    patch source: "ncurses-clang.patch"
+    patch source: "ncurses-clang.patch", env: env
   end
 
   if openbsd?
-    patch source: "patch-ncurses_tinfo_lib__baudrate.c", plevel: 0
-  end
-
-  if version == "5.9" && ppc64le?
-    patch source: "v5.9.ppc64le-configure.patch", plevel: 1
+    patch source: "patch-ncurses_tinfo_lib__baudrate.c", plevel: 0, env: env
   end
 
   configure_command = [
@@ -119,7 +130,7 @@ build do
 
   # only Solaris 10 sh has a problem with
   # parens enclosed case statement conditions the configure script
-  configure_command.unshift "bash" if solaris2?
+  configure_command.unshift "bash" if solaris_10?
 
   command configure_command.join(" "), env: env
 

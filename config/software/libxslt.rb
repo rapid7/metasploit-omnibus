@@ -17,16 +17,21 @@
 name "libxslt"
 default_version "1.1.28"
 
-dependency "libxml2"
-dependency "libtool" if solaris2?
-dependency "liblzma"
+license "MIT"
+license_file "COPYING"
 
-version "1.1.26" do
-  source md5: "e61d0364a30146aaa3001296f853b2b9"
-end
+dependency "libxml2"
+dependency "liblzma"
+dependency "config_guess"
+dependency "libtool" if solaris_10?
+dependency "patch" if solaris_10?
 
 version "1.1.28" do
   source md5: "9667bf6f9310b957254fdcf6596600b7"
+end
+
+version "1.1.26" do
+  source md5: "e61d0364a30146aaa3001296f853b2b9"
 end
 
 source url: "ftp://xmlsoft.org/libxml2/libxslt-#{version}.tar.gz"
@@ -34,16 +39,30 @@ source url: "ftp://xmlsoft.org/libxml2/libxslt-#{version}.tar.gz"
 relative_path "libxslt-#{version}"
 
 build do
-  env = with_standard_compiler_flags(with_embedded_path)
+  update_config_guess
 
-  command "./configure" \
-          " --prefix=#{install_dir}/embedded" \
-          " --with-libxml-prefix=#{install_dir}/embedded" \
-          " --with-libxml-include-prefix=#{install_dir}/embedded/include" \
-          " --with-libxml-libs-prefix=#{install_dir}/embedded/lib" \
-          " --without-python" \
-          " --without-crypto", env: env
+  env = with_standard_compiler_flags(with_embedded_path({}, msys: true), bfd_flags: true)
 
-  make "-j #{workers}", env: env
+  patch source: "libxslt-cve-2015-7995.patch", env: env
+  patch source: "libxslt-solaris-configure.patch", env: env if solaris?
+  patch source: "libxslt-mingw32.patch", env: env if windows?
+
+  configure_commands = [
+    "--with-libxml-prefix=#{install_dir}/embedded",
+    "--with-libxml-include-prefix=#{install_dir}/embedded/include",
+    "--with-libxml-libs-prefix=#{install_dir}/embedded/lib",
+    "--without-python",
+    "--without-crypto",
+  ]
+
+  configure(*configure_commands, env: env)
+
+  if windows?
+    # Apply a post configure patch to prevent dll base address clash
+    patch source: "libxslt-windows-relocate.patch", env: env if windows?
+    make env: env
+  else
+    make "-j #{workers}", env: env
+  end
   make "install", env: env
 end

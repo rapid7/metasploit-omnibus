@@ -15,7 +15,7 @@
 #
 
 name "ruby-windows"
-default_version "2.1.7"
+default_version "2.3.0"
 
 relative_path "ruby-#{version}-i386-mingw32"
 

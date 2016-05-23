@@ -15,39 +15,53 @@
 #
 
 name "ruby-windows-devkit"
-default_version "4.7.2-20130224-1151"
+default_version "4.7.2-20130224"
 
-dependency "ruby-windows"
+license "BSD-3-Clause"
+license_file "LICENSE.txt"
 
-version "4.5.2-20111229-1559" do
-  source url: "http://cloud.github.com/downloads/oneclick/rubyinstaller/DevKit-tdm-32-#{version}-sfx.exe",
-         md5: "4bf8f2dd1d582c8733a67027583e19a6"
+if windows_arch_i386?
+  version "4.5.2-20111229-1559" do
+    source url: "http://cloud.github.com/downloads/oneclick/rubyinstaller/DevKit-tdm-32-#{version}-sfx.exe",
+           md5: "4bf8f2dd1d582c8733a67027583e19a6"
+  end
+
+  version "4.7.2-20130224" do
+    source url: "http://cdn.rubyinstaller.org/archives/devkits/DevKit-mingw64-32-#{version}-1151-sfx.exe",
+           md5: "9383f12958aafc425923e322460a84de"
+  end
+else
+  version "4.7.2-20130224" do
+    source url: "http://cdn.rubyinstaller.org/archives/devkits/DevKit-mingw64-64-#{version}-1432-sfx.exe",
+           md5: "ce99d873c1acc8bffc639bd4e764b849"
+  end
 end
-
-version "4.7.2-20130224-1151" do
-  source url: "http://cdn.rubyinstaller.org/archives/devkits/DevKit-mingw64-32-#{version}-sfx.exe",
-         md5: "9383f12958aafc425923e322460a84de"
-end
-
 build do
   env = with_standard_compiler_flags(with_embedded_path)
 
   embedded_dir = "#{install_dir}/embedded"
-  devkit_dir = "#{install_dir}/devkit"
 
-  mkdir devkit_dir
+  command "#{project_file} -y -o#{windows_safe_path(embedded_dir)}", env: env
 
-  version "4.5.2-20111229-1559" do
-    command "DevKit-tdm-32-#{version}-sfx.exe -y -o#{windows_safe_path(devkit_dir)}", env: env
+  command "echo - #{install_dir}/embedded > config.yml", cwd: embedded_dir
+  ruby "dk.rb install", env: env, cwd: embedded_dir
+
+  # Normally we would symlink the required unix tools.
+  # However with the introduction of git-cache to speed up omnibus builds,
+  # we can't do that anymore since git on windows doesn't support symlinks.
+  # https://groups.google.com/forum/#!topic/msysgit/arTTH5GmHRk
+  # Therefore we copy the tools to the necessary places.
+  # We need tar for 'knife cookbook site install' to function correctly and
+  # many gems that ship with native extensions assume tar will be available
+  # in the PATH.
+  {
+    'tar.exe'          => 'bsdtar.exe',
+    'libarchive-2.dll' => 'libarchive-2.dll',
+    'libexpat-1.dll'   => 'libexpat-1.dll',
+    'liblzma-1.dll'    => 'liblzma-1.dll',
+    'libbz2-2.dll'     => 'libbz2-2.dll',
+    'libz-1.dll'       => 'libz-1.dll',
+  }.each do |target, to|
+    copy "#{install_dir}/embedded/mingw/bin/#{to}", "#{install_dir}/bin/#{target}"
   end
-
-  version "4.7.2-20130224-1151" do
-    command "DevKit-mingw64-32-#{version}-sfx.exe -y -o#{windows_safe_path(devkit_dir)}", env: env
-  end
-
-  command "echo - #{embedded_dir} > config.yml", cwd: devkit_dir
-  ruby "#{devkit_dir}/dk.rb install", env: env, cwd: devkit_dir
-
-  # may gems that ship with native extensions assume tar will be available in the PATH
-  copy "#{install_dir}/devkit/mingw/bin/bsdtar.exe", "#{install_dir}/devkit/mingw/bin/tar.exe"
 end
