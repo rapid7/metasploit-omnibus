@@ -19,6 +19,7 @@ default_version "0.28-1"
 
 license "GPL-2.0"
 license_file "COPYING"
+skip_transitive_dependency_licensing true
 
 dependency "config_guess"
 

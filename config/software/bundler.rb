@@ -18,6 +18,7 @@ name "bundler"
 
 license "MIT"
 license_file "https://raw.githubusercontent.com/bundler/bundler/master/LICENSE.md"
+skip_transitive_dependency_licensing true
 
 dependency "rubygems"
 

@@ -18,17 +18,19 @@ name "cacerts"
 
 license "MPL-2.0"
 license_file "https://github.com/bagder/ca-bundle/blob/master/README.md"
+skip_transitive_dependency_licensing true
 
-default_version "2016.01.20"
+default_version "2016-04-20"
 
-version "2016.01.20" do
-  source md5: "36eee0e80373937dd90a9a334ae42817"
-  source url: "https://raw.githubusercontent.com/bagder/ca-bundle/dfcc02c918b7bf40ed3a7f27a634c74ef4e80829/ca-bundle.crt"
+source url: "https://curl.haxx.se/ca/cacert-#{version}.pem"
+
+version "2016-04-20" do
+  source md5: "782dcde8f5d53b1b9e888fdf113c42b9"
 end
 
-version "2015.10.28" do
-  source md5: "3c58c3f2435598a942dc37cdb02a3ec3"
-  source url: "https://raw.githubusercontent.com/bagder/ca-bundle/86347ecbdc2277f365d02f0d208b822a214e012d/ca-bundle.crt"
+version "2016.01.20" do
+  source md5: "06629db7f712ff3a75630eccaecc1fe4"
+  source url: "https://curl.haxx.se/ca/cacert-2016-01-20.pem"
 end
 
 relative_path "cacerts-#{version}"
@@ -36,14 +38,7 @@ relative_path "cacerts-#{version}"
 build do
   mkdir "#{install_dir}/embedded/ssl/certs"
 
-  # Append the 1024bit Verisign certs so that S3 continues to work
-  block do
-    unless File.foreach("#{project_dir}/ca-bundle.crt").grep(/^Verisign Class 3 Public Primary Certification Authority$/).any?
-      File.open("#{project_dir}/ca-bundle.crt", "a") { |fd| fd.write(VERISIGN_CERTS) }
-    end
-  end
-
-  copy "#{project_dir}/ca-bundle.crt", "#{install_dir}/embedded/ssl/certs/cacert.pem"
+  copy "#{project_dir}/cacert*.pem", "#{install_dir}/embedded/ssl/certs/cacert.pem"
 
   # Windows does not support symlinks
   unless windows?

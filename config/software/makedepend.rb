@@ -19,8 +19,9 @@ default_version "1.0.5"
 
 license "MIT"
 license_file "COPYING"
+skip_transitive_dependency_licensing true
 
-source url: "http://xorg.freedesktop.org/releases/individual/util/makedepend-1.0.5.tar.gz",
+source url: "https://www.x.org/releases/individual/util/makedepend-1.0.5.tar.gz",
        md5: "efb2d7c7e22840947863efaedc175747"
 
 relative_path "makedepend-1.0.5"
@@ -33,7 +34,7 @@ build do
   env = with_standard_compiler_flags(with_embedded_path)
 
   if solaris_10?
-    env['PKG_CONFIG'] = "#{install_dir}/embedded/bin/pkg-config"
+    env["PKG_CONFIG"] = "#{install_dir}/embedded/bin/pkg-config"
   end
 
   command "./configure --prefix=#{install_dir}/embedded", env: env

@@ -19,6 +19,7 @@ default_version "5.2.2"
 
 license "Public-Domain"
 license_file "COPYING"
+skip_transitive_dependency_licensing true
 
 source url: "http://tukaani.org/xz/xz-#{version}.tar.gz",
        md5: "7cf6a8544a7dae8e8106fdf7addfa28c"
@@ -26,11 +27,11 @@ source url: "http://tukaani.org/xz/xz-#{version}.tar.gz",
 relative_path "xz-#{version}"
 
 build do
-  env = with_standard_compiler_flags(with_embedded_path({}, msys: true), bfd_flags: true)
+  env = with_standard_compiler_flags(with_embedded_path)
   # liblzma properly uses CFLAGS for C compilation and CPPFLAGS for common
   # flags used across tools such as windres.  Don't put anything in it
   # that can be misinterpreted by windres.
-  env['CPPFLAGS'] = "-I#{install_dir}/embedded/include" if windows?
+  env["CPPFLAGS"] = "-I#{install_dir}/embedded/include" if windows?
 
   config_command = [
     "--disable-debug",

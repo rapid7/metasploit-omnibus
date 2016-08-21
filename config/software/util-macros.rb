@@ -25,10 +25,11 @@ version "1.18.0" do
   source md5: "fd0ba21b3179703c071bbb4c3e5fb0f4"
 end
 
-source url: "http://xorg.freedesktop.org/releases/individual/util/util-macros-#{version}.tar.gz"
+source url: "https://www.x.org/releases/individual/util/util-macros-#{version}.tar.gz"
 
 license "MIT"
 license_file "COPYING"
+skip_transitive_dependency_licensing true
 
 relative_path "util-macros-#{version}"
 

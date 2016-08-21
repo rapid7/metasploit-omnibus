@@ -18,7 +18,8 @@ name "ruby-windows-devkit"
 default_version "4.7.2-20130224"
 
 license "BSD-3-Clause"
-license_file "LICENSE.txt"
+license_file "https://raw.githubusercontent.com/oneclick/rubyinstaller/master/LICENSE.txt"
+skip_transitive_dependency_licensing true
 
 if windows_arch_i386?
   version "4.5.2-20111229-1559" do
@@ -55,12 +56,12 @@ build do
   # many gems that ship with native extensions assume tar will be available
   # in the PATH.
   {
-    'tar.exe'          => 'bsdtar.exe',
-    'libarchive-2.dll' => 'libarchive-2.dll',
-    'libexpat-1.dll'   => 'libexpat-1.dll',
-    'liblzma-1.dll'    => 'liblzma-1.dll',
-    'libbz2-2.dll'     => 'libbz2-2.dll',
-    'libz-1.dll'       => 'libz-1.dll',
+    "tar.exe"          => "bsdtar.exe",
+    "libarchive-2.dll" => "libarchive-2.dll",
+    "libexpat-1.dll"   => "libexpat-1.dll",
+    "liblzma-1.dll"    => "liblzma-1.dll",
+    "libbz2-2.dll"     => "libbz2-2.dll",
+    "libz-1.dll"       => "libz-1.dll",
   }.each do |target, to|
     copy "#{install_dir}/embedded/mingw/bin/#{to}", "#{install_dir}/bin/#{target}"
   end

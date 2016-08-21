@@ -31,7 +31,6 @@ version "2.21" do
   source md5: "4222aa8c2a1b78889e959a4722f1881a"
 end
 
-
 relative_path "util-linux-#{version}"
 
 build do

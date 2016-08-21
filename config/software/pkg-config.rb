@@ -50,7 +50,6 @@ build do
           " --with-internal-glib" \
           " --with-pc-path=#{install_dir}/embedded/bin/pkgconfig", env: env
 
-
   # #203: pkg-configs internal glib does not provide a way to pass ldflags.
   # Only allows GLIB_CFLAGS and GLIB_LIBS.
   # These do not serve our purpose, so we must explicitly

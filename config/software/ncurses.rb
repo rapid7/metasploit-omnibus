@@ -15,7 +15,7 @@
 #
 
 name "ncurses"
-default_version "6.0-20150810"
+default_version "5.9"
 
 license "MIT"
 license_file "http://invisible-island.net/ncurses/ncurses-license.html"
@@ -49,7 +49,7 @@ relative_path "ncurses-#{version}"
 
 build do
   env = with_standard_compiler_flags(with_embedded_path)
-  env.delete('CPPFLAGS')
+  env.delete("CPPFLAGS")
 
   if smartos?
     # SmartOS is Illumos Kernel, plus NetBSD userland with a GNU toolchain.
@@ -81,7 +81,7 @@ build do
 
   if mac_os_x? ||
     # Clang became the default compiler in FreeBSD 10+
-    (freebsd? && ohai['os_version'].to_i >= 1000024)
+      (freebsd? && ohai["os_version"].to_i >= 1000024)
     # References:
     # https://github.com/Homebrew/homebrew-dupes/issues/43
     # http://invisible-island.net/ncurses/NEWS.html#t20110409
@@ -122,10 +122,10 @@ build do
     # ncurses's ./configure incorrectly
     # "figures out" ARFLAGS if you try
     # to set them yourself
-    env.delete('ARFLAGS')
+    env.delete("ARFLAGS")
 
     # use gnu install from the coreutils IBM rpm package
-    env['INSTALL'] = "/opt/freeware/bin/install"
+    env["INSTALL"] = "/opt/freeware/bin/install"
   end
 
   # only Solaris 10 sh has a problem with
