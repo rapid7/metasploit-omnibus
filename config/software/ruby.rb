@@ -173,7 +173,7 @@ build do
                        "--disable-install-doc",
                        "--without-gmp",
                        "--without-gdbm",
-                       "--without-tk",
+                       "--with-out-ext=tk",
                        "--disable-dtrace"]
   configure_command << "--with-ext=psych" if version.satisfies?("< 2.3")
   configure_command << "--with-bundled-md5" if fips_enabled
