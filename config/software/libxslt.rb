@@ -15,18 +15,20 @@
 #
 
 name "libxslt"
-default_version "1.1.28"
+default_version "1.1.29"
+
+license "MIT"
+license_file "COPYING"
+skip_transitive_dependency_licensing true
 
 dependency "libxml2"
-dependency "libtool" if solaris2?
 dependency "liblzma"
+dependency "config_guess"
+dependency "libtool" if solaris_10?
+dependency "patch" if solaris_10?
 
-version "1.1.26" do
-  source md5: "e61d0364a30146aaa3001296f853b2b9"
-end
-
-version "1.1.28" do
-  source md5: "9667bf6f9310b957254fdcf6596600b7"
+version "1.1.29" do
+  source md5: "a129d3c44c022de3b9dcf6d6f288d72e"
 end
 
 source url: "ftp://xmlsoft.org/libxml2/libxslt-#{version}.tar.gz"
@@ -34,15 +36,30 @@ source url: "ftp://xmlsoft.org/libxml2/libxslt-#{version}.tar.gz"
 relative_path "libxslt-#{version}"
 
 build do
+  update_config_guess
+
   env = with_standard_compiler_flags(with_embedded_path)
 
-  command "./configure" \
-          " --prefix=#{install_dir}/embedded" \
-          " --with-libxml-prefix=#{install_dir}/embedded" \
-          " --with-libxml-include-prefix=#{install_dir}/embedded/include" \
-          " --with-libxml-libs-prefix=#{install_dir}/embedded/lib" \
-          " --without-python" \
-          " --without-crypto", env: env
+  patch source: "libxslt-solaris-configure.patch", env: env if solaris?
+
+  # the libxslt configure script iterates directories specified in
+  # --with-libxml-prefix looking for the libxml2 config script. That
+  # iteration treats colons as a delimiter so we are using a cygwin
+  # style path to accomodate
+  configure_commands = [
+    "--with-libxml-prefix=#{install_dir.sub('C:', '/C')}/embedded",
+    "--with-libxml-include-prefix=#{install_dir}/embedded/include",
+    "--with-libxml-libs-prefix=#{install_dir}/embedded/lib",
+    "--without-python",
+    "--without-crypto",
+  ]
+
+  configure(*configure_commands, env: env)
+
+  if windows?
+    # Apply a post configure patch to prevent dll base address clash
+    patch source: "libxslt-windows-relocate.patch", env: env if windows?
+  end
 
   make "-j #{workers}", env: env
   make "install", env: env

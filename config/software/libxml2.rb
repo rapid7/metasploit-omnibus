@@ -15,26 +15,23 @@
 #
 
 name "libxml2"
-default_version "2.9.3"
+default_version "2.9.4"
+
+license "MIT"
+license_file "COPYING"
+skip_transitive_dependency_licensing true
 
 dependency "zlib"
 dependency "libiconv"
 dependency "liblzma"
+dependency "config_guess"
 
-version "2.7.8" do
-  source md5: "8127a65e8c3b08856093099b52599c86"
-end
-
-version "2.9.2" do
-  source md5: "9e6a9aca9d155737868b3dc5fd82f788"
-end
-
-version "2.9.1" do
-  source md5: "9c0cfef285d5c4a5c80d00904ddab380"
+version "2.9.4" do
+  source md5: "ae249165c173b1ff386ee8ad676815f5"
 end
 
 version "2.9.3" do
-  source sha256: "4de9e31f46b44d34871c22f54bfc54398ef124d6f7cafb1f4a5958fbcd3ba12d"
+  source md5: "daece17e045f1c107610e137ab50c179"
 end
 
 source url: "ftp://xmlsoft.org/libxml2/libxml2-#{version}.tar.gz"
@@ -44,12 +41,19 @@ relative_path "libxml2-#{version}"
 build do
   env = with_standard_compiler_flags(with_embedded_path)
 
-  command "./configure" \
-          " --prefix=#{install_dir}/embedded" \
-          " --with-zlib=#{install_dir}/embedded" \
-          " --with-iconv=#{install_dir}/embedded" \
-          " --without-python" \
-          " --without-icu", env: env
+  configure_command = [
+    "--with-zlib=#{install_dir}/embedded",
+    "--with-iconv=#{install_dir}/embedded",
+    "--without-python",
+    "--without-icu",
+  ]
+
+  # solaris 10 ipv6 support is broken due to no inet_ntop() in -lnsl
+  configure_command << "--enable-ipv6=no" if solaris_10?
+
+  update_config_guess
+
+  configure(*configure_command, env: env)
 
   make "-j #{workers}", env: env
   make "install", env: env

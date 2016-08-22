@@ -1,5 +1,5 @@
 #
-# Copyright 2012-2015 Chef Software, Inc.
+# Copyright 2013-2014 Chef Software, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,32 +14,32 @@
 # limitations under the License.
 #
 
-name "libyaml"
-default_version "0.1.6"
+name "pkg-config-lite"
+default_version "0.28-1"
 
-license "MIT"
-license_file "LICENSE"
+license "GPL-2.0"
+license_file "COPYING"
 skip_transitive_dependency_licensing true
 
 dependency "config_guess"
 
-source url: "http://pyyaml.org/download/libyaml/yaml-#{version}.tar.gz",
-       md5: "5fe00cda18ca5daeb43762b80c38e06e"
+version "0.28-1" do
+  source md5: "61f05feb6bab0a6bbfab4b6e3b2f44b6"
+end
 
-relative_path "yaml-#{version}"
+source url: "http://downloads.sourceforge.net/project/pkgconfiglite/#{version}/pkg-config-lite-#{version}.tar.gz"
+
+relative_path "pkg-config-lite-#{version}"
 
 build do
   env = with_standard_compiler_flags(with_embedded_path)
 
-  update_config_guess(target: "config")
+  update_config_guess
 
-  configure "--enable-shared", env: env
-
-  # Windows had worse automake/libtool version issues.
-  # Just patch the output instead.
-  if version == "0.1.6" && windows?
-    patch source: "v0.1.6.windows-configure.patch", plevel: 1, env: env
-  end
+  command "./configure" \
+          " --prefix=#{install_dir}/embedded" \
+          " --disable-host-tool" \
+          " --with-pc-path=#{install_dir}/embedded/bin/pkgconfig", env: env
 
   make "-j #{workers}", env: env
   make "-j #{workers} install", env: env

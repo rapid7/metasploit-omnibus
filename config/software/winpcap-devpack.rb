@@ -28,6 +28,6 @@ source url: "https://www.winpcap.org/install/bin/WpdPack_4_1_2.zip"
 build do
 
   copy "#{project_dir}/Lib/*", "#{install_dir}/embedded/lib"
-  copy "#{project_dir}/Include/*", "#{install_dir}/embedded/include/ruby-2.1.0"
+  copy "#{project_dir}/Include/*", "#{install_dir}/embedded/include/ruby-2.3.0"
 
 end

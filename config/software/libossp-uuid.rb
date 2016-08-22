@@ -14,37 +14,30 @@
 # limitations under the License.
 #
 
-name "gdbm"
-default_version "1.8.3"
+name "libossp-uuid"
+default_version "1.6.2"
+
+license "MIT"
+license_file "README"
 
 dependency "config_guess"
 
-# Version 1.9 and above are GPLv3, do NOT add later versions in
-version("1.8.3") { source sha256: "cc340338a2e28b40058ab9eb5354a21d53f88a1582ea21ba0bb185c37a281dc9" }
+version "1.6.2" do
+  source md5: "5db0d43a9022a6ebbbc25337ae28942f"
+end
 
-source url: "https://ftp.gnu.org/gnu/gdbm/gdbm-#{version}.tar.gz"
+# ftp on ftp.ossp.org is unavaiable so we must use another mirror site.
+source url: "https://www.mirrorservice.org/sites/ftp.ossp.org/pkg/lib/uuid/uuid-#{version}.tar.gz"
 
-relative_path "gdbm-#{version}"
+relative_path "uuid-#{version}"
 
 build do
   env = with_standard_compiler_flags(with_embedded_path)
 
-  if version == "1.8.3"
-    patch source: "v1.8.3-Makefile.in.patch", plevel: 0, env: env
-  end
-
   update_config_guess
 
-  if freebsd?
-    command "./configure" \
-            " --enable-libgdbm-compat" \
-            " --with-pic" \
-            " --prefix=#{install_dir}/embedded", env: env
-  else
-    command "./configure" \
-            " --enable-libgdbm-compat" \
-            " --prefix=#{install_dir}/embedded", env: env
-  end
+  command "./configure" \
+          " --prefix=#{install_dir}/embedded", env: env
 
   make "-j #{workers}", env: env
   make "install", env: env

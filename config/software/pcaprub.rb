@@ -15,14 +15,12 @@
 #
 
 name "pcaprub"
-default_version "0.12.0"
+default_version "0.12.4"
 
+dependency "ruby"
 if windows?
-  dependency "ruby-windows"
-  dependency "ruby-windows-devkit"
   dependency "winpcap-devpack"
 else
-  dependency "ruby"
   dependency "libpcap"
 end
 
@@ -30,22 +28,6 @@ dependency "rubygems"
 
 build do
   env = with_standard_compiler_flags(with_embedded_path)
-  #env['CFLAGS'] += " -I#{install_dir}/embedded/include"
-
-#  if windows?
-    # use the 'fat' precompiled binary bundled with pcaprub
-    gem "install pcaprub" \
-      " --version '#{version}'", env: env
-#  else
-#    gem "install pcaprub" \
-#      " --version '#{version}'" \
-#      " --" \
-#      " --use-system-libraries" \
-#      " --with-xml2-lib=#{install_dir}/embedded/lib" \
-#      " --with-xml2-include=#{install_dir}/embedded/include/libxml2" \
-#      " --with-xslt-lib=#{install_dir}/embedded/lib" \
-#      " --with-xslt-include=#{install_dir}/embedded/include/libxslt" \
-#      " --with-iconv-dir=#{install_dir}/embedded" \
-#      " --with-zlib-dir=#{install_dir}/embedded", env: env
-#  end
+  gem "install pcaprub" \
+    " --version '#{version}'", env: env
 end

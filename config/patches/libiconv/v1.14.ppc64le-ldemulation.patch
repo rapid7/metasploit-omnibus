@@ -1,0 +1,90 @@
+diff --git a/configure b/configure
+index e511b04..2d92a70 100755
+--- a/configure
++++ b/configure
+@@ -8123,9 +8123,12 @@ s390*-*linux*|s390*-*tpf*|sparc*-*linux*)
+	  x86_64-*linux*)
+	    LD="${LD-ld} -m elf_x86_64"
+	    ;;
+-	  ppc*-*linux*|powerpc*-*linux*)
++	  ppc64-*linux*|powerpc64-*linux*)
+	    LD="${LD-ld} -m elf64ppc"
+	    ;;
++	  ppc64le-*linux*|powerpc64le-*linux*)
++	    LD="${LD-ld} -m elf64lppc"
++	    ;;
+	  s390*-*linux*|s390*-*tpf*)
+	    LD="${LD-ld} -m elf64_s390"
+	    ;;
+diff --git a/libcharset/configure b/libcharset/configure
+index 1064c38..c96e5f4 100755
+--- a/libcharset/configure
++++ b/libcharset/configure
+@@ -5954,9 +5954,12 @@ s390*-*linux*|s390*-*tpf*|sparc*-*linux*)
+	  x86_64-*linux*)
+	    LD="${LD-ld} -m elf_x86_64"
+	    ;;
+-	  ppc*-*linux*|powerpc*-*linux*)
++	  ppc64-*linux*|powerpc64-*linux*)
+	    LD="${LD-ld} -m elf64ppc"
+	    ;;
++	  ppc64le-*linux*|powerpc64le-*linux*)
++	    LD="${LD-ld} -m elf64lppc"
++	    ;;
+	  s390*-*linux*|s390*-*tpf*)
+	    LD="${LD-ld} -m elf64_s390"
+	    ;;
+diff --git a/libcharset/m4/libtool.m4 b/libcharset/m4/libtool.m4
+index dde344a..511a421 100644
+--- a/libcharset/m4/libtool.m4
++++ b/libcharset/m4/libtool.m4
+@@ -1301,9 +1301,12 @@ s390*-*linux*|s390*-*tpf*|sparc*-*linux*)
+	  x86_64-*linux*)
+	    LD="${LD-ld} -m elf_x86_64"
+	    ;;
+-	  ppc*-*linux*|powerpc*-*linux*)
++	  ppc64-*linux*|powerpc64-*linux*)
+	    LD="${LD-ld} -m elf64ppc"
+	    ;;
++	  ppc64le-*linux*|powerpc64le-*linux*)
++	    LD="${LD-ld} -m elf64lppc"
++	    ;;
+	  s390*-*linux*|s390*-*tpf*)
+	    LD="${LD-ld} -m elf64_s390"
+	    ;;
+diff --git a/m4/libtool.m4 b/m4/libtool.m4
+index dde344a..511a421 100644
+--- a/m4/libtool.m4
++++ b/m4/libtool.m4
+@@ -1301,9 +1301,12 @@ s390*-*linux*|s390*-*tpf*|sparc*-*linux*)
+	  x86_64-*linux*)
+	    LD="${LD-ld} -m elf_x86_64"
+	    ;;
+-	  ppc*-*linux*|powerpc*-*linux*)
++	  ppc64-*linux*|powerpc64-*linux*)
+	    LD="${LD-ld} -m elf64ppc"
+	    ;;
++	  ppc64le-*linux*|powerpc64le-*linux*)
++	    LD="${LD-ld} -m elf64lppc"
++	    ;;
+	  s390*-*linux*|s390*-*tpf*)
+	    LD="${LD-ld} -m elf64_s390"
+	    ;;
+diff --git a/preload/configure b/preload/configure
+index 4f4f01e..9fc293d 100755
+--- a/preload/configure
++++ b/preload/configure
+@@ -5966,9 +5966,12 @@ s390*-*linux*|s390*-*tpf*|sparc*-*linux*)
+	  x86_64-*linux*)
+	    LD="${LD-ld} -m elf_x86_64"
+	    ;;
+-	  ppc*-*linux*|powerpc*-*linux*)
++	  ppc64-*linux*|powerpc64-*linux*)
+	    LD="${LD-ld} -m elf64ppc"
+	    ;;
++	  ppc64le-*linux*|powerpc64le-*linux*)
++	    LD="${LD-ld} -m elf64lppc"
++	    ;;
+	  s390*-*linux*|s390*-*tpf*)
+	    LD="${LD-ld} -m elf64_s390"
+	    ;;

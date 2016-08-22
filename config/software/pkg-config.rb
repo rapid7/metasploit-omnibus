@@ -18,26 +18,29 @@ name "pkg-config"
 default_version "0.28"
 
 dependency "libiconv"
+dependency "config_guess"
+
+version "0.29" do
+  source md5: "77f27dce7ef88d0634d0d6f90e03a77f"
+end
 
 version "0.28" do
   source md5: "aa3c86e67551adc3ac865160e34a2a0d"
 end
 
-source url: "http://pkgconfig.freedesktop.org/releases/pkg-config-#{version}.tar.gz"
+source url: "https://pkgconfig.freedesktop.org/releases/pkg-config-#{version}.tar.gz"
 
 relative_path "pkg-config-#{version}"
 
 build do
   env = with_standard_compiler_flags(with_embedded_path)
 
-  if version == "0.28" && ppc64le?
-    patch source: "v0.28.ppc64le-configure.patch", plevel: 1
-  end
+  update_config_guess
 
   # pkg-config (at least up to 0.28) includes an older version of
   # libcharset/lib/config.charset that doesn't know about openbsd
   if openbsd?
-    patch source: "openbsd-charset.patch", plevel: 1
+    patch source: "openbsd-charset.patch", plevel: 1, env: env
   end
 
   command "./configure" \
@@ -46,7 +49,6 @@ build do
           " --disable-host-tool" \
           " --with-internal-glib" \
           " --with-pc-path=#{install_dir}/embedded/bin/pkgconfig", env: env
-
 
   # #203: pkg-configs internal glib does not provide a way to pass ldflags.
   # Only allows GLIB_CFLAGS and GLIB_LIBS.
