@@ -11,6 +11,6 @@ before_install:
 script:
   - ./bin/omnibus build metasploit
 rvm:
-  - '2.1'
+  - '2.3'
 #notifications:
 #  irc: "irc.freenode.org#msfnotify"
