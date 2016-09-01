@@ -103,4 +103,8 @@ unset GEM_ROOT
 unset RUBY_ENGINE
 unset RUBY_ROOT
 PATH=$BIN:$SCRIPTDIR:$PATH
-$BIN/ruby $FRAMEWORK/$cmd "$@"
+if [ -e $FRAMEWORK/$cmd ]; then
+  $BIN/ruby $FRAMEWORK/$cmd "$@"
+else
+  $BIN/ruby $BIN/$cmd "$@"
+fi
