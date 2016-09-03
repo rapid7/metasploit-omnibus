@@ -15,6 +15,10 @@ set RUBY_ENGINE=
 set RUBY_ROOT=
 set PATH=%BIN%;%PATH%
 
-ruby %FRAMEWORK%\%CMD% %*
+if exist %FRAMEWORK%\%CMD% (
+  ruby %FRAMEWORK%\%CMD% %*
+) else (
+  ruby %BIN%\%CMD% %*
+)
 
 endlocal
