@@ -4,4 +4,10 @@ INSTALL_DIR="<%= install_dir %>"
 PATH="$INSTALL_DIR/embedded/bin:$PATH"
 export PATH
 
+unset GEM_HOME
+unset GEM_PATH
+unset GEM_ROOT
+unset RUBY_ENGINE
+unset RUBY_ROOT
+
 ruby "$INSTALL_DIR/embedded/framework/msfdb" "$@"
