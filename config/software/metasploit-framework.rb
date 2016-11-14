@@ -23,8 +23,10 @@ end
 # This depends on extra system libraries on OS X
 whitelist_file "#{install_dir}//embedded/framework/data/isight.bundle"
 
+# This depends on libfuse
+whitelist_file "#{install_dir}/embedded/framework/data/data/exploits/CVE-2016-4557/hello"
+
 # This depends on Openssl 1.x
-whitelist_file "#{install_dir}/embedded/framework/data/john/.*"
 whitelist_file "#{install_dir}/embedded/lib/ruby/gems/2.1.0/gems/metasploit-payloads.*"
 
 build do
