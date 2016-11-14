@@ -21,7 +21,7 @@ else
 end
 
 # This depends on extra system libraries on OS X
-whitelist_file "#{install_dir}/embedded/framework/data/isight.bundle"
+whitelist_file "#{install_dir}//embedded/framework/data/isight.bundle"
 
 # This depends on libfuse
 whitelist_file "#{install_dir}/embedded/framework/data/exploits/CVE-2016-4557/hello"
