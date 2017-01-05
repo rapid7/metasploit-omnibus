@@ -14,7 +14,6 @@ if windows?
 else
   dependency "liblzma"
   dependency "libxslt"
-  dependency "nokogiri"
   dependency "ruby"
   dependency "postgresql"
   dependency "sqlite"
@@ -27,7 +26,7 @@ whitelist_file "#{install_dir}//embedded/framework/data/isight.bundle"
 whitelist_file "#{install_dir}/embedded/framework/data/exploits/CVE-2016-4557/hello"
 
 # This depends on Openssl 1.x
-whitelist_file "#{install_dir}/embedded/lib/ruby/gems/2.1.0/gems/metasploit-payloads.*"
+whitelist_file "#{install_dir}/embedded/lib/ruby/gems/2.3.0/gems/metasploit-payloads.*"
 
 build do
   copy "#{project_dir}", "#{install_dir}/embedded/framework"
@@ -55,7 +54,5 @@ build do
 
   if windows?
     delete "#{install_dir}/devkit"
-  else
-    command "chmod o+r #{install_dir}/embedded/lib/ruby/gems/2.1.0/gems/robots-0.10.1/lib/robots.rb"
   end
 end

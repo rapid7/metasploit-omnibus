@@ -15,7 +15,7 @@
 #
 
 name "ruby-windows"
-default_version "2.1.7"
+default_version "2.3.3"
 
 relative_path "ruby-#{version}-i386-mingw32"
 
@@ -45,6 +45,10 @@ end
 
 version "2.2.1" do
   source md5: "9f1beca535b2e60098d826eb7cb1b972"
+end
+
+version "2.3.3" do
+  source sha256: "9f1beca535b2e60098d826eb7cb1b972"
 end
 
 source url: "http://dl.bintray.com/oneclick/rubyinstaller/ruby-#{version}-i386-mingw32.7z?direct"

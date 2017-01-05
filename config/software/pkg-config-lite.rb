@@ -1,5 +1,5 @@
 #
-# Copyright 2012-2014 Chef Software, Inc.
+# Copyright 2013-2014 Chef Software, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,44 +14,33 @@
 # limitations under the License.
 #
 
-name "libxml2"
-default_version "2.9.4"
+name "pkg-config-lite"
+default_version "0.28-1"
 
-license "MIT"
+license "GPL-2.0"
 license_file "COPYING"
 skip_transitive_dependency_licensing true
 
-dependency "zlib"
-dependency "libiconv"
-dependency "liblzma"
 dependency "config_guess"
 
-version "2.9.4" do
-  source md5: "ae249165c173b1ff386ee8ad676815f5"
+version "0.28-1" do
+  source md5: "61f05feb6bab0a6bbfab4b6e3b2f44b6"
 end
 
-version "2.9.3" do
-  source md5: "daece17e045f1c107610e137ab50c179"
-end
+source url: "http://downloads.sourceforge.net/project/pkgconfiglite/#{version}/pkg-config-lite-#{version}.tar.gz"
 
-source url: "ftp://xmlsoft.org/libxml2/libxml2-#{version}.tar.gz"
-
-relative_path "libxml2-#{version}"
+relative_path "pkg-config-lite-#{version}"
 
 build do
   env = with_standard_compiler_flags(with_embedded_path)
 
-  configure_command = [
-    "--with-zlib=#{install_dir}/embedded",
-    "--with-iconv=#{install_dir}/embedded",
-    "--without-python",
-    "--without-icu",
-  ]
-
   update_config_guess
 
-  configure(*configure_command, env: env)
+  command "./configure" \
+          " --prefix=#{install_dir}/embedded" \
+          " --disable-host-tool" \
+          " --with-pc-path=#{install_dir}/embedded/bin/pkgconfig", env: env
 
   make "-j #{workers}", env: env
-  make "install", env: env
+  make "-j #{workers} install", env: env
 end
