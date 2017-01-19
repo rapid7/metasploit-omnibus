@@ -24,8 +24,8 @@ skip_transitive_dependency_licensing true
 dependency "zlib"
 dependency "openssl"
 dependency "libedit"
+dependency "libuuid" unless mac_os_x?
 dependency "ncurses"
-dependency "libossp-uuid"
 dependency "config_guess"
 
 version "9.2.14" do
@@ -117,7 +117,7 @@ build do
           " --prefix=#{install_dir}/embedded" \
           " --with-libedit-preferred" \
           " --with-openssl" \
-          " --with-ossp-uuid" \
+          " --with-uuid=e2fs" \
           " --with-includes=#{install_dir}/embedded/include" \
           " --with-libraries=#{install_dir}/embedded/lib", env: env
 
