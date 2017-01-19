@@ -2,7 +2,7 @@ source 'https://rubygems.org'
 
 # Install omnibus
 # gem 'omnibus', '~> 4.0'
-gem 'omnibus', github: 'rapid7/omnibus', branch: 'master'
+gem 'omnibus', git: 'https://github.com/rapid7/omnibus'
 
 # Use Chef's software definitions. It is recommended that you write your own
 # software definitions, but you can clone/fork Chef's to get you started.
@@ -14,10 +14,10 @@ gem 'omnibus', github: 'rapid7/omnibus', branch: 'master'
 # by running `bundle install --without development` to speed up build times.
 group :development do
   # Use Berkshelf for resolving cookbook dependencies
-  gem 'berkshelf', '~> 3.0'
+  gem 'berkshelf'
 
   # Use Test Kitchen with Vagrant for converging the build environment
-  gem 'test-kitchen',    '~> 1.2'
-  gem 'kitchen-vagrant', '~> 0.14'
-  gem 'vagrant-wrapper', '~> 2.0.2'
+  gem 'test-kitchen'
+  gem 'kitchen-vagrant'
+  gem 'vagrant-wrapper'
 end
