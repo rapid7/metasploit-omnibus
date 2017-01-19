@@ -20,4 +20,6 @@ group :development do
   gem 'test-kitchen'
   gem 'kitchen-vagrant'
   gem 'vagrant-wrapper'
+
+  gem 'nio4r', '~> 1.2.1'
 end
