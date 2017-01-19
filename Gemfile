@@ -14,7 +14,7 @@ gem 'omnibus', git: 'https://github.com/rapid7/omnibus'
 # by running `bundle install --without development` to speed up build times.
 group :development do
   # Use Berkshelf for resolving cookbook dependencies
-  gem 'berkshelf'
+  gem 'berkshelf', '~> 3.0'
 
   # Use Test Kitchen with Vagrant for converging the build environment
   gem 'test-kitchen'
