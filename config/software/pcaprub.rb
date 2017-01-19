@@ -17,10 +17,12 @@
 name "pcaprub"
 default_version "0.12.4"
 
-dependency "ruby"
 if windows?
+  dependency "ruby-windows"
+  dependency "ruby-windows-devkit"
   dependency "winpcap-devpack"
 else
+  dependency "ruby"
   dependency "libpcap"
 end
 

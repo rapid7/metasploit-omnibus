@@ -20,7 +20,12 @@ license "MIT"
 license_file "https://raw.githubusercontent.com/rubygems/rubygems/master/LICENSE.txt"
 skip_transitive_dependency_licensing true
 
-dependency "ruby"
+if windows?
+  dependency "ruby-windows"
+  dependency "ruby-windows-devkit"
+else
+  dependency "ruby"
+end
 
 if version && !source
   # NOTE: 2.1.11 is the last version of rubygems before the 2.2.x change to native gem install location
