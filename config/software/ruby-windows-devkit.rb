@@ -56,7 +56,6 @@ build do
   # many gems that ship with native extensions assume tar will be available
   # in the PATH.
   {
-    "tar.exe"          => "bsdtar.exe",
     "libarchive-2.dll" => "libarchive-2.dll",
     "libexpat-1.dll"   => "libexpat-1.dll",
     "liblzma-1.dll"    => "liblzma-1.dll",
