@@ -18,7 +18,7 @@ name "postgresql-windows"
 default_version "9.6.1"
 
 version "9.6.1" do
-  source sha256: "ad5364ce2c0fa9a489dd907516f9116243c278d7b887fb7d5f469b0d060ba4a9"
+  source sha256: "16a5b97579587bf6c6ab98788b0c95e55398e87a75b990089522d4837b2da0f4"
 end
 
 version "9.4.6" do
