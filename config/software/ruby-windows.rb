@@ -48,7 +48,7 @@ version "2.2.1" do
 end
 
 version "2.3.3" do
-  source sha256: "9f1beca535b2e60098d826eb7cb1b972"
+  source sha256: "5022ef928f0296abede90f1cf4346250d69f6298c648cad6279938f64eca29fa"
 end
 
 source url: "http://dl.bintray.com/oneclick/rubyinstaller/ruby-#{version}-i386-mingw32.7z?direct"
@@ -66,7 +66,7 @@ build do
   # to turn off the warning message
   # We are only removing dl.rb:8
   # => warn "DL is deprecated, please use Fiddle"
-  if version.start_with? "2"
+  if version.start_with? "2.1"
     block do
       require 'digest/md5'
 
