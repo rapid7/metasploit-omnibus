@@ -47,6 +47,8 @@ build do
   command "echo - #{install_dir}/embedded > config.yml", cwd: embedded_dir
   ruby "dk.rb install", env: env, cwd: embedded_dir
 
+  mkdir "#{install_dir}/bin"
+
   # Normally we would symlink the required unix tools.
   # However with the introduction of git-cache to speed up omnibus builds,
   # we can't do that anymore since git on windows doesn't support symlinks.
@@ -56,6 +58,7 @@ build do
   # many gems that ship with native extensions assume tar will be available
   # in the PATH.
   {
+    "tar.exe"          => "bsdtar.exe",
     "libarchive-2.dll" => "libarchive-2.dll",
     "libexpat-1.dll"   => "libexpat-1.dll",
     "liblzma-1.dll"    => "liblzma-1.dll",
