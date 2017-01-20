@@ -168,7 +168,7 @@ build do
     patch source: "ruby-fix-reserve-stack-segfault.patch", plevel: 1, env: patch_env
   end
 
-  configure_command = ["--with-out-ext=dbm,tk",
+  configure_command = ["--with-out-ext=dbm,tk,readline",
                        "--enable-shared",
                        "--disable-install-doc",
                        "--without-gmp",
