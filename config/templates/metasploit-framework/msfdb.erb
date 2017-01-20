@@ -171,6 +171,7 @@ EOF
   run_psql("alter user msf createdb")
   run_psql("alter user msftest createdb")
   run_cmd("#{@bin}/createdb -p #{@dbport} -O #{msf_user} -h localhost msf")
+  run_cmd("#{@bin}/createdb -p #{@dbport} -O #{msftest_user} -h localhost msf")
 
   puts 'Creating initial database schema'
   Dir.chdir(@framework) do
