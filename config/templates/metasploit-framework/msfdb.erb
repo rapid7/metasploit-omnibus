@@ -13,6 +13,7 @@ end
 @base = '<%= install_dir %>'
 @embedded = "#{@base}/embedded"
 @bin = "#{@embedded}/bin"
+@prev_bin = "#{@embedded}/postgresql-prev/bin"
 @framework = "#{@embedded}/framework"
 
 @localconf = "#{ENV['HOME']}/.msf4"
@@ -21,12 +22,25 @@ end
 @dbport = 5433
 @pg_ctl = "#{@bin}/pg_ctl"
 
+@msf_user = 'msf'
+@msftest_user = 'msftest'
+
+
 def run_cmd(cmd)
   exitstatus = 0
 
+  err = out = ""
   Open3.popen3(cmd) do |stdin, stdout, stderr, wait_thr|
+    err = stderr.read
+    out = stdout.read
     exitstatus = wait_thr.value.exitstatus
   end
+
+#  if exitstatus != 0
+#    puts "'#{cmd}' returned #{exitstatus}"
+#    puts out
+#    puts err
+#  end
 
   exitstatus
 end
@@ -55,34 +69,49 @@ def status_db
   end
 end
 
+def started_db
+  if run_cmd("#{@pg_ctl} -o \"-p #{@dbport}\" -D #{@db} status") == 0
+    puts "Database already started at #{@db}"
+    return true
+  end
+
+  print "Starting database at #{@db}..."
+  run_cmd("#{@pg_ctl} -o \"-p #{@dbport}\" -D #{@db} -l #{@db}/log start")
+  sleep(2)
+  if run_cmd("#{@pg_ctl} -o \"-p #{@dbport}\" -D #{@db} status") != 0
+    puts 'failed'
+    false
+  else
+    puts 'success'
+    true
+  end
+end
+
 def start_db
-  if Dir.exist?(@db)
-    if run_cmd("#{@pg_ctl} -o \"-p #{@dbport}\" -D #{@db} status") == 0
-      puts "Database already started at #{@db}"
-    else
-      puts "Starting database at #{@db}"
-      run_cmd("#{@pg_ctl} -o \"-p #{@dbport}\" -D #{@db} -l #{@db}/log start")
-      sleep(2)
-      unless run_cmd("#{@pg_ctl} -o \"-p #{@dbport}\" -D #{@db} status")
-        print 'The database failed to start: '
-        puts tail("#{@db}/log")
-        loop do
-          print 'If your database is corrupt, would you to reinitialize it? '
-          yn = STDIN.gets
-          case yn
-          when /^[Yy]/
-            reinit_db
-            break
-          when /^[Nn]/
-            break
-          else
-            puts 'Please answer yes or no.'
-          end
-        end
+  if !Dir.exist?(@db)
+    puts "No database found at #{@db}, not starting"
+    return
+  end
+
+  while !started_db
+    last_log = tail("#{@db}/log")
+    puts last_log
+    fixed = false
+    if last_log =~ /not compatible/
+      if ask_yn('Attempt to upgrade the database?')
+        fixed = upgrade_db
       end
     end
-  else
-    puts "No database found at #{@db}, not starting"
+    if !fixed
+      if ask_yn('If your database is corrupt, would you to reinitialize it?')
+        fixed = reinit_db
+      end
+    end
+    if !fixed
+      if !ask_yn('Database not started, try again?')
+        return
+      end
+    end
   end
 end
 
@@ -95,6 +124,37 @@ def stop_db
   end
 end
 
+def create_db
+  puts "Creating database at #{@db}"
+  Dir.mkdir(@db)
+  run_cmd("#{@bin}/initdb --auth-host=trust --auth-local=trust -E UTF8 #{@db}")
+
+  File.open("#{@db}/pg_hba.conf", 'a') do |f|
+    f.puts "host    \"msf\"      \"#{@msf_user}\"      127.0.0.1/32           md5"
+    f.puts "host    \"msftest\"  \"#{@msftest_user}\"  127.0.0.1/32           md5"
+  end
+
+  File.open("#{@db}/postgresql.conf", 'a') do |f|
+    f.puts "port = #{@dbport}"
+  end
+end
+
+def upgrade_db
+  prev_db = "#{@db}.prev"
+  FileUtils.rm_rf(prev_db)
+  FileUtils.mv(@db, prev_db)
+  puts "Moved old database to #{prev_db}"
+  print "Upgrading..."
+  create_db
+  if run_cmd("#{@bin}/pg_upgrade -d #{prev_db} -D #{@db} -b #{@prev_bin} -B #{@bin}") == 0
+    puts "successful, starting..."
+    true
+  else
+    puts "unsuccessful"
+    false
+  end
+end
+
 def init_db
   if Dir.exist?(@db)
     puts "Found a database at #{@db}, checking to see if it is started"
@@ -103,22 +163,10 @@ def init_db
   end
 
   if File.exist?(@dbconf)
-    loop do
-      print "Found a database config at #{@dbconf}, do you want to overwrite it? "
-      yn = STDIN.gets
-      case yn
-      when /^[Yy]/
-        break
-      when /^[Nn]/
-        return
-      else
-        puts 'Please answer yes or no.'
-      end
+    if !ask_yn("Found database config at #{@dbconf}, do you want to overwrite it?")
+      return
     end
   end
-
-  msf_user = 'msf'
-  msftest_user = 'msftest'
 
   # Generate new database passwords
   msf_pass = pw_gen
@@ -130,8 +178,8 @@ def init_db
 development: &pgsql
   adapter: postgresql
   database: msf
-  username: #{msf_user}
-  password: #{msf_pass}
+  username: #{@msf_user}
+  password: #{@msf_pass}
   host: localhost
   port: #{@dbport}
   pool: 200
@@ -143,35 +191,24 @@ production: &production
 test:
   <<: *pgsql
   database: msftest
-  username: #{msftest_user}
+  username: #{@msftest_user}
   password: #{msftest_pass}
 EOF
   end
 
   File.chmod(0640, @dbconf)
 
-  puts "Creating database at #{@db}"
-  Dir.mkdir(@db)
-  run_cmd("#{@bin}/initdb --auth-host=trust --auth-local=trust -E UTF8 #{@db}")
-
-  File.open("#{@db}/pg_hba.conf", 'a') do |f|
-    f.puts "host    \"msf\"      \"#{msf_user}\"      127.0.0.1/32           md5"
-    f.puts "host    \"msftest\"  \"#{msftest_user}\"  127.0.0.1/32           md5"
-  end
-
-  File.open("#{@db}/postgresql.conf", 'a') do |f|
-    f.puts "port = #{@dbport}"
-  end
+  create_db
 
   start_db
 
   puts 'Creating database users'
-  run_psql("create user #{msf_user} with password '#{msf_pass}'")
-  run_psql("create user #{msftest_user} with password '#{msftest_pass}'")
+  run_psql("create user #{@msf_user} with password '#{msf_pass}'")
+  run_psql("create user #{@msftest_user} with password '#{msftest_pass}'")
   run_psql("alter user msf createdb")
   run_psql("alter user msftest createdb")
-  run_cmd("#{@bin}/createdb -p #{@dbport} -O #{msf_user} -h localhost msf")
-  run_cmd("#{@bin}/createdb -p #{@dbport} -O #{msftest_user} -h localhost msf")
+  run_cmd("#{@bin}/createdb -p #{@dbport} -O #{@msf_user} -h localhost msf")
+  run_cmd("#{@bin}/createdb -p #{@dbport} -O #{@msftest_user} -h localhost msftest")
 
   puts 'Creating initial database schema'
   Dir.chdir(@framework) do
@@ -179,23 +216,29 @@ EOF
   end
 end
 
+def ask_yn(question)
+  loop do
+    print "#{question}: "
+    yn = STDIN.gets
+    case yn
+    when /^[Yy]/
+      return true
+    when /^[Nn]/
+      return false
+    else
+      puts 'Please answer yes or no.'
+    end
+  end
+end
+
+
 def delete_db
   if Dir.exist?(@db)
     puts "Deleting all data at #{@db}"
     stop_db
     FileUtils.rm_rf(@db)
-    loop do
-    print "Delete #{@dbconf}? "
-      yn = STDIN.gets
-      case yn
-      when /^[Yy]/
-        File.delete(@dbconf)
-        break
-      when /^[Nn]/
-        break
-      else
-        puts 'Please answer yes or no.'
-      end
+    if ask_yn("Delete datase configuration at #{@dbconf}?")
+      File.delete(@dbconf)
     end
   else
     puts "No data at #{@db}, doing nothing"
@@ -219,6 +262,7 @@ Manage a metasploit framework database
   #{prog} status  # check database status
   #{prog} start   # start the database
   #{prog} stop    # stop the database
+  #{prog} restart # restart the database
 
 EOF
   exit
@@ -241,6 +285,9 @@ when 'start'
   start_db
 when 'stop'
   stop_db
+when 'restart'
+  stop_db
+  start_db
 else
   puts "Error: unrecognized action '#{ARGV[0]}'"
   usage
