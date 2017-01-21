@@ -15,7 +15,7 @@
 #
 
 name "ncurses"
-default_version "5.9"
+default_version "6.0-20150810"
 
 license "MIT"
 license_file "http://invisible-island.net/ncurses/ncurses-license.html"
