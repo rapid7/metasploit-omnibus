@@ -27,9 +27,11 @@ source url: "http://get.enterprisedb.com/postgresql/postgresql-#{version}-1-wind
 
 build do
 
+  mkdir "#{install_dir}/embedded/postgresql-prev/bin"
   copy "#{project_dir}/bin/*", "#{install_dir}/embedded/postgresql-prev/bin"
+  mkdir "#{install_dir}/embedded/postgresql-prev/lib"
   copy "#{project_dir}/lib/*", "#{install_dir}/embedded/postgresql-prev/lib"
-  copy "#{project_dir}/include/*", "#{install_dir}/embedded/postgresql-prev/include"
+  mkdir "#{install_dir}/embedded/postgresql-prev/share"
   copy "#{project_dir}/share/*", "#{install_dir}/embedded/postgresql-prev/share"
 
 end
