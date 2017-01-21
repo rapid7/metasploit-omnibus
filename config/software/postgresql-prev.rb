@@ -14,8 +14,8 @@
 # limitations under the License.
 #
 
-name "postgresql"
-default_version "9.6.1"
+name "postgresql-prev"
+default_version "9.4.5"
 
 license "PostgreSQL"
 license_file "COPYRIGHT"
@@ -28,8 +28,8 @@ dependency "libuuid" unless mac_os_x?
 dependency "ncurses"
 dependency "config_guess"
 
-version "9.6.1" do
-  source sha256: "e5101e0a49141fc12a7018c6dad594694d3a3325f5ab71e93e0e51bd94e51fcd"
+version "9.4.5" do
+  source sha256: "b87c50c66b6ea42a9712b5f6284794fabad0616e6ae420cf0f10523be6d94a39"
 end
 
 source url: "https://ftp.postgresql.org/pub/source/v#{version}/postgresql-#{version}.tar.bz2"
@@ -42,12 +42,12 @@ build do
   update_config_guess(target: "config")
 
   command "./configure" \
-          " --prefix=#{install_dir}/embedded" \
+          " --prefix=#{install_dir}/embedded/postgresql-prev" \
           " --with-libedit-preferred" \
           " --with-openssl" \
           " --with-uuid=e2fs" \
-          " --with-includes=#{install_dir}/embedded/include" \
-          " --with-libraries=#{install_dir}/embedded/lib", env: env
+          " --with-includes=#{install_dir}/embedded/postgresql-prev/include" \
+          " --with-libraries=#{install_dir}/embedded/postgresql-prev/lib", env: env
 
   make "world -j #{workers}", env: env
   make "install-world", env: env
