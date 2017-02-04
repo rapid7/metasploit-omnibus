@@ -52,6 +52,9 @@ build do
       mode: 0755,
       vars: { install_dir: install_dir }
 
+  # Workaround broken Ruby 2.3 support for bcrypt on Windows
+  # https://github.com/codahale/bcrypt-ruby/issues/139
+  bundle "config build.bcrypt --platform=ruby"
   bundle "install"
 
   if windows?
