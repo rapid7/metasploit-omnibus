@@ -52,13 +52,15 @@ build do
       mode: 0755,
       vars: { install_dir: install_dir }
 
-  # Workaround broken Ruby 2.3 support for bcrypt on Windows
-  # https://github.com/codahale/bcrypt-ruby/issues/139
-  bundle "config build.bcrypt --platform=ruby"
   bundle "install"
 
   if windows?
     delete "#{install_dir}/devkit"
+
+    # Workaround broken Ruby 2.3 support for bcrypt on Windows
+    # https://github.com/codahale/bcrypt-ruby/issues/139
+    gem "uninstall bcrypt"
+    gem "install bcrypt --platform=ruby"
   else
     command "chmod o+r #{install_dir}/embedded/lib/ruby/gems/2.3.0/gems/robots-0.10.1/lib/robots.rb"
   end
