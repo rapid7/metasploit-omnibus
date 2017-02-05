@@ -52,13 +52,14 @@ build do
       mode: 0755,
       vars: { install_dir: install_dir }
 
-  bundle "install"
+  env = with_standard_compiler_flags(with_embedded_path)
+  bundle "install", env: env
 
   if windows?
     # Workaround missing Ruby 2.3 support for bcrypt on Windows
     # https://github.com/codahale/bcrypt-ruby/issues/139
-    gem "uninstall bcrypt"
-    gem "install bcrypt --platform=ruby"
+    gem "uninstall bcrypt", env: env
+    gem "install bcrypt --platform=ruby", env: env
 
     delete "#{install_dir}/devkit"
   else
