@@ -91,10 +91,6 @@ fi
 if [ $cmd = "msfconsole" ]; then
 # Uncomment to enable libedit support
 # cmd="$cmd -L"
-  if [ -n "`find $FRAMEWORK/$cmd -mmin +20160`" ]; then
-    (>&2 echo "This copy of metasploit-framework is more than two weeks old.")
-    (>&2 echo " Consider running 'msfupdate' to update to the latest version.")
-  fi
 fi
 
 unset GEM_HOME
