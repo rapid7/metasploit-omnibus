@@ -20,6 +20,8 @@ default_version "2.21"
 license "LGPL-2.1"
 license_file "COPYING"
 
+dependency "config_guess"
+
 source url: "https://www.kernel.org/pub/linux/utils/util-linux/v#{version}/util-linux-#{version}.tar.gz"
 
 # We use the version in util-linux, and only build the libuuid subdirectory
@@ -35,6 +37,8 @@ relative_path "util-linux-#{version}"
 
 build do
   env = with_standard_compiler_flags(with_embedded_path)
+
+  update_config_guess(target: "config")
 
   command "./configure --prefix=#{install_dir}/embedded", env: env
 
