@@ -13,7 +13,10 @@ unset RUBY_ROOT
 if [ -e /etc/os-release -a $(id -u) -eq 0 ]; then
   if grep -q kali /etc/os-release; then
     echo "Metasploit running on Kali Linux as root, using system database"
-	exec $INSTALL_DIR/embedded/framework/msfdb-kali "$@"
+    if [ ! -e /usr/share/metasploit-framework/config ]; then
+      mkdir -p /usr/share/metasploit-framework/config
+    fi
+    exec $INSTALL_DIR/embedded/framework/msfdb-kali "$@"
   fi
 fi
 
