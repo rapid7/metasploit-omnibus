@@ -10,4 +10,11 @@ unset GEM_ROOT
 unset RUBY_ENGINE
 unset RUBY_ROOT
 
+if [ -e /etc/os-release -a $(id -u) -eq 0 ]; then
+  if grep -q kali /etc/os-release; then
+    echo "Metasploit running on Kali Linux as root, using system database"
+	exec $INSTALL_DIR/embedded/framework/msfdb-kali "$@"
+  fi
+fi
+
 ruby "$INSTALL_DIR/embedded/framework/msfdb" "$@"
