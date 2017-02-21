@@ -1,0 +1,153 @@
+#!/bin/sh
+
+METASPLOIT_BASEDIR=/usr/share/metasploit-framework
+
+DB_CONF=$METASPLOIT_BASEDIR/config/database.yml
+DB_NAME=msf
+DB_USER=msf
+DB_PORT=5432
+PG_SERVICE=postgresql
+
+pw_gen() {
+    openssl rand -base64 32
+}
+
+pg_cmd() {
+    su - postgres -c "$*"
+}
+
+start_db() {
+    if ! service $PG_SERVICE status >/dev/null; then
+	service $PG_SERVICE start
+    fi
+}
+
+stop_db() {
+    if service $PG_SERVICE status >/dev/null; then
+	service $PG_SERVICE stop
+    fi
+}
+
+db_exists() {
+    if pg_cmd "psql -lqt" | cut -d \| -f 1 | grep -qw $1; then
+	return 0
+    fi
+    return 1
+}
+
+user_exists() {
+    if echo "SELECT usename FROM pg_user;" | pg_cmd "psql -qt postgres" | grep -qw $1; then
+	return 0
+    fi
+    return 1
+}
+
+init_db() {
+    start_db
+    if [ -e $DB_CONF ]; then
+	echo "A database appears to be already configured, skipping initialization" 
+	return
+    fi
+    DB_PASS=$(pw_gen)
+    if user_exists $DB_USER; then
+	echo "Resetting password of database user '$DB_USER'"
+	printf "ALTER ROLE $DB_USER WITH PASSWORD '$DB_PASS';\n" | pg_cmd psql postgres >/dev/null
+    else
+	echo "Creating database user '$DB_USER'"
+	printf "%s\n%s\n" "$DB_PASS" "$DB_PASS" | pg_cmd createuser -S -D -R -P $DB_USER >/dev/null
+    fi
+    echo "Creating databases '$DB_NAME' and '${DB_NAME}_test'"
+    if ! db_exists $DB_NAME; then
+	pg_cmd createdb $DB_NAME -O $DB_USER -T template0 -E UTF-8
+    fi
+    if ! db_exists ${DB_NAME}_test; then
+	pg_cmd createdb ${DB_NAME}_test -O $DB_USER -T template0 -E UTF-8
+    fi
+    echo "Creating configuration file in $DB_CONF"
+    cat > $DB_CONF <<-EOF
+development:
+  adapter: postgresql
+  database: $DB_NAME
+  username: $DB_USER
+  password: $DB_PASS
+  host: localhost
+  port: $DB_PORT
+  pool: 5
+  timeout: 5
+
+production:
+  adapter: postgresql
+  database: $DB_NAME
+  username: $DB_USER
+  password: $DB_PASS
+  host: localhost
+  port: $DB_PORT
+  pool: 5
+  timeout: 5
+
+test:
+  adapter: postgresql
+  database: ${DB_NAME}_test
+  username: $DB_USER
+  password: $DB_PASS
+  host: localhost
+  port: $DB_PORT
+  pool: 5
+  timeout: 5
+EOF
+    echo "Creating initial database schema"
+    cd $METASPLOIT_BASEDIR
+    bundle exec rake db:migrate >/dev/null
+}
+
+delete_db() {
+    start_db
+    if db_exists $DB_NAME; then
+	pg_cmd dropdb $DB_NAME
+    fi
+    if db_exists ${DB_NAME}_test; then
+	pg_cmd dropdb ${DB_NAME}_test
+    fi
+    if user_exists $DB_USER; then
+	pg_cmd dropuser $DB_USER
+    fi
+    rm -f $DB_CONF
+}
+
+reinit_db() {
+    delete_db
+    init_db
+}
+
+usage() {
+  PROG=`basename $0`
+  echo
+  echo "Manage a metasploit framework database"
+  echo
+  echo "  $PROG init    # initialize the database"
+  echo "  $PROG reinit  # delete and reinitialize the database"
+  echo "  $PROG delete  # delete database and stop using it"
+  echo "  $PROG start   # start the database"
+  echo "  $PROG stop    # stop the database"
+  echo
+  exit
+}
+
+if [ "$#" -ne 1 ]; then
+  usage
+fi
+
+if [ $(id -u) -ne 0 ]; then
+    echo "ERROR: $0: must be run as root"
+    exit 1
+fi
+
+case $1 in
+  init) init_db ;;
+  reinit) reinit_db ;;
+  delete) delete_db ;;
+  start) start_db ;;
+  stop) stop_db ;;
+  *) echo "Error: unrecognized action '${1}'"; usage ;;
+esac
+

@@ -52,6 +52,13 @@ build do
       mode: 0755,
       vars: { install_dir: install_dir }
 
+  unless windows?
+    erb source: 'msfdb-kali.erb',
+        dest: "#{install_dir}/embedded/framework/msfdb-kali",
+        mode: 0755,
+        vars: { install_dir: install_dir }
+  end
+
   env = with_standard_compiler_flags(with_embedded_path)
   bundle "install", env: env
 
