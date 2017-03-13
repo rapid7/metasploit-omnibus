@@ -1,3 +1,5 @@
+# To build the dev environment.
+# docker build -t rapid7/build:kali109_32-omnibus .
 FROM rapid7/build:kali109_32
 MAINTAINER Rapid7 Release Engineering <r7_re@rapid7.com>
 
@@ -45,3 +47,4 @@ RUN /bin/bash -l -c "gem install bundler --no-ri --no-rdoc"
 RUN git clone https://github.com/rapid7/metasploit-omnibus.git
 RUN /bin/bash -l -c "cd metasploit-omnibus && bundle install --binstubs"
 RUN rm -fr metasploit-omnibus
+RUN mkdir /metasploit-framework
