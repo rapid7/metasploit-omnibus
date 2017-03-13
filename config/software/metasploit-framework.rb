@@ -1,11 +1,11 @@
 name "metasploit-framework"
-source git: "https://github.com/rapid7/metasploit-framework.git"
-default_version "master"
-
-#default_version "release"
-#source url: "https://github.com/rapid7/metasploit-framework/archive/#{default_version}.tar.gz",
-#       md5: "8194917a8b5e53f9f72e8ba55df8c8cf"
-#relative_path "metasploit-framework-#{default_version}"
+if linux? && File.exist?("/metasploit-framework")
+  # supply current version of metasploit-framework at root of filesystem
+  source path: "/metasploit-framework"
+else
+  source git: "https://github.com/rapid7/metasploit-framework.git"
+  default_version "master"
+end
 
 dependency "bundler"
 dependency "pcaprub"

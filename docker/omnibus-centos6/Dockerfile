@@ -1,5 +1,7 @@
+# To build the dev environment.
+# docker build -t rapid7/build:msf-omnibus-centos .
 FROM centos:centos6
-MAINTAINER John E. Vincent
+MAINTAINER Rapid7 Release Engineering <r7_re@rapid7.com>
 
 VOLUME /pkg
 
@@ -77,3 +79,4 @@ RUN echo "%_signature gpg" > "$JENKINS_HOME/.rpmmacros" && \
 RUN chown -R jenkins "$JENKINS_HOME"
 
 ENV PATH /opt/chef/embedded/bin:$PATH
+RUN mkdir /metasploit-framework

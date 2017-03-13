@@ -12,6 +12,7 @@ pkg/*
 bin/*
 files/**/cache/
 vendor/cookbooks
+.idea
 
 # RVM management
 .ruby-version
