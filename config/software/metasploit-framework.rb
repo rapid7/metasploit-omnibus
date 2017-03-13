@@ -1,5 +1,5 @@
 name "metasploit-framework"
-if linux?
+if linux? && File.exist?("/metasploit-framework")
   # supply current version of metasploit-framework at root of filesystem
   source path: "/metasploit-framework"
 else
