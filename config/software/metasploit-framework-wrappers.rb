@@ -25,6 +25,7 @@ build do
   command "chmod +x #{install_dir}/bin/*"
 
   metasploit_bins = [
+        'metasploit-aggregator',
         'msfbinscan',
         'msfconsole',
         'msfd',
