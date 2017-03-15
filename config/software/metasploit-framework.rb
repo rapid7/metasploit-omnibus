@@ -61,6 +61,7 @@ build do
 
   env = with_standard_compiler_flags(with_embedded_path)
   bundle "install", env: env
+  copy "#{project_dir}/Gemfile.lock", "#{install_dir}/embedded/framework/Gemfile.lock"
 
   if windows?
     # Workaround missing Ruby 2.3 support for bcrypt on Windows
