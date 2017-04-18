@@ -103,6 +103,7 @@ if [ $cmd = "metasploit-aggregator" ]; then
     (>&2 echo "This platform is not supported at this time.")
     exit 0
   fi
+  FROM_CONSOLE_PATH=true
 fi
 
 unset GEM_HOME
@@ -114,5 +115,9 @@ PATH=$BIN:$SCRIPTDIR:$PATH
 if [ -e "$FRAMEWORK/$cmd" ]; then
   $BIN/ruby $FRAMEWORK/$cmd $db_args "$@"
 else
-  $BIN/ruby $BIN/$cmd $db_args "$@"
+  if [ "FROM_CONSOLE_PATH" = true ]; then
+    (cd $FRAMEWORK && $BIN/ruby $BIN/$cmd $db_args "$@")
+  else
+    $BIN/ruby $BIN/$cmd $db_args "$@"
+  fi
 fi
