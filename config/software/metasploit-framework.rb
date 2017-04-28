@@ -71,6 +71,6 @@ build do
 
     delete "#{install_dir}/devkit"
   else
-    command "chmod o+r #{install_dir}/embedded/lib/ruby/gems/2.3.0/gems/robots-0.10.1/lib/robots.rb"
+    command "chmod o+r #{install_dir}/embedded/lib/ruby/gems/2.4.0/gems/robots-0.10.1/lib/robots.rb"
   end
 end
