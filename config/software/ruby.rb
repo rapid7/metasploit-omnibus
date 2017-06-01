@@ -78,7 +78,7 @@ if mac_os_x?
   # a failure when it makes a test program to check your CFLAGS (regardless
   # of the actual exit code from the compiler).
   env["CFLAGS"] << " -I#{install_dir}/embedded/include/ncurses -arch x86_64 -m64 -O3 -g -pipe -Qunused-arguments"
-  env["LDFLAGS"] << " -arch x86_64"
+  env["LDFLAGS"] << " -arch x86_64 -no_weak_imports"
 elsif freebsd?
   # Stops "libtinfo.so.5.9: could not read symbols: Bad value" error when
   # compiling ext/readline. See the following for more info:
