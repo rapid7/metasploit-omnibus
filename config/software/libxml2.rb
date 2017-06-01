@@ -1,5 +1,5 @@
 #
-# Copyright 2012-2014 Chef Software, Inc.
+# Copyright 2012-2017, Chef Software Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ license_file "COPYING"
 skip_transitive_dependency_licensing true
 
 dependency "zlib"
-dependency "libiconv"
 dependency "liblzma"
 dependency "config_guess"
 
@@ -43,7 +42,7 @@ build do
 
   configure_command = [
     "--with-zlib=#{install_dir}/embedded",
-    "--with-iconv=#{install_dir}/embedded",
+    "--without-iconv",
     "--without-python",
     "--without-icu",
   ]

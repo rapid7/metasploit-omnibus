@@ -1,5 +1,5 @@
 #
-# Copyright 2012-2016 Chef Software, Inc.
+# Copyright 2012-2017, Chef Software Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,13 +22,7 @@ license_file "COPYING"
 license_file "LEGAL"
 skip_transitive_dependency_licensing true
 
-# - chef-client cannot use 2.2.x yet due to a bug in IRB that affects chef-shell on linux:
-#   https://bugs.ruby-lang.org/issues/11869
-# - the current status of 2.3.x is that it downloads but fails to compile.
-# - verify that all ffi libs are available for your version on all platforms.
 default_version "2.4.1"
-
-fips_enabled = (project.overrides[:fips] && project.overrides[:fips][:enabled]) || false
 
 dependency "ncurses" unless windows? || version.satisfies?(">= 2.1")
 dependency "zlib"
@@ -36,17 +30,15 @@ dependency "openssl"
 dependency "libedit"
 dependency "libffi"
 dependency "libyaml"
-# Needed for chef_gem installs of (e.g.) nokogiri on upgrades -
-# they expect to see our libiconv instead of a system version.
-# Ignore on windows - TDM GCC comes with libiconv in the runtime
-# and that's the only one we will ever use.
-dependency "libiconv"
 
 version("2.4.1")      { source sha256: "a330e10d5cb5e53b3a0078326c5731888bb55e32c4abfeb27d9e7f8e5d000250" }
+version("2.4.0")      { source sha256: "152fd0bd15a90b4a18213448f485d4b53e9f7662e1508190aa5b702446b29e3d" }
+
 version("2.3.3")      { source sha256: "241408c8c555b258846368830a06146e4849a1d58dcaf6b14a3b6a73058115b7" }
 version("2.3.1")      { source sha256: "b87c738cb2032bf4920fef8e3864dc5cf8eae9d89d8d523ce0236945c5797dcd" }
 version("2.3.0")      { source md5: "e81740ac7b14a9f837e9573601db3162" }
 
+version("2.2.6")      { source sha256: "de8e192791cb157d610c48a9a9ff6e7f19d67ce86052feae62b82e3682cc675f" }
 version("2.2.5")      { source md5: "bd8e349d4fb2c75d90817649674f94be" }
 version("2.2.4")      { source md5: "9a5e15f9d5255ba37ace18771b0a8dd2" }
 version("2.2.3")      { source md5: "150a5efc5f5d8a8011f30aa2594a7654" }
@@ -114,6 +106,9 @@ elsif solaris_10?
   else
     env["CFLAGS"] << " -std=c99 -O3 -g -pipe"
   end
+elsif solaris_11?
+  env["CFLAGS"] << " -std=c99"
+  env["CPPFLAGS"] << " -D_XOPEN_SOURCE=600 -D_XPG6"
 elsif windows?
   env["CPPFLAGS"] << " -DFD_SETSIZE=2048"
 else # including linux
@@ -169,14 +164,15 @@ build do
     patch source: "ruby-fix-reserve-stack-segfault.patch", plevel: 1, env: patch_env
   end
 
-  configure_command = ["--with-out-ext=dbm,tk,readline",
+  configure_command = ["--with-out-ext=dbm,readline",
                        "--enable-shared",
                        "--disable-install-doc",
                        "--without-gmp",
                        "--without-gdbm",
+                       "--without-tk",
                        "--disable-dtrace"]
   configure_command << "--with-ext=psych" if version.satisfies?("< 2.3")
-  configure_command << "--with-bundled-md5" if fips_enabled
+  configure_command << "--with-bundled-md5" if fips_mode?
 
   if aix?
     # need to patch ruby's configure file so it knows how to find shared libraries
@@ -243,15 +239,21 @@ build do
       dlls << "libgcc_s_seh-1"
     end
     dlls.each do |dll|
-      arch_suffix = windows_arch_i386? ? "32" : "64"
-      windows_path = "C:/msys2/mingw#{arch_suffix}/bin/#{dll}.dll"
+      mingw = ENV["MSYSTEM"].downcase
+      msys_path = ENV["OMNIBUS_TOOLCHAIN_INSTALL_DIR"] ? "#{ENV["OMNIBUS_TOOLCHAIN_INSTALL_DIR"]}/embedded/bin" : "C:/msys2"
+      windows_path = "#{msys_path}/#{mingw}/bin/#{dll}.dll"
       if File.exist?(windows_path)
         copy windows_path, "#{install_dir}/embedded/bin/#{dll}.dll"
       else
         raise "Cannot find required DLL needed for dynamic linking: #{windows_path}"
       end
     end
-  else
+
+    if version.satisfies?(">= 2.4")
+      %w{ erb gem irb rdoc ri }.each do |cmd|
+        copy "#{project_dir}/bin/#{cmd}", "#{install_dir}/embedded/bin/#{cmd}"
+      end
+    end
   end
 
 end

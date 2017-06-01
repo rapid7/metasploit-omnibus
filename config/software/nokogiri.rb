@@ -1,5 +1,4 @@
-#
-# Copyright 2012-2014 Chef Software, Inc.
+# Copyright 2012-2017, Chef Software Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,16 +14,18 @@
 #
 
 name "nokogiri"
-default_version "1.7.0.1"
 
-if windows?
-  dependency "ruby-windows"
-  dependency "ruby-windows-devkit"
-else
-  dependency "ruby"
+license "MIT"
+license_file "https://raw.githubusercontent.com/sparklemotion/nokogiri/master/LICENSE.md"
+# We install only nokogiri from rubygems here.
+skip_transitive_dependency_licensing true
+
+dependency "ruby"
+
+using_prebuilt_ruby = windows? && (project.overrides[:ruby].nil? || project.overrides[:ruby][:version] == "ruby-windows")
+unless using_prebuilt_ruby
   dependency "libxml2"
   dependency "libxslt"
-  dependency "libiconv"
   dependency "liblzma"
   dependency "zlib"
 end
@@ -57,23 +58,27 @@ dependency "rubygems"
 build do
   env = with_standard_compiler_flags(with_embedded_path)
 
-  if windows?
-    # use the 'fat' precompiled binary bundled with nokogiri
-    gem "install nokogiri" \
-      " --version '#{version}'", env: env
-  else
+  gem_command = [ "install nokogiri" ]
+  gem_command << "--version '#{version}'" unless version.nil?
+
+  # windows uses the 'fat' precompiled binaries'
+  unless using_prebuilt_ruby
     # Tell nokogiri to use the system libraries instead of compiling its own
     env["NOKOGIRI_USE_SYSTEM_LIBRARIES"] = "true"
 
-    gem "install nokogiri" \
-      " --version '#{version}'" \
-      " --" \
-      " --use-system-libraries" \
-      " --with-xml2-lib=#{install_dir}/embedded/lib" \
-      " --with-xml2-include=#{install_dir}/embedded/include/libxml2" \
-      " --with-xslt-lib=#{install_dir}/embedded/lib" \
-      " --with-xslt-include=#{install_dir}/embedded/include/libxslt" \
-      " --with-iconv-dir=#{install_dir}/embedded" \
-      " --with-zlib-dir=#{install_dir}/embedded", env: env
+    gem_command += [
+      "--",
+      "--use-system-libraries",
+      "--with-xml2-lib=#{install_dir}/embedded/lib",
+      "--with-xml2-include=#{install_dir}/embedded/include/libxml2",
+      "--with-xslt-lib=#{install_dir}/embedded/lib",
+      "--with-xslt-include=#{install_dir}/embedded/include/libxslt",
+      "--without-iconv",
+      "--with-zlib-dir=#{install_dir}/embedded",
+    ]
   end
+
+  gem gem_command.join(" "), env: env
+
+  delete "#{install_dir}/embedded/lib/ruby/gems/2.1.0/gems/mini_portile2-2.0.0/test"
 end

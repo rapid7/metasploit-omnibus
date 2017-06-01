@@ -15,7 +15,7 @@
 #
 
 name "postgresql"
-default_version "9.6.2"
+default_version "9.6.3"
 
 license "PostgreSQL"
 license_file "COPYRIGHT"
@@ -27,6 +27,10 @@ dependency "libedit"
 dependency "libuuid" unless mac_os_x?
 dependency "ncurses"
 dependency "config_guess"
+
+version "9.6.3" do
+  source sha256: "1645b3736901f6d854e695a937389e68ff2066ce0cde9d73919d6ab7c995b9c6"
+end
 
 version "9.6.2" do
   source sha256: "0187b5184be1c09034e74e44761505e52357248451b0c854dddec6c231fe50c9"
