@@ -31,8 +31,8 @@ def run_cmd(cmd)
 
   err = out = ""
   Open3.popen3(cmd) do |stdin, stdout, stderr, wait_thr|
-    err = stderr.read
-    out = stdout.read
+#    err = stderr.read
+#    out = stdout.read
     exitstatus = wait_thr.value.exitstatus
   end
 
