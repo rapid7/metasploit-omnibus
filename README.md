@@ -8,10 +8,14 @@ associated tools and modules.
 Installing the package
 ------------
 
-We are currently running nightly builds for .deb packages, with more to come soon. See USAGE.md for installation instructions.
+If you just want to install this package, we provide a number of pre-built binaries for Metasploit that are rebuilt every night. See https://github.com/rapid7/metasploit-framework/wiki/Nightly-Installers for installation information.
 
 Building the package
 ------------
+
+## Prerequisites
+
+This project has a package cache that should be pulled in before building. Run 'git submodule update -i' to download the git submodule that contains these packages. We cache these both for performance, and because occasionally upstream locations go away, and this allows the build to continue without broken dependencies.
 
 ## Building on Ubuntu / Debian systems
 In general, a build environment needs a working C/C++ compiler, Ruby 1.9 or higher and the ruby development headers, bundler, git, bison and flex. A quad-core CPU and 4GB of ram are recommended.
