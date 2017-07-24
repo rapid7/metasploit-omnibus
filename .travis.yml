@@ -2,6 +2,7 @@ language: ruby
 cache: bundler
 before_install:
   - bundle install --binstubs
+  - sudo apt install fakeroot
   - sudo mkdir /var/cache/omnibus
   - sudo chown travis /var/cache/omnibus
   - sudo mkdir /opt/metasploit-framework
