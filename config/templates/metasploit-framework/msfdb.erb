@@ -4,6 +4,8 @@ require 'fileutils'
 require 'open3'
 require 'securerandom'
 
+DEBUG = false
+
 # Bomb out if we're root
 if !Gem.win_platform? && Process.uid.zero?
   puts "Please run #{File.basename($0)} as a non-root user"
@@ -26,27 +28,35 @@ end
 @msftest_user = 'msftest'
 
 
-def run_cmd(cmd)
+def run_cmd(cmd, input = nil)
   exitstatus = 0
 
   err = out = ""
   Open3.popen3(cmd) do |stdin, stdout, stderr, wait_thr|
-#    err = stderr.read
-#    out = stdout.read
+    stdin.puts(input) if input
+    if DEBUG
+      err = stderr.read
+      out = stdout.read
+    end
     exitstatus = wait_thr.value.exitstatus
   end
 
-#  if exitstatus != 0
-#    puts "'#{cmd}' returned #{exitstatus}"
-#    puts out
-#    puts err
-#  end
+  if exitstatus != 0
+    if DEBUG
+      puts "'#{cmd}' returned #{exitstatus}"
+      puts out
+      puts err
+    end
+  end
 
   exitstatus
 end
 
 def run_psql(cmd)
   run_cmd("#{@bin}/psql -p #{@dbport} -c \"#{cmd};\" postgres")
+  if DEBUG
+    $stderr.puts "#{@bin}/psql -p #{@dbport} -c \"#{cmd};\" postgres"
+  end
 end
 
 def pw_gen
@@ -129,9 +139,11 @@ def create_db
   Dir.mkdir(@db)
   run_cmd("#{@bin}/initdb --auth-host=trust --auth-local=trust -E UTF8 #{@db}")
 
-  File.open("#{@db}/pg_hba.conf", 'a') do |f|
+  File.open("#{@db}/pg_hba.conf", 'w') do |f|
     f.puts "host    \"msf\"      \"#{@msf_user}\"      127.0.0.1/32           md5"
     f.puts "host    \"msftest\"  \"#{@msftest_user}\"  127.0.0.1/32           md5"
+    f.puts "local   all             all                                       trust"
+    f.puts "host    \"template1\"   all                127.0.0.1/32           trust"
   end
 
   File.open("#{@db}/postgresql.conf", 'a') do |f|
@@ -179,8 +191,8 @@ development: &pgsql
   adapter: postgresql
   database: msf
   username: #{@msf_user}
-  password: #{@msf_pass}
-  host: localhost
+  password: #{msf_pass}
+  host: 127.0.0.1
   port: #{@dbport}
   pool: 200
   timeout: 5
@@ -205,10 +217,14 @@ EOF
   puts 'Creating database users'
   run_psql("create user #{@msf_user} with password '#{msf_pass}'")
   run_psql("create user #{@msftest_user} with password '#{msftest_pass}'")
-  run_psql("alter user msf createdb")
-  run_psql("alter user msftest createdb")
-  run_cmd("#{@bin}/createdb -p #{@dbport} -O #{@msf_user} -h localhost msf")
-  run_cmd("#{@bin}/createdb -p #{@dbport} -O #{@msftest_user} -h localhost msftest")
+  run_psql("alter role msf createdb")
+  run_psql("alter role msftest createdb")
+  run_psql("alter role #{@msf_user} with password '#{msf_pass}'")
+  run_psql("alter role #{@msftest_user} with password '#{msftest_pass}'")
+  run_cmd("#{@bin}/createdb -p #{@dbport} -O #{@msf_user} -h 127.0.0.1 -U msf -E UTF-8 -T template0 msf",
+    "#{msf_pass}\n#{msf_pass}\n")
+  run_cmd("#{@bin}/createdb -p #{@dbport} -O #{@msftest_user} -h 127.0.0.1 -U msftest -E UTF-8 -T template0 msftest",
+    "#{msftest_pass}\n#{msftest_pass}\n")
 
   puts 'Creating initial database schema'
   Dir.chdir(@framework) do
@@ -237,7 +253,7 @@ def delete_db
     puts "Deleting all data at #{@db}"
     stop_db
     FileUtils.rm_rf(@db)
-    if ask_yn("Delete datase configuration at #{@dbconf}?")
+    if File.exist?(@dbconf) && ask_yn("Delete database configuration at #{@dbconf}?")
       File.delete(@dbconf)
     end
   else
