@@ -11,13 +11,11 @@ dependency "bundler"
 dependency "pcaprub"
 if windows?
   dependency "postgresql-windows"
-  dependency "postgresql-windows-prev"
 else
   dependency "liblzma"
   dependency "libxslt"
   dependency "ruby"
   dependency "postgresql"
-  dependency "postgresql-prev"
   dependency "sqlite"
 end
 
