@@ -3,6 +3,7 @@
 require 'fileutils'
 require 'open3'
 require 'securerandom'
+require 'yaml'
 
 DEBUG = false
 
@@ -101,6 +102,17 @@ def start_db
   if !Dir.exist?(@db)
     puts "No database found at #{@db}, not starting"
     return
+  end
+
+  if File.exist?(@dbconf)
+    config = YAML.load(File.read(@dbconf))
+    if config["production"] && config["production"]["port"]
+      port = config["production"]["port"]
+      if port != @dbport
+        puts "Using database port #{port}"
+        @dbport = port
+      end
+    end
   end
 
   while !started_db
