@@ -164,6 +164,10 @@ def create_db
 end
 
 def upgrade_db
+  unless File.exist?(@prev_bin)
+    puts "An old version of postgresql is not available, run 'msfdb reinit'"
+    return false
+  end
   prev_db = "#{@db}.prev"
   FileUtils.rm_rf(prev_db)
   FileUtils.mv(@db, prev_db)
