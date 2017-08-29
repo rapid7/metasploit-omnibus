@@ -67,7 +67,5 @@ build do
     gem "install bcrypt --platform=ruby", env: env
 
     delete "#{install_dir}/devkit"
-  else
-    command "chmod o+r #{install_dir}/embedded/lib/ruby/gems/2.4.0/gems/robots-0.10.1/lib/robots.rb"
   end
 end
