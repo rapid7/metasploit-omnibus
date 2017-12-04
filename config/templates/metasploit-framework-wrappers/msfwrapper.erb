@@ -91,6 +91,7 @@ fi
 if [ $cmd = "msfconsole" ]; then
 # Uncomment to enable libedit support
 # cmd="$cmd -L"
+  cmd="$cmd $db_args"
   if [ -n "`find $FRAMEWORK/$cmd -mmin +20160`" ]; then
     (>&2 echo "This copy of metasploit-framework is more than two weeks old.")
     (>&2 echo " Consider running 'msfupdate' to update to the latest version.")
@@ -113,11 +114,11 @@ unset RUBY_ENGINE
 unset RUBY_ROOT
 PATH=$BIN:$SCRIPTDIR:$PATH
 if [ -e "$FRAMEWORK/$cmd" ]; then
-  $BIN/ruby $FRAMEWORK/$cmd $db_args "$@"
+  $BIN/ruby $FRAMEWORK/$cmd "$@"
 else
   if [ "$FROM_CONSOLE_PATH" = true ]; then
-    (cd $FRAMEWORK && $BIN/ruby $BIN/$cmd $db_args "$@")
+    (cd $FRAMEWORK && $BIN/ruby $BIN/$cmd "$@")
   else
-    $BIN/ruby $BIN/$cmd $db_args "$@"
+    $BIN/ruby $BIN/$cmd "$@"
   fi
 fi
