@@ -155,8 +155,13 @@ def create_db
     f.puts "host    \"msf\"      \"#{@msf_user}\"      127.0.0.1/32           md5"
     f.puts "host    \"msftest\"  \"#{@msftest_user}\"  127.0.0.1/32           md5"
     f.puts "host    \"postgresql\"  \"#{@msftest_user}\"  127.0.0.1/32           md5"
-    f.puts "local   all             all                                       trust"
     f.puts "host    \"template1\"   all                127.0.0.1/32           trust"
+    if Gem.win_platform?
+      f.puts "host    all             all                127.0.0.1/32           trust"
+      f.puts "host    all             all                ::1/128                trust"
+    else
+      f.puts "local   all             all                                       trust"
+    end
   end
 
   File.open("#{@db}/postgresql.conf", 'a') do |f|
