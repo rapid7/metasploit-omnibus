@@ -207,6 +207,7 @@ def init_db
   msftest_pass = pw_gen
 
   # Write a default database config file
+  Dir.mkdir(@localconf) unless File.directory?(@localconf)
   File.open(@dbconf, 'w') do |f|
     f.puts <<EOF
 development: &pgsql
