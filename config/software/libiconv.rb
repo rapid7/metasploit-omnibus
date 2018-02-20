@@ -18,7 +18,7 @@
 # libiconv such that removal of libiconv will break those libraries on upgrade.  With an better story around
 # external gem handling when chef-client is upgraded libconv could be dropped.
 name "libiconv"
-default_version "1.14"
+default_version "1.15"
 
 license "LGPL-2.1"
 license_file "COPYING.LIB"
@@ -27,7 +27,7 @@ skip_transitive_dependency_licensing true
 dependency "config_guess"
 
 source url: "https://ftp.gnu.org/pub/gnu/libiconv/libiconv-#{version}.tar.gz",
-       md5: "e34509b1623cec449dfeb73d7ce9c6c6"
+       sha256: "ccf536620a45458d26ba83887a983b96827001e92a13847b45e4925cc8913178"
 
 relative_path "libiconv-#{version}"
 
@@ -39,18 +39,6 @@ build do
 
   update_config_guess(target: "build-aux")
   update_config_guess(target: "libcharset/build-aux")
-
-  if aix?
-    patch_env = env.dup
-    patch_env["PATH"] = "/opt/freeware/bin:#{env['PATH']}"
-    patch source: "libiconv-1.14_srclib_stdio.in.h-remove-gets-declarations.patch", env: patch_env
-  else
-    patch source: "libiconv-1.14_srclib_stdio.in.h-remove-gets-declarations.patch", env: env
-  end
-
-  if version == "1.14" && ppc64le?
-    patch source: "v1.14.ppc64le-ldemulation.patch", plevel: 1, env: env
-  end
 
   configure(env: env)
 
