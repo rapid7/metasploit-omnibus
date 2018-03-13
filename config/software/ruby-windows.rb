@@ -15,21 +15,16 @@
 #
 
 name "ruby-windows"
-default_version "2.4.3-1"
+default_version "2.4.3-2"
 
-relative_path "ruby-#{version}-x86"
+relative_path "rubyinstaller-#{version}-x86"
 
-version "2.4.3-1" do
-  source sha256: "5022ef928f0296abede90f1cf4346250d69f6298c648cad6279938f64eca29fa"
+version "2.4.3-2" do
+  source sha256: "ffd023d0aea50c3a9d7a4719c322aa46c4de54fdef55756264663ca74a7c13ea"
 end
 
 source url: "https://github.com/oneclick/rubyinstaller2/releases/download/rubyinstaller-#{version}/rubyinstaller-#{version}-x86.7z"
 
 build do
-
   sync "#{project_dir}/", "#{install_dir}/embedded"
-
-  msvcr = File.expand_path(File.join(Omnibus::Config.cache_dir, "msvcr120.dll"))
-  copy msvcr, "#{install_dir}/embedded/bin/"
-
 end
