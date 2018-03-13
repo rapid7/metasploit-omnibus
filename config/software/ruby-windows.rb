@@ -15,83 +15,16 @@
 #
 
 name "ruby-windows"
-default_version "2.3.3"
+default_version "2.4.3-2"
 
-relative_path "ruby-#{version}-i386-mingw32"
+relative_path "rubyinstaller-#{version}-x86"
 
-version "1.9.3-p484" do
-  source md5: "a0665113aaeea83f1c4bea02fcf16694"
+version "2.4.3-2" do
+  source sha256: "ffd023d0aea50c3a9d7a4719c322aa46c4de54fdef55756264663ca74a7c13ea"
 end
 
-version "2.0.0-p451" do
-  source md5: "37feadb0230e7f475a8591d1807ecfec"
-end
-
-version "2.1.3" do
-  source md5: "60e39aaab140c3a22abdc04ec2017968"
-end
-
-version "2.1.5" do
-  source md5: "fe6b596fc47f503b0c0c01ebed16cf65"
-end
-
-version "2.1.6" do
-  source md5: "e3c345a73e5523677a1f301caa4142eb"
-end
-
-version "2.1.7" do
-  source sha256: "cf6e9f4bb156e70df4dcb5052011296edeb16bf02a4a4e476899a03ceed9a248"
-end
-
-version "2.2.1" do
-  source md5: "9f1beca535b2e60098d826eb7cb1b972"
-end
-
-version "2.3.3" do
-  source sha256: "5022ef928f0296abede90f1cf4346250d69f6298c648cad6279938f64eca29fa"
-end
-
-source url: "http://dl.bintray.com/oneclick/rubyinstaller/ruby-#{version}-i386-mingw32.7z?direct"
+source url: "https://github.com/oneclick/rubyinstaller2/releases/download/rubyinstaller-#{version}/rubyinstaller-#{version}-x86.7z"
 
 build do
-
   sync "#{project_dir}/", "#{install_dir}/embedded"
-
-  msvcr = File.expand_path(File.join(Omnibus::Config.cache_dir, "msvcr120.dll"))
-  copy msvcr, "#{install_dir}/embedded/bin/"
-
-  # Ruby 2.X dl.rb gives an annoying warning message on Windows:
-  # DL is deprecated, please use Fiddle
-  # Since we don't have patch on windows we are manually patching the file
-  # to turn off the warning message
-  # We are only removing dl.rb:8
-  # => warn "DL is deprecated, please use Fiddle"
-  if version.start_with? "2.1"
-    block do
-      require 'digest/md5'
-
-      ABI_ver = version[/(^\d+\.\d+)/] + '.0'
-      dl_path = File.join(install_dir, "embedded/lib/ruby", ABI_ver, "dl.rb")
-
-      if Digest::MD5.hexdigest(File.read(dl_path)) == "78c185a3fcc7b5e2c3db697c85110d8f"
-        File.open(dl_path, "w") do |f|
-          f.print <<-E
-  require 'dl.so'
-
-  begin
-    require 'fiddle' unless Object.const_defined?(:Fiddle)
-  rescue LoadError
-  end
-
-  module DL
-    # Returns true if DL is using Fiddle, the libffi wrapper.
-    def self.fiddle?
-      Object.const_defined?(:Fiddle)
-    end
-  end
-  E
-        end
-      end
-    end
-  end
 end

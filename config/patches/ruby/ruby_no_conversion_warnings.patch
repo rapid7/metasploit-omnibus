@@ -1,0 +1,32 @@
+From fe28339fe58807d93fd78de0fdd6a41a298f8b91 Mon Sep 17 00:00:00 2001
+From: Steven Danna <steve@chef.io>
+Date: Mon, 26 Jun 2017 15:20:38 +0100
+Subject: [PATCH] Cast args of __builtin_expect to avoid GCC 4.1 warning
+
+GCC's -Wconversion will complain about RB_UNLIKELY and RB_LIKELY
+without this cast, causing some native gem compilations to
+fail. Notably, this was preventing nokogiri from building on EL-5.
+
+Signed-off-by: Steven Danna <steve@chef.io>
+---
+ include/ruby/defines.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/include/ruby/defines.h b/include/ruby/defines.h
+index a4da7ea014..70092a90cf 100644
+--- a/include/ruby/defines.h
++++ b/include/ruby/defines.h
+@@ -75,8 +75,8 @@ extern "C" {
+ 
+ /* likely */
+ #if __GNUC__ >= 3
+-#define RB_LIKELY(x)   (__builtin_expect(!!(x), 1))
+-#define RB_UNLIKELY(x) (__builtin_expect(!!(x), 0))
++#define RB_LIKELY(x)   (__builtin_expect((long int)!!(x), 1L))
++#define RB_UNLIKELY(x) (__builtin_expect((long int)!!(x), 0L))
+ #else /* __GNUC__ >= 3 */
+ #define RB_LIKELY(x)   (x)
+ #define RB_UNLIKELY(x) (x)
+-- 
+2.12.2
+
