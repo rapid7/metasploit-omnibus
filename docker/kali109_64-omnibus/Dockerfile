@@ -48,3 +48,6 @@ RUN git clone https://github.com/rapid7/metasploit-omnibus.git
 RUN /bin/bash -l -c "cd metasploit-omnibus && bundle install --binstubs"
 RUN rm -fr metasploit-omnibus
 RUN mkdir /metasploit-framework
+RUN /bin/bash -l -c "rvm install 2.4.1"
+RUN /bin/bash -l -c "rvm use 2.4.1 && gem install bundler --no-ri --no-rdoc"
+RUN /bin/bash -l -c "rvm use 2.4.1 && git clone https://github.com/rapid7/metasploit-omnibus.git && cd metasploit-omnibus && bundle install --binstubs && cd .. && rm -rf metasploit-omnibus"
