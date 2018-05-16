@@ -106,13 +106,13 @@ PATH=$BIN:$SCRIPTDIR:$PATH
 if [ -e "$FRAMEWORK/$cmd" ]; then
 
   if [ $cmd = "msfconsole" ]; then
-#   Uncomment to enable libedit support
-#   cmd="$cmd -L"
-    cmd="$cmd $db_args"
     if [ -n "`find $FRAMEWORK/$cmd -mmin +20160`" ]; then
       (>&2 echo "This copy of metasploit-framework is more than two weeks old.")
       (>&2 echo " Consider running 'msfupdate' to update to the latest version.")
     fi
+#   Uncomment to enable libedit support
+#   cmd="$cmd -L"
+    cmd="$cmd $db_args"
   fi
 
   $BIN/ruby $FRAMEWORK/$cmd "$@"
