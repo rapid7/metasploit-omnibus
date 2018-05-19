@@ -127,14 +127,8 @@ ID=`id -u`
 if [ -f /etc/redhat-release ] ; then
   PKGTYPE=rpm
 elif [ -f /etc/system-release ] ; then
-  # /etc/redhat-release is not present on Amazon Linux. 
-  # cat out /etc/system-release and see if it is Amazon Linux.
-  if cat /etc/system-release | grep "Amazon Linux" > /dev/null; then
-    PKGTYPE=rpm
-  else
-    # Likely some other distro that uses RPM if /etc/system-release is present
-    PKGTYPE=rpm
-  fi
+  # If /etc/system-release is present, this is likely a distro that uses RPM.
+  PKGTYPE=rpm
 else
   if uname -sv | grep 'Darwin' > /dev/null; then
     PKGTYPE=pkg
