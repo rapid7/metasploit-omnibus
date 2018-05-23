@@ -126,6 +126,9 @@ ID=`id -u`
 
 if [ -f /etc/redhat-release ] ; then
   PKGTYPE=rpm
+elif [ -f /etc/system-release ] ; then
+  # If /etc/system-release is present, this is likely a distro that uses RPM.
+  PKGTYPE=rpm
 else
   if uname -sv | grep 'Darwin' > /dev/null; then
     PKGTYPE=pkg
