@@ -48,3 +48,11 @@ RUN git clone https://github.com/rapid7/metasploit-omnibus.git
 RUN /bin/bash -l -c "cd metasploit-omnibus && bundle install --binstubs"
 RUN rm -fr metasploit-omnibus
 RUN mkdir /metasploit-framework
+RUN /usr/bin/sudo rm -rf $HOME/.rvm $HOME/.rvmrc /etc/rvmrc /etc/profile.d/rvm.sh /usr/local/rvm /usr/local/bin/rvm && \
+  /usr/bin/sudo /usr/sbin/groupdel rvm
+RUN su jenkins -c "/bin/bash -l -c 'curl -sSL https://rvm.io/mpapis.asc | gpg --import -'"
+RUN su jenkins -c "/bin/bash -l -c 'curl -sSL https://get.rvm.io | bash -s stable'"
+RUN su jenkins -c "/bin/bash -l -c 'rvm install 2.4.1'"
+RUN su jenkins -c "/bin/bash -l -c 'rvm use 2.4.1 && gem install bundler --no-ri --no-rdoc'"
+RUN su jenkins -c "/bin/bash -l -c 'rvm use 2.4.1 && cd ~/ && git clone https://github.com/rapid7/metasploit-omnibus.git && \
+  cd metasploit-omnibus && bundle install --binstubs && cd .. && rm -rf metasploit-omnibus'"
