@@ -21,6 +21,8 @@ license "BSD-3-Clause"
 license_file "https://raw.githubusercontent.com/oneclick/rubyinstaller/master/LICENSE.txt"
 skip_transitive_dependency_licensing true
 
+dependency "ruby-windows-msys2"
+
 if windows_arch_i386?
   version "4.5.2-20111229-1559" do
     source url: "http://cloud.github.com/downloads/oneclick/rubyinstaller/DevKit-tdm-32-#{version}-sfx.exe",
@@ -41,11 +43,12 @@ build do
   env = with_standard_compiler_flags(with_embedded_path)
 
   embedded_dir = "#{install_dir}/embedded"
+  devkit_dir = "#{embedded_dir}/devkit"
 
-  command "#{project_file} -y -o#{windows_safe_path(embedded_dir)}", env: env
+  command "#{project_file} -y -o#{windows_safe_path(devkit_dir)}", env: env
 
-  command "echo - #{install_dir}/embedded > config.yml", cwd: embedded_dir
-  ruby "dk.rb install", env: env, cwd: embedded_dir
+  command "echo - #{embedded_dir} > config.yml", cwd: devkit_dir
+  ruby "dk.rb install", env: env, cwd: devkit_dir
 
   mkdir "#{install_dir}/bin"
 
@@ -65,6 +68,8 @@ build do
     "libbz2-2.dll"     => "libbz2-2.dll",
     "libz-1.dll"       => "libz-1.dll",
   }.each do |target, to|
-    copy "#{install_dir}/embedded/mingw/bin/#{to}", "#{install_dir}/bin/#{target}"
+    copy "#{devkit_dir}/mingw/bin/#{to}", "#{install_dir}/bin/#{target}"
   end
+
+  command "#{embedded_dir}/bin/ridk.cmd install 2 3", env: env, cwd: embedded_dir
 end

@@ -23,6 +23,7 @@ skip_transitive_dependency_licensing true
 if windows?
   dependency "ruby-windows"
   dependency "ruby-windows-devkit"
+  dependency "ruby-windows-msys2"
 else
   dependency "ruby"
 end
