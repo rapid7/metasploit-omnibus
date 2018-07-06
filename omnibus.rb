@@ -48,4 +48,4 @@
 # local_software_dirs ['/path/to/local/software']
 
 # The default arch is :x64 on 64-bit build machines, let's always build 32-bit packages
-windows_arch :x86
+windows_arch :x64
