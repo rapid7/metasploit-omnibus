@@ -17,13 +17,23 @@
 name "ruby-windows"
 default_version "2.4.3-2"
 
-relative_path "rubyinstaller-#{version}-x64"
+if windows_arch_i386?
+  relative_path "rubyinstaller-#{version}-x86"
 
-version "2.4.3-2" do
-  source sha256: "3c9ace4e96a1bc7bca2c260bf35230e17662857e20a9637bade901cf55622661"
+  version "2.4.3-2" do
+    source sha256: "ffd023d0aea50c3a9d7a4719c322aa46c4de54fdef55756264663ca74a7c13ea"
+  end
+
+  source url: "https://github.com/oneclick/rubyinstaller2/releases/download/rubyinstaller-#{version}/rubyinstaller-#{version}-x86.7z"
+else
+  relative_path "rubyinstaller-#{version}-x64"
+
+  version "2.4.3-2" do
+    source sha256: "3c9ace4e96a1bc7bca2c260bf35230e17662857e20a9637bade901cf55622661"
+  end
+
+  source url: "https://github.com/oneclick/rubyinstaller2/releases/download/rubyinstaller-#{version}/rubyinstaller-#{version}-x64.7z"
 end
-
-source url: "https://github.com/oneclick/rubyinstaller2/releases/download/rubyinstaller-#{version}/rubyinstaller-#{version}-x64.7z"
 
 build do
   sync "#{project_dir}/", "#{install_dir}/embedded"

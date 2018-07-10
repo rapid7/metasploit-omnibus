@@ -23,8 +23,8 @@ skip_transitive_dependency_licensing true
 
 if windows_arch_i386?
   version "20180531" do
-    source url: "http://repo.msys2.org/distrib/i686/msys2-base-i686-#{version}.tar.xz",
-           md5: "b2ef7b785e49e5cec9de908c033107b5"
+    source url: "http://repo.msys2.org/distrib/i686/msys2-base-i686-#{version}.tar.gz",
+           md5: "08bbc0437919d64da28801ec54e3d943"
     relative_path "msys32"
   end
 else
