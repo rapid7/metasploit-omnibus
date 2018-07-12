@@ -18,4 +18,9 @@ exclude "**/bundler/git"
 
 package :msi do
   upgrade_code 'A3C83F57-6D8F-453A-9559-0D650A95EB21'
+  wix_light_delay_validation true
+end
+
+package :appx do
+  skip_packager true
 end
