@@ -61,7 +61,7 @@ when complete, there will be a new installable .deb file under the 'pkg' directo
 ## Building on OS X
 From OS X, first install XCode and the command line development tools. I use ruby, bundler, git, bison and flex from the Mac Homebrew project. The rest of the steps are identical to building on Ubuntu. A .pkg file will be under the pkg directory instead.
 
-### Clean
+## Clean
 
 You can clean up all temporary files generated during the build process with
 the `clean` command:
@@ -72,13 +72,19 @@ $ bin/omnibus clean metasploit-framework
 
 Adding the `--purge` purge option removes __ALL__ files generated during the
 build including the project install directory (`/opt/metasploit-framework`) and
-the package cache directory (`/var/cache/omnibus/pkg`):
+the package cache directory (`/var/cache/omnibus/pkg`) as well as __ALL__ files
+in the local package cache directory (`./local/cache`):
 
 ```shell
 $ bin/omnibus clean metasploit-framework --purge
 ```
 
-### Publish
+Restore the git submodule that contains the local package cache:
+```shell
+$ git submodule update -i
+```
+
+## Publish
 
 Omnibus has a built-in mechanism for releasing to a variety of "backends", such
 as Amazon S3. You must set the proper credentials in your `omnibus.rb` config
@@ -88,7 +94,7 @@ file or specify them via the command line.
 $ bin/omnibus publish path/to/*.deb --backend s3
 ```
 
-### Help
+## Help
 
 Full help for the Omnibus command line interface can be accessed with the
 `help` command:
