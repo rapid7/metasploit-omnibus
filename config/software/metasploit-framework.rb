@@ -4,7 +4,7 @@ if linux? && File.exist?("/metasploit-framework")
   source path: "/metasploit-framework"
 else
   source git: "https://github.com/rapid7/metasploit-framework.git"
-  default_version "4.x"
+  default_version "master"
 end
 
 dependency "bundler"
