@@ -80,3 +80,4 @@ RUN chown -R jenkins "$JENKINS_HOME"
 
 ENV PATH /opt/chef/embedded/bin:$PATH
 RUN mkdir /metasploit-framework
+RUN yum --enablerepo=rpmforge-extras install -y sudo && yum clean all && echo "jenkins ALL=(ALL) NOPASSWD: ALL" | tee -a /etc/sudoers
