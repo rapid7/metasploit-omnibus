@@ -15,8 +15,11 @@
 #
 
 name "zlib"
-default_version "1.2.8"
+default_version "1.2.11"
 
+version "1.2.11" do
+  source md5: "1c9f62f0778697a09d36121ead88e08e"
+end
 version "1.2.8" do
   source md5: "44d667c142d7cda120332623eab69f40"
 end

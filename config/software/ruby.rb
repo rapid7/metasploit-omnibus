@@ -22,7 +22,7 @@ license_file "COPYING"
 license_file "LEGAL"
 skip_transitive_dependency_licensing true
 
-default_version "2.4.1"
+default_version "2.4.3"
 
 dependency "ncurses" unless windows? || version.satisfies?(">= 2.1")
 dependency "zlib"
@@ -31,13 +31,22 @@ dependency "libedit"
 dependency "libffi"
 dependency "libyaml"
 
+version("2.5.0")      { source sha256: "46e6f3630f1888eb653b15fa811d77b5b1df6fd7a3af436b343cfe4f4503f2ab" }
+
+version("2.4.3")      { source sha256: "fd0375582c92045aa7d31854e724471fb469e11a4b08ff334d39052ccaaa3a98" }
+version("2.4.2")      { source sha256: "93b9e75e00b262bc4def6b26b7ae8717efc252c47154abb7392e54357e6c8c9c" }
 version("2.4.1")      { source sha256: "a330e10d5cb5e53b3a0078326c5731888bb55e32c4abfeb27d9e7f8e5d000250" }
 version("2.4.0")      { source sha256: "152fd0bd15a90b4a18213448f485d4b53e9f7662e1508190aa5b702446b29e3d" }
 
+version("2.3.6")      { source sha256: "8322513279f9edfa612d445bc111a87894fac1128eaa539301cebfc0dd51571e" }
+version("2.3.5")      { source sha256: "5462f7bbb28beff5da7441968471ed922f964db1abdce82b8860608acc23ddcc" }
+version("2.3.4")      { source sha256: "98e18f17c933318d0e32fed3aea67e304f174d03170a38fd920c4fbe49fec0c3" }
 version("2.3.3")      { source sha256: "241408c8c555b258846368830a06146e4849a1d58dcaf6b14a3b6a73058115b7" }
 version("2.3.1")      { source sha256: "b87c738cb2032bf4920fef8e3864dc5cf8eae9d89d8d523ce0236945c5797dcd" }
 version("2.3.0")      { source md5: "e81740ac7b14a9f837e9573601db3162" }
 
+version("2.2.9")      { source sha256: "2f47c77054fc40ccfde22501425256d32c4fa0ccaf9554f0d699ed436beca1a6" }
+version("2.2.8")      { source sha256: "8f37b9d8538bf8e50ad098db2a716ea49585ad1601bbd347ef84ca0662d9268a" }
 version("2.2.6")      { source sha256: "de8e192791cb157d610c48a9a9ff6e7f19d67ce86052feae62b82e3682cc675f" }
 version("2.2.5")      { source md5: "bd8e349d4fb2c75d90817649674f94be" }
 version("2.2.4")      { source md5: "9a5e15f9d5255ba37ace18771b0a8dd2" }
@@ -153,6 +162,13 @@ build do
     # be fixed.
   end
 
+  # Fix find_proxy with IP format proxy and domain format uri raises an exception.
+  # This only affects 2.4 and the fix is expected to be included in 2.4.2
+  # https://github.com/ruby/ruby/pull/1513
+  if version == "2.4.0" || version == "2.4.1"
+    patch source: "2.4_no_proxy_exception.patch", plevel: 1, env: patch_env
+  end
+
   # Fix reserve stack segmentation fault when building on RHEL5 or below
   # Currently only affects 2.1.7 and 2.2.3. This patch taken from the fix
   # in Ruby trunk and expected to be included in future point releases.
@@ -160,8 +176,23 @@ build do
   if rhel? &&
       platform_version.satisfies?("< 6") &&
       (version == "2.1.7" || version == "2.2.3")
-
     patch source: "ruby-fix-reserve-stack-segfault.patch", plevel: 1, env: patch_env
+  end
+
+  if rhel? &&
+      platform_version.satisfies?("< 6") &&
+      version.satisfies?(">= 2.4") &&
+      version.satisfies?("< 2.5")
+    patch source: "ruby_no_conversion_warnings.patch", plevel: 1, env: patch_env
+  end
+
+  # RHEL 6's gcc doesn't support `#pragma GCC diagnostic` inside functions, so
+  # we'll guard their inclusion more specifically. As of 2018-01-25 this is fixed
+  # upstream and ought to be in 2.5.1
+  if rhel? &&
+      platform_version.satisfies?("< 7") &&
+      (version == "2.5.0")
+    patch source: "prelude_25_el6_no_pragma.patch", plevel: 0, env: patch_env
   end
 
   configure_command = ["--with-out-ext=dbm,readline",
@@ -194,9 +225,10 @@ build do
     configure_command << "ac_cv_header_execinfo_h=no"
     configure_command << "--with-opt-dir=#{install_dir}/embedded"
   elsif smartos?
-    # Opscode patch - someara@opscode.com
+    # Chef patch - sean@sean.io
     # GCC 4.7.0 chokes on mismatched function types between OpenSSL 1.0.1c and Ruby 1.9.3-p286
-    patch source: "ruby-openssl-1.0.1c.patch", plevel: 1, env: patch_env
+    # patch included upstream in Ruby 2.4.1
+    patch source: "ruby-openssl-1.0.1c.patch", plevel: 1, env: patch_env unless version.satisfies?(">= 2.4.1")
 
     # Patches taken from RVM.
     # http://bugs.ruby-lang.org/issues/5384
@@ -209,7 +241,8 @@ build do
     configure_command << "ac_cv_func_dl_iterate_phdr=no"
     configure_command << "--with-opt-dir=#{install_dir}/embedded"
   elsif windows?
-    if version.satisfies?(">= 2.3")
+    if version.satisfies?(">= 2.3") &&
+        version.satisfies?("< 2.5")
       # Windows Nano Server COM libraries do not support Apartment threading
       # instead COINIT_MULTITHREADED must be used
       patch source: "ruby_nano.patch", plevel: 1, env: patch_env
@@ -218,6 +251,11 @@ build do
     configure_command << " debugflags=-g"
   else
     configure_command << "--with-opt-dir=#{install_dir}/embedded"
+  end
+
+  # This patch is expected to be included in 2.3.5 and is already in 2.4.1.
+  if version == "2.3.4"
+    patch source: "ruby_2_3_gcc7.patch", plevel: 0, env: patch_env
   end
 
   # FFS: works around a bug that infects AIX when it picks up our pkg-config
@@ -232,12 +270,16 @@ build do
   if windows?
     # Needed now that we switched to msys2 and have not figured out how to tell
     # it how to statically link yet
-    dlls = ["libwinpthread-1"]
+    dlls = [
+      "libwinpthread-1",
+      "libstdc++-6",
+    ]
     if windows_arch_i386?
       dlls << "libgcc_s_dw2-1"
     else
       dlls << "libgcc_s_seh-1"
     end
+
     dlls.each do |dll|
       mingw = ENV["MSYSTEM"].downcase
       msys_path = ENV["OMNIBUS_TOOLCHAIN_INSTALL_DIR"] ? "#{ENV["OMNIBUS_TOOLCHAIN_INSTALL_DIR"]}/embedded/bin" : "C:/msys2"
@@ -254,6 +296,12 @@ build do
         copy "#{project_dir}/bin/#{cmd}", "#{install_dir}/embedded/bin/#{cmd}"
       end
     end
+
+    # Ruby 2.4 seems to mark rake.bat as read-only.
+    # Mark it as writable so that we can install other version of rake without
+    # running into permission errors.
+    command "attrib -r #{install_dir}/embedded/bin/rake.bat"
+
   end
 
 end

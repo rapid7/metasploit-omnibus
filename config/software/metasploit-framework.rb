@@ -4,7 +4,7 @@ if linux? && File.exist?("/metasploit-framework")
   source path: "/metasploit-framework"
 else
   source git: "https://github.com/rapid7/metasploit-framework.git"
-  default_version "4.x"
+  default_version "master"
 end
 
 dependency "bundler"
@@ -51,6 +51,13 @@ build do
       dest: "#{install_dir}/embedded/framework/msfdb",
       mode: 0755,
       vars: { install_dir: install_dir }
+
+  block "Give precedence to msfdb if found in '#{project_dir}'" do
+    if File.exist?("#{project_dir}/msfdb")
+      # install msfdb found in metasploit-framework
+      FileUtils.cp("#{project_dir}/msfdb", "#{install_dir}/embedded/framework/")
+    end
+  end
 
   unless windows?
     erb source: 'msfdb-kali.erb',

@@ -1,5 +1,5 @@
 #
-# Copyright 2012-2017, Chef Software Inc.
+# Copyright 2012-2018, Chef Software Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
 #
 
 name "libxml2"
-default_version "2.9.4"
+default_version "2.9.7"
 
 license "MIT"
 license_file "COPYING"
@@ -24,6 +24,14 @@ skip_transitive_dependency_licensing true
 dependency "zlib"
 dependency "liblzma"
 dependency "config_guess"
+
+version "2.9.7" do
+  source sha256: "f63c5e7d30362ed28b38bfa1ac6313f9a80230720b7fb6c80575eeab3ff5900c"
+end
+
+version "2.9.5" do
+  source sha256: "4031c1ecee9ce7ba4f313e91ef6284164885cdb69937a123f6a83bb6a72dcd38"
+end
 
 version "2.9.4" do
   source md5: "ae249165c173b1ff386ee8ad676815f5"
