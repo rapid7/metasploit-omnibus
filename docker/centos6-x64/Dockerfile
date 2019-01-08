@@ -1,5 +1,5 @@
 # To build the dev environment.
-# docker build -t rapid7/build:msf-omnibus-centos .
+# docker build -t rapid7/msf-centos6-x64-omnibus .
 FROM centos:centos6
 MAINTAINER Rapid7 Release Engineering <r7_re@rapid7.com>
 
