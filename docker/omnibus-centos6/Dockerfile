@@ -40,20 +40,12 @@ RUN yum --enablerepo=rpmforge-extras install -y \
     ccache \
     createrepo \
     expect \
+    sudo \
 	&& yum clean all
 
 RUN curl -L https://www.opscode.com/chef/install.sh | bash
 RUN git config --global user.email "packager@myco" && \
     git config --global user.name "Omnibus Packager"
-
-RUN echo "export PATH=\${PATH}:/opt/chef/embedded/bin" | tee -a /etc/profile.d/chef-ruby.sh
-
-RUN source /etc/profile.d/chef-ruby.sh && gem install bundler --no-ri --no-rdoc
-
-# pre-load the omnibus dependencies
-RUN git clone https://github.com/rapid7/metasploit-omnibus.git
-RUN cd metasploit-omnibus && /opt/chef/embedded/bin/bundle install --binstubs
-RUN rm -fr metasploit-omnibus
 
 ENV JENKINS_HOME /var/jenkins_home
 RUN useradd -d "$JENKINS_HOME" -u 1001 -m -s /bin/sh jenkins
@@ -62,7 +54,6 @@ RUN mkdir -p /var/cache/omnibus
 RUN mkdir -p /opt/metasploit-framework
 RUN chown jenkins /var/cache/omnibus
 RUN chown jenkins /opt/metasploit-framework
-RUN chown -R jenkins /opt/chef/embedded/lib/ruby/gems
 
 RUN echo "#!/usr/bin/expect -f" > /usr/bin/signrpm && \
 	echo "spawn rpm --addsign {*}\$argv" >> /usr/bin/signrpm && \
@@ -77,7 +68,15 @@ RUN echo "%_signature gpg" > "$JENKINS_HOME/.rpmmacros" && \
 	echo "%__gpg_check_password_cmd /bin/true" >> "$JENKINS_HOME/.rpmmacros" && \
 	echo "%__gpg_sign_cmd %{__gpg} gpg --batch --no-verbose --no-armor --use-agent --no-secmem-warning -u \"%{_gpg_name}\" -sbo %{__signature_filename} %{__plaintext_filename}" >> "$JENKINS_HOME/.rpmmacros"
 RUN chown -R jenkins "$JENKINS_HOME"
+RUN echo "jenkins ALL=(ALL) NOPASSWD: ALL" | tee -a /etc/sudoers
 
-ENV PATH /opt/chef/embedded/bin:$PATH
-RUN mkdir /metasploit-framework
-RUN yum --enablerepo=rpmforge-extras install -y sudo && yum clean all && echo "jenkins ALL=(ALL) NOPASSWD: ALL" | tee -a /etc/sudoers
+RUN su jenkins -c 'command curl -sSL https://rvm.io/mpapis.asc | gpg --import - && \
+  command curl -sSL https://rvm.io/pkuczynski.asc | gpg --import - && \
+  curl -L -sSL https://get.rvm.io | bash -s stable'
+
+RUN su jenkins -c "/bin/bash -l -c 'rvm requirements'"
+RUN su jenkins -c "/bin/bash -l -c 'rvm install 2.5.3'"
+RUN su jenkins -c "/bin/bash -l -c 'gem install bundler --no-ri --no-rdoc'"
+# pre-load the omnibus dependencies
+RUN su jenkins -c "/bin/bash -l -c 'cd ~/ && git clone https://github.com/rapid7/metasploit-omnibus.git && \
+        cd ~/metasploit-omnibus && bundle install --binstubs && cd ~/ && rm -fr metasploit-omnibus'"
