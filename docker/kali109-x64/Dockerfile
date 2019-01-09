@@ -1,6 +1,6 @@
 # To build the dev environment.
-# docker build -t rapid7/build:kali109_32-omnibus .
-FROM rapid7/build:kali109_32
+# docker build -t rapid7/msf-kali109-x64-omnibus .
+FROM rapid7/build:kali109_64
 MAINTAINER Rapid7 Release Engineering <r7_re@rapid7.com>
 
 RUN echo "deb http://old.kali.org/kali moto main non-free contrib" > /etc/apt/sources.list
@@ -29,12 +29,12 @@ RUN git config --global user.email "packager@example.com" && \
 
 ENV JENKINS_HOME /home/jenkins
 RUN mkdir -p "$JENKINS_HOME" && \
-    cp ~/.gitconfig "$JENKINS_HOME" && \
-    chown -R jenkins "$JENKINS_HOME" && \
-    mkdir -p /var/cache/omnibus && \
-    mkdir -p /opt/metasploit-framework && \
-    chown jenkins /var/cache/omnibus && \
-    chown jenkins /opt/metasploit-framework
+	cp ~/.gitconfig "$JENKINS_HOME" && \
+	chown -R jenkins "$JENKINS_HOME" && \
+	mkdir -p /var/cache/omnibus && \
+	mkdir -p /opt/metasploit-framework && \
+	chown jenkins /var/cache/omnibus && \
+	chown jenkins /opt/metasploit-framework
 RUN echo "jenkins    ALL=NOPASSWD: ALL" > /etc/sudoers.d/jenkins
 RUN chmod 440 /etc/sudoers.d/jenkins
 RUN apt-get remove -y libpq-dev libpq5

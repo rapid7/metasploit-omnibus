@@ -1,6 +1,6 @@
 # To build the dev environment.
-# docker build -t rapid7/build:ubuntu1204_64-omnibus .
-FROM ubuntu:12.04.5
+# docker build -t rapid7/msf-ubuntu1204-x86-omnibus .
+FROM i386/ubuntu:12.04
 MAINTAINER Rapid7 Release Engineering <r7_re@rapid7.com>
 
 RUN sed -i 's/archive\.ubuntu/old-releases\.ubuntu/g' /etc/apt/sources.list
@@ -46,8 +46,8 @@ RUN su jenkins -c 'command curl -sSL https://rvm.io/mpapis.asc | gpg --import - 
   curl -L -sSL https://get.rvm.io | bash -s stable'
 
 RUN su jenkins -c "/bin/bash -l -c 'rvm requirements'"
-RUN su jenkins -c "/bin/bash -l -c 'rvm install 2.5.3'"
-RUN su jenkins -c "/bin/bash -l -c 'gem install bundler --no-ri --no-rdoc'"
+RUN su jenkins -c "linux32 /bin/bash -l -c 'rvm install 2.5.3'"
+RUN su jenkins -c "linux32 /bin/bash -l -c 'gem install bundler --no-ri --no-rdoc'"
 
 # pre-load the omnibus dependencies
 RUN su jenkins -c "/bin/bash -l -c 'cd ~/ && git clone https://github.com/rapid7/metasploit-omnibus.git && \
