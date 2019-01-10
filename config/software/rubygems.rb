@@ -23,6 +23,7 @@ skip_transitive_dependency_licensing true
 if windows?
   dependency "ruby-windows"
   dependency "ruby-windows-devkit"
+  dependency "ruby-windows-msys2"
 else
   dependency "ruby"
 end
@@ -45,10 +46,10 @@ if version && !source
     "2.6.7" => "9cd4c5bdc70b525dfacd96e471a64605",
     "2.6.8" => "40b3250f28c1d0d5cb9ff5ab2b17df6e",
   }
-  known_tarballs.each do |version, md5|
-    self.version version do
-      source md5: md5, url: "http://production.cf.rubygems.org/rubygems/rubygems-#{version}.tgz"
-      relative_path "rubygems-#{version}"
+  known_tarballs.each do |vsn, md5|
+    version vsn do
+      source md5: md5, url: "http://production.cf.rubygems.org/rubygems/rubygems-#{vsn}.tgz"
+      relative_path "rubygems-#{vsn}"
     end
   end
 

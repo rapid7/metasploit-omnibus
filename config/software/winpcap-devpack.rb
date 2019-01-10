@@ -21,13 +21,22 @@ version "4.1.2" do
   source md5: "bae2236af062b0900ad1416b2c4878b9"
 end
 
+dependency "ruby-windows"
+dependency "ruby-windows-devkit"
+
 relative_path "WpdPack"
 
 source url: "https://www.winpcap.org/install/bin/WpdPack_4_1_2.zip"
 
 build do
 
-  copy "#{project_dir}/Lib/*", "#{install_dir}/embedded/lib"
-  copy "#{project_dir}/Include/*", "#{install_dir}/embedded/include/ruby-2.3.0"
+  mkdir "#{install_dir}/embedded/lib"
+  if windows_arch_i386?
+    copy "#{project_dir}/Lib/*", "#{install_dir}/embedded/lib"
+  else
+    copy "#{project_dir}/Lib/x64/*", "#{install_dir}/embedded/lib"
+  end
+  mkdir "#{install_dir}/embedded/include/ruby-2.4.0"
+  copy "#{project_dir}/Include/*", "#{install_dir}/embedded/include/ruby-2.4.0"
 
 end
