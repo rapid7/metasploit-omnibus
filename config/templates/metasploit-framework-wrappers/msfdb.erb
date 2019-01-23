@@ -20,4 +20,4 @@ if [ -e /etc/os-release -a $(id -u) -eq 0 ]; then
   fi
 fi
 
-ruby "$INSTALL_DIR/embedded/framework/msfdb" "$@"
+(cd $INSTALL_DIR/embedded/framework && ruby msfdb "$@")
