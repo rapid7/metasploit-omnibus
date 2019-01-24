@@ -15,7 +15,7 @@
 #
 
 name "ruby-windows"
-default_version "2.4.3-2"
+default_version "2.5.3-1"
 
 if windows_arch_i386?
   relative_path "rubyinstaller-#{version}-x86"
