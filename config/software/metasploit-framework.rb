@@ -72,7 +72,6 @@ build do
   end
 
   env = with_standard_compiler_flags(with_embedded_path)
-  gem "list pg"
   bundle "install", env: env
   copy "#{project_dir}/Gemfile.lock", "#{install_dir}/embedded/framework/Gemfile.lock"
 
