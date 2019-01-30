@@ -60,18 +60,24 @@ build do
     end
   end
 
+  env = with_standard_compiler_flags(with_embedded_path)
   unless windows?
     erb source: 'msfdb-kali.erb',
         dest: "#{install_dir}/embedded/framework/msfdb-kali",
         mode: 0755,
         vars: { install_dir: install_dir }
   else
-    env = with_standard_compiler_flags(with_embedded_path)
-    bundle "lock --add-platform ruby", env: env
-    bundle "config force_ruby_platform true", env: env
+    patch_env = env.dup
+    patch_env["PATH"] = "#{install_dir}/embedded/bin/msys64/usr/bin:#{env['PATH']}"
+    # patch gemspec to override pg version to one with 2.5 native supplied
+    # this is only a viable option because pg does not have any other dependencies
+    # as some point activerecord updates or impelmentation of bunlder feature
+    # requested in https://github.com/bundler/bundler/pull/6247 will allow removal
+    # of this hack
+    patch source: "bump_pg.patch", plevel: 1, env: patch_env
+    # remove after bundle is installed
   end
 
-  env = with_standard_compiler_flags(with_embedded_path)
   bundle "install", env: env
   copy "#{project_dir}/Gemfile.lock", "#{install_dir}/embedded/framework/Gemfile.lock"
 
@@ -80,6 +86,9 @@ build do
     # https://github.com/codahale/bcrypt-ruby/issues/139
     gem "uninstall bcrypt", env: env
     gem "install bcrypt --platform=ruby", env: env
+
+    patch source: "reset_pg.patch", plevel: 1, env: patch_env
+    gem "uninstall pg -v1.1.4 --force", env: env
 
     delete "#{install_dir}/devkit"
   end
