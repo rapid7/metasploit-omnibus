@@ -51,7 +51,7 @@ else
   end
 
   version "9.6.7" do
-    source sha256: "15ba2b183bac8107c23241b64e6a9db8940cef864bdb11e0302c6b035a6ad890"
+    source sha256: "026592acf6f25dfa74ded9c870a4da537e349ca5b328354437e6a48f262ea3fb"
   end
 
   source url: "http://get.enterprisedb.com/postgresql/postgresql-#{version}-1-windows-x64-binaries.zip"
