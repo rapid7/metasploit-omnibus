@@ -9,9 +9,9 @@ end
 
 dependency "bundler"
 dependency "pcaprub"
-dependency "pg"
 if windows?
   dependency "postgresql-windows"
+  dependency "pg"
 else
   dependency "liblzma"
   dependency "libxslt"
