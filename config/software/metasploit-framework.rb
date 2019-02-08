@@ -9,6 +9,7 @@ end
 
 dependency "bundler"
 dependency "pcaprub"
+dependency "pg"
 if windows?
   dependency "postgresql-windows"
 else
@@ -64,9 +65,14 @@ build do
         dest: "#{install_dir}/embedded/framework/msfdb-kali",
         mode: 0755,
         vars: { install_dir: install_dir }
+  else
+    env = with_standard_compiler_flags(with_embedded_path)
+    bundle "lock --add-platform ruby", env: env
+    bundle "config force_ruby_platform true", env: env
   end
 
   env = with_standard_compiler_flags(with_embedded_path)
+  gem "list pg"
   bundle "install", env: env
   copy "#{project_dir}/Gemfile.lock", "#{install_dir}/embedded/framework/Gemfile.lock"
 
