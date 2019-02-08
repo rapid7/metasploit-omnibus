@@ -40,6 +40,7 @@
           </Directory>
         </Directory>
       </Directory>
+      <Merge Id="CRT" Language="0" SourceFile="C:\Program Files (x86)\Common Files\Merge Modules\microsoft_vc120_crt_x64.msm" DiskId="1" />
     </Directory>
 
     <SetDirectory Id="WINDOWSVOLUME" Value="[WindowsVolume]" />
@@ -48,6 +49,7 @@
     <Feature Id="ProjectFeature" Title="!(loc.FeatureMainName)" Absent="disallow" AllowAdvertise="no" Level="1" ConfigurableDirectory="<%= wix_install_dir %>">
       <ComponentGroupRef Id="ProjectDir" />
       <ComponentRef Id="MsfBinPath" />
+      <MergeRef Id="CRT" />
     </Feature>
 
     <!-- UI Stuff -->
