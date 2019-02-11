@@ -12,6 +12,7 @@ dependency "pcaprub"
 if windows?
   dependency "postgresql-windows"
   dependency "pg"
+  dependency "sqlite3-gem"
 else
   dependency "liblzma"
   dependency "libxslt"
