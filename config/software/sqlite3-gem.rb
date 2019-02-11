@@ -4,7 +4,6 @@ default_version "1.3.11"
 gem_config = ""
 
 if windows?
-  dependency "sqlite"
   dependency "ruby-windows"
   dependency "ruby-windows-devkit"
   dependency "bundler"
