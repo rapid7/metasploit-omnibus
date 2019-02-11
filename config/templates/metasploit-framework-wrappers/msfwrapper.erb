@@ -88,15 +88,6 @@ else # Skip initialization if we're root
   fi
 fi
 
-if [ $cmd = "metasploit-aggregator" ]; then
-  `echo "exit 1 unless ['x86_64-linux', 'x86-linux', 'darwin'].include?(RUBY_PLATFORM.gsub(/.*darwin.*/, 'darwin'))" | $BIN/ruby`
-  if [ $? != 0 ]; then
-    (>&2 echo "This platform is not supported at this time.")
-    exit 0
-  fi
-  FROM_CONSOLE_PATH=true
-fi
-
 unset GEM_HOME
 unset GEM_PATH
 unset GEM_ROOT

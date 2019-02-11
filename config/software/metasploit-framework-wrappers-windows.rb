@@ -33,7 +33,6 @@ build do
       vars: { install_dir: install_dir }
 
   metasploit_bins = [
-        'metasploit-aggregator',
         'msfbinscan',
         'msfconsole',
         'msfd',
