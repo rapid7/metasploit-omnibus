@@ -24,36 +24,20 @@ source :url => "https://sqlite.org/2015/sqlite-autoconf-3080802.tar.gz",
 relative_path "sqlite-autoconf-3080802"
 
 build do
-  if windows?
-    env = with_standard_compiler_flags(with_embedded_path)
-    cmd = ["C:/PROGRA~2/MICROS~1.0/VC/vcvarsall.bat",
-           "amd64",
-           "&&",
-           "cl",
-           "sqlite3.c",
-           "-link",
-           "-dll",
-           "-out:sqlite3.dll"
-          ].join(" ")
-    command cmd, :env => env
-    copy "#{project_dir}/sqlite3.h", "#{install_dir}/embedded/include"
-    copy "#{project_dir}/sqlite3.dll", "#{install_dir}/embedded/lib"
-  else
-    cmd = ["./configure",
-           "--prefix=#{install_dir}/embedded",
-           "--disable-readline"
-           ].join(" ")
-    env = {
-      "LDFLAGS" => "-L#{install_dir}/embedded/lib -I#{install_dir}/embedded/include",
-      "CFLAGS" => "-L#{install_dir}/embedded/lib -I#{install_dir}/embedded/include",
-      "LD_RUN_PATH" => "#{install_dir}/embedded/lib"
-    }
-    command cmd, :env => env
-    #command "make -j #{max_build_jobs}", :env => {"LD_RUN_PATH" => "#{install_dir}/embedded/lib"}
-    #command "make install", :env => {"LD_RUN_PATH" => "#{install_dir}/embedded/lib"}end
-    make "-j #{workers}", env: env
-    make "install", env: env
-  end
+  cmd = ["./configure",
+         "--prefix=#{install_dir}/embedded",
+         "--disable-readline"
+         ].join(" ")
+  env = {
+    "LDFLAGS" => "-L#{install_dir}/embedded/lib -I#{install_dir}/embedded/include",
+    "CFLAGS" => "-L#{install_dir}/embedded/lib -I#{install_dir}/embedded/include",
+    "LD_RUN_PATH" => "#{install_dir}/embedded/lib"
+  }
+  command cmd, :env => env
+  #command "make -j #{max_build_jobs}", :env => {"LD_RUN_PATH" => "#{install_dir}/embedded/lib"}
+  #command "make install", :env => {"LD_RUN_PATH" => "#{install_dir}/embedded/lib"}end
+  make "-j #{workers}", env: env
+  make "install", env: env
 end
 
 
