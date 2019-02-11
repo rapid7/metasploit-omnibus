@@ -1,5 +1,5 @@
 name "pg"
-default_version "0.20.0"
+default_version "0.21.0"
 
 pg_config = ""
 
