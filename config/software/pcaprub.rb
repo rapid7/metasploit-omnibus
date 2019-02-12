@@ -31,5 +31,5 @@ dependency "rubygems"
 build do
   env = with_standard_compiler_flags(with_embedded_path)
   gem "install pcaprub" \
-    " --version '#{version}'", env: env
+    " --version '#{version}' --no-document", env: env
 end

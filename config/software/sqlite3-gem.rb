@@ -20,5 +20,5 @@ build do
   msys_dir = "#{install_dir}/embedded/msys64"
   command "#{msys_dir}/usr/bin/bash.exe -lc 'pacman --noconfirm -Syuu mingw-w64-x86_64-sqlite3'", env: env
   gem "install sqlite3" \
-    " -v#{version} #{gem_config}", env: env
+    " -v#{version} --no-document #{gem_config}", env: env
 end

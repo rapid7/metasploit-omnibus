@@ -84,7 +84,7 @@ build do
     # Workaround missing Ruby 2.3 support for bcrypt on Windows
     # https://github.com/codahale/bcrypt-ruby/issues/139
     gem "uninstall bcrypt", env: env
-    gem "install bcrypt --platform=ruby", env: env
+    gem "install bcrypt --no-document --platform=ruby", env: env
 
     patch source: "reset_pg.patch", plevel: 1, env: env
     gem "uninstall pg -v1.1.4 --force", env: env

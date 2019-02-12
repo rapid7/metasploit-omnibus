@@ -20,5 +20,5 @@ dependency "rubygems"
 build do
   env = with_standard_compiler_flags(with_embedded_path)
   gem "install pg" \
-    " -v#{version} #{pg_config}", env: env
+    " -v#{version} --no-document #{pg_config}", env: env
 end
