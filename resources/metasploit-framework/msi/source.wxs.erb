@@ -29,7 +29,43 @@
       <RemoveExistingProducts After="InstallValidate" />
     </InstallExecuteSequence>
 
+    <!--
+      If fastmsi is set, custom actions will be invoked during install to unzip
+      project files, and during uninstall to remove the project folder
+    -->
+    <% if fastmsi %>
+    <SetProperty Id="FastUnzip"
+                 Value="FASTZIPDIR=[INSTALLLOCATION];FASTZIPAPPNAME=$(var.ProjectLocationDir)"
+                 Sequence="execute"
+                 Before="FastUnzip" />
+
+    <CustomAction Id="FastUnzip"
+                  BinaryKey="CustomActionFastMsiDLL"
+                  DllEntry="FastUnzip"
+                  Execute="deferred"
+                  Return="check" />
+
+    <Binary Id="CustomActionFastMsiDLL"
+            SourceFile="CustomActionFastMsi.CA.dll" />
+
+    <CustomAction Id="Cleanup"
+                  Directory="INSTALLLOCATION"
+                  ExeCommand="cmd /C &quot;rd /S /Q $(var.ProjectLocationDir)&quot;"
+                  Execute="deferred"
+                  Return="ignore" />
+
+    <InstallExecuteSequence>
+      <Custom Action="FastUnzip" After="InstallFiles">NOT Installed</Custom>
+      <Custom Action="Cleanup" After="RemoveFiles">REMOVE~="ALL"</Custom>
+    </InstallExecuteSequence>
+
+    <UI>
+      <ProgressText Action="FastUnzip">!(loc.FileExtractionProgress)</ProgressText>
+    </UI>
+    <% end %>
+
     <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="INSTALLLOCATION"/>
       <Directory Id="WINDOWSVOLUME">
         <Directory Id="PROJECTLOCATION" Name="metasploit-framework" >
           <Directory Id="PROJECTLOCATIONBIN" Name="bin" >
