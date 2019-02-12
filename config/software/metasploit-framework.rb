@@ -78,7 +78,6 @@ build do
   end
 
   bundle "install", env: env
-  copy "#{project_dir}/Gemfile.lock", "#{install_dir}/embedded/framework/Gemfile.lock"
 
   if windows?
     # Workaround missing Ruby 2.3 support for bcrypt on Windows
@@ -89,6 +88,10 @@ build do
     patch source: "reset_pg.patch", plevel: 1, env: env
     gem "uninstall pg -v1.1.4 --force", env: env
 
+    gem "uninstall sqlite3", env: env
+    gem "install sqlite3 --no-document --platform=ruby", env: env
+
     delete "#{install_dir}/devkit"
   end
+  copy "#{project_dir}/Gemfile.lock", "#{install_dir}/embedded/framework/Gemfile.lock"
 end
