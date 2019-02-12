@@ -1,5 +1,5 @@
 name "sqlite3-gem"
-default_version "1.3.11"
+default_version "1.3.13"
 
 gem_config = ""
 
