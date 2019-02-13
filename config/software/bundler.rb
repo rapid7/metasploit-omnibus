@@ -34,6 +34,6 @@ build do
   gem [
     "install bundler",
     v_opts,
-    "--force",
+    "--force --no-document",
   ].compact.join(" "), env: env
 end
