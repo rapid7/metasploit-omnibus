@@ -4,7 +4,7 @@
 # prior to installing package.
 #
 
-BINS="msfbinscan msfconsole msfd msfdb msfelfscan msfmachscan msfpescan msfrop msfrpc msfrpcd msfupdate msfvenom metasploit-aggregator"
+BINS="msfbinscan msfconsole msfd msfdb msfelfscan msfmachscan msfpescan msfrop msfrpc msfrpcd msfupdate msfvenom"
 
 if [ -x /usr/sbin/update-alternatives ] ; then
 	for BIN in $BINS; do
