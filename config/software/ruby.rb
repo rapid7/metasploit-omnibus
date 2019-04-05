@@ -1,5 +1,5 @@
 #
-# Copyright 2012-2018, Chef Software Inc.
+# Copyright 2012-2019, Chef Software Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,16 +25,17 @@ skip_transitive_dependency_licensing true
 # the default versions should always be the latest release of ruby
 # if you consume this definition it is your responsibility to pin
 # to the desired version of ruby. don't count on this not changing.
-default_version "2.5.3"
+default_version "2.6.1"
 
-dependency "ncurses" unless windows? || version.satisfies?(">= 2.1")
 dependency "zlib"
 dependency "openssl"
-dependency "libedit"
 dependency "libffi"
 dependency "libyaml"
 
-version("2.6.0")      { source sha256: "f3c35b924a11c88ff111f0956ded3cdc12c90c04b72b266ac61076d3697fc072" }
+version("2.6.2")      { source sha256: "a0405d2bf2c2d2f332033b70dff354d224a864ab0edd462b7a413420453b49ab" }
+version("2.6.1")      { source sha256: "17024fb7bb203d9cf7a5a42c78ff6ce77140f9d083676044a7db67f1e5191cb8" }
+version("2.5.5")      { source sha256: "28a945fdf340e6ba04fc890b98648342e3cccfd6d223a48f3810572f11b2514c" }
+version("2.5.4")      { source sha256: "0e4042bce749352dfcf1b9e3013ba7c078b728f51f8adaf6470ce37675e3cb1f" }
 version("2.5.3")      { source sha256: "9828d03852c37c20fa333a0264f2490f07338576734d910ee3fd538c9520846c" }
 version("2.5.1")      { source sha256: "dac81822325b79c3ba9532b048c2123357d3310b2b40024202f360251d9829b1" }
 version("2.5.0")      { source sha256: "46e6f3630f1888eb653b15fa811d77b5b1df6fd7a3af436b343cfe4f4503f2ab" }
@@ -58,31 +59,6 @@ version("2.3.0")      { source md5: "e81740ac7b14a9f837e9573601db3162" }
 version("2.2.10")     { source sha256: "cd51019eb9d9c786d6cb178c37f6812d8a41d6914a1edaf0050c051c75d7c358" }
 version("2.2.9")      { source sha256: "2f47c77054fc40ccfde22501425256d32c4fa0ccaf9554f0d699ed436beca1a6" }
 version("2.2.8")      { source sha256: "8f37b9d8538bf8e50ad098db2a716ea49585ad1601bbd347ef84ca0662d9268a" }
-version("2.2.6")      { source sha256: "de8e192791cb157d610c48a9a9ff6e7f19d67ce86052feae62b82e3682cc675f" }
-version("2.2.5")      { source md5: "bd8e349d4fb2c75d90817649674f94be" }
-version("2.2.4")      { source md5: "9a5e15f9d5255ba37ace18771b0a8dd2" }
-version("2.2.3")      { source md5: "150a5efc5f5d8a8011f30aa2594a7654" }
-version("2.2.2")      { source md5: "326e99ddc75381c7b50c85f7089f3260" }
-version("2.2.1")      { source md5: "b49fc67a834e4f77249eb73eecffb1c9" }
-version("2.2.0")      { source md5: "cd03b28fd0b555970f5c4fd481700852" }
-
-version("2.1.9")      { source sha256: "034cb9c50676d2c09b3b6cf5c8003585acea05008d9a29fa737c54d52c1eb70c" }
-version("2.1.8")      { source md5: "091b62f0a9796a3c55de2a228a0e6ef3" }
-version("2.1.7")      { source md5: "2e143b8e19b056df46479ae4412550c9" }
-version("2.1.6")      { source md5: "6e5564364be085c45576787b48eeb75f" }
-version("2.1.5")      { source md5: "df4c1b23f624a50513c7a78cb51a13dc" }
-version("2.1.4")      { source md5: "89b2f4a197621346f6724a3c35535b19" }
-version("2.1.3")      { source md5: "74a37b9ad90e4ea63c0eed32b9d5b18f" }
-version("2.1.2")      { source md5: "a5b5c83565f8bd954ee522bd287d2ca1" }
-version("2.1.1")      { source md5: "e57fdbb8ed56e70c43f39c79da1654b2" }
-
-version("2.0.0-p645") { source md5: "49919bba0c855eaf8e247108c7933a62" }
-version("2.0.0-p594") { source md5: "a9caa406da5d72f190e28344e747ee74" }
-version("2.0.0-p576") { source md5: "2e1f4355981b754d92f7e2cc456f843d" }
-
-version("1.9.3-p550") { source md5: "e05135be8f109b2845229c4f47f980fd" }
-version("1.9.3-p547") { source md5: "7531f9b1b35b16f3eb3d7bea786babfd" }
-version("1.9.3-p484") { source md5: "8ac0dee72fe12d75c8b2d0ef5d0c2968" }
 
 source url: "https://cache.ruby-lang.org/pub/ruby/#{version.match(/^(\d+\.\d+)/)[0]}/ruby-#{version}.tar.gz"
 
@@ -118,14 +94,6 @@ elsif aix?
   env["SOLIBS"] = "-lm -lc"
   # need to use GNU m4, default m4 doesn't work
   env["M4"] = "/opt/freeware/bin/m4"
-elsif solaris_10?
-  if sparc?
-    # Known issue with rubby where too much GCC optimization blows up miniruby on sparc
-    env["CFLAGS"] << " -std=c99 -O3 -g -pipe -mcpu=v9"
-    env["LDFLAGS"] << " -mcpu=v9"
-  else
-    env["CFLAGS"] << " -std=c99 -O3 -g -pipe"
-  end
 elsif solaris_11?
   env["CFLAGS"] << " -std=c99"
   env["CPPFLAGS"] << " -D_XOPEN_SOURCE=600 -D_XPG6"
@@ -153,16 +121,10 @@ build do
   patch_env = env.dup
   patch_env["PATH"] = "/opt/freeware/bin:#{env['PATH']}" if aix?
 
-  if solaris_10? && version.satisfies?(">= 2.1")
-    patch source: "ruby-no-stack-protector.patch", plevel: 1, env: patch_env
-  elsif solaris_11? && version =~ /^2.1/
-    patch source: "ruby-solaris-linux-socket-compat.patch", plevel: 1, env: patch_env
-  end
-
   # wrlinux7/ios_xr build boxes from Cisco include libssp and there is no way to
   # disable ruby from linking against it, but Cisco switches will not have the
   # library.  Disabling it as we do for Solaris.
-  if ios_xr? && version.satisfies?(">= 2.1")
+  if ios_xr?
     patch source: "ruby-no-stack-protector.patch", plevel: 1, env: patch_env
   end
 
@@ -175,34 +137,15 @@ build do
   # and ruby trying to set LD_LIBRARY_PATH itself gets it wrong.
   #
   # Also, fix paths emitted in the makefile on windows on both msys and msys2.
-  if version.satisfies?(">= 2.1")
-    patch source: "ruby-mkmf.patch", plevel: 1, env: patch_env
-    # should intentionally break and fail to apply on 2.2, patch will need to
-    # be fixed.
-  end
+  # should intentionally break and fail to apply on 2.2, patch will need to
+  # be fixed.
+  patch source: "ruby-mkmf.patch", plevel: 1, env: patch_env
 
   # Fix find_proxy with IP format proxy and domain format uri raises an exception.
   # This only affects 2.4 and the fix is expected to be included in 2.4.2
   # https://github.com/ruby/ruby/pull/1513
   if version == "2.4.0" || version == "2.4.1"
     patch source: "2.4_no_proxy_exception.patch", plevel: 1, env: patch_env
-  end
-
-  # Fix reserve stack segmentation fault when building on RHEL5 or below
-  # Currently only affects 2.1.7 and 2.2.3. This patch taken from the fix
-  # in Ruby trunk and expected to be included in future point releases.
-  # https://bugs.ruby-lang.org/issues/11602
-  if rhel? &&
-      platform_version.satisfies?("< 6") &&
-      (version == "2.1.7" || version == "2.2.3")
-    patch source: "ruby-fix-reserve-stack-segfault.patch", plevel: 1, env: patch_env
-  end
-
-  if rhel? &&
-      platform_version.satisfies?("< 6") &&
-      version.satisfies?(">= 2.4") &&
-      version.satisfies?("< 2.5")
-    patch source: "ruby_no_conversion_warnings.patch", plevel: 1, env: patch_env
   end
 
   # RHEL 6's gcc doesn't support `#pragma GCC diagnostic` inside functions, so
@@ -231,9 +174,17 @@ build do
   configure_command << "--with-ext=psych" if version.satisfies?("< 2.3")
   configure_command << "--with-bundled-md5" if fips_mode?
 
+  # jit doesn't compile on all platforms in 2.6.0
+  # we should evaluate this when new releases come out to see if we can turn it back on
+  configure_command << "--disable-jit-support" if version.satisfies?(">= 2.6")
+
   if aix?
     # need to patch ruby's configure file so it knows how to find shared libraries
-    patch source: "ruby-aix-configure.patch", plevel: 1, env: patch_env
+    if version.satisfies?(">= 2.6")
+      patch source: "ruby-aix-configure_26_and_later.patch", plevel: 1, env: patch_env
+    else
+      patch source: "ruby-aix-configure_pre26.patch", plevel: 1, env: patch_env
+    end
     # have ruby use zlib on AIX correctly
     patch source: "ruby_aix_openssl.patch", plevel: 1, env: patch_env
     # AIX has issues with ssl retries, need to patch to have it retry
