@@ -38,7 +38,7 @@ else
     source sha256: "eabd682a6fb886a22168f568b9c508318f045dc2e130b2668e39c4a81d340ec9"
   end
   version "2.6.1-1" do
-    source sha256: "53e720d866337d9289c457e97bfdb44fc70ed7e42a3dcb8dbb43f7e93147614d"
+    source sha256: "3f637d73092d3004fb1cee2d7047949aad3880042879d8de55bf661a399f06fc"
   end
 
   source url: "https://github.com/oneclick/rubyinstaller2/releases/download/rubyinstaller-#{version}/rubyinstaller-#{version}-x64.7z"
