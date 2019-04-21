@@ -19,6 +19,8 @@ RUN apt-get update && apt-get install -y \
     devscripts \
     fakeroot \
     unzip \
+    procps \
+    gnupg \
 	build-essential \
     m4 && \
     apt-get clean && \
@@ -27,10 +29,11 @@ RUN apt-get update && apt-get install -y \
 RUN git config --global user.email "packager@example.com" && \
     git config --global user.name "Omnibus Packager"
 
-RUN curl -sSL https://rvm.io/mpapis.asc | gpg --import -
-RUN curl -sSL https://get.rvm.io | bash -s stable
+RUN command curl -sSL https://rvm.io/mpapis.asc | gpg --import - && \
+    command curl -sSL https://rvm.io/pkuczynski.asc | gpg --import - && \
+    curl -L -sSL https://get.rvm.io | bash -s stable
 RUN /bin/bash -l -c "rvm requirements"
-RUN /bin/bash -l -c "rvm install 2.3.3"
+RUN /bin/bash -l -c "rvm install 2.5.5"
 RUN /bin/bash -l -c "gem install bundler --no-ri --no-rdoc"
 
 RUN gem install bundler --no-ri --no-rdoc
