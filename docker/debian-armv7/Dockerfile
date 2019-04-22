@@ -52,6 +52,5 @@ RUN mkdir -p /var/cache/omnibus
 RUN mkdir -p /opt/metasploit-framework
 RUN chown jenkins /var/cache/omnibus
 RUN chown jenkins /opt/metasploit-framework
-RUN chown -R jenkins /var/lib/gems/
 
 RUN ["cross-build-end"]
