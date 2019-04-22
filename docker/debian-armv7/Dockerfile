@@ -1,4 +1,4 @@
-# docker build -t rapid7/build:msf-omnibus-debian-armv7 .
+# docker build -t rapid7/msf-debian-armv7-omnibus .
 FROM resin/armv7hf-debian-qemu
 MAINTAINER Rapid7 Release Engineering <r7_re@rapid7.com>
 

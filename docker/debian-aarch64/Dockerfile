@@ -1,4 +1,4 @@
-# docker build -t rapid7/build:msf-omnibus-debian-aarch64 .
+# docker build -t rapid7/msf-debian-aarch64-omnibus .
 FROM forumi0721/debian-aarch64-base:latest
 MAINTAINER Rapid7 Release Engineering <r7_re@rapid7.com>
 
