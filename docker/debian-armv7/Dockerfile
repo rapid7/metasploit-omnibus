@@ -1,8 +1,10 @@
-# docker build -t rapid7/build:msf-omnibus-debian-armv7 .
+# docker build -t rapid7/msf-debian-armv7-omnibus .
 FROM resin/armv7hf-debian-qemu
 MAINTAINER Rapid7 Release Engineering <r7_re@rapid7.com>
 
 RUN ["cross-build-start"]
+
+RUN sed -i '/jessie-update/d' /etc/apt/sources.list
 
 RUN apt-get update && apt-get install -y \
     git \
@@ -19,6 +21,8 @@ RUN apt-get update && apt-get install -y \
     devscripts \
     fakeroot \
     unzip \
+    procps \
+    gnupg \
 	build-essential \
     m4 && \
     apt-get clean && \
@@ -27,13 +31,12 @@ RUN apt-get update && apt-get install -y \
 RUN git config --global user.email "packager@example.com" && \
     git config --global user.name "Omnibus Packager"
 
-RUN curl -sSL https://rvm.io/mpapis.asc | gpg --import -
-RUN curl -sSL https://get.rvm.io | bash -s stable
+RUN command curl -sSL https://rvm.io/mpapis.asc | gpg --import - && \
+    command curl -sSL https://rvm.io/pkuczynski.asc | gpg --import - && \
+    curl -L -sSL https://get.rvm.io | bash -s stable
 RUN /bin/bash -l -c "rvm requirements"
-RUN /bin/bash -l -c "rvm install 2.3.3"
-RUN /bin/bash -l -c "gem install bundler --no-ri --no-rdoc"
-
-RUN gem install bundler --no-ri --no-rdoc
+RUN /bin/bash -l -c "rvm install 2.5.3"
+RUN /bin/bash -l -c "gem install bundler --no-document"
 
 # pre-load the omnibus dependencies
 RUN git clone https://github.com/rapid7/metasploit-omnibus.git
@@ -49,6 +52,5 @@ RUN mkdir -p /var/cache/omnibus
 RUN mkdir -p /opt/metasploit-framework
 RUN chown jenkins /var/cache/omnibus
 RUN chown jenkins /opt/metasploit-framework
-RUN chown -R jenkins /var/lib/gems/
 
 RUN ["cross-build-end"]
