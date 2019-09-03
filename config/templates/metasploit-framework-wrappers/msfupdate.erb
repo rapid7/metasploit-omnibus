@@ -3,7 +3,6 @@
 print_pgp_key() {
   cat <<-EOF
 -----BEGIN PGP PUBLIC KEY BLOCK-----
-Version: GnuPG v1
 
 mQINBFDAy/0BEAC8I5bw5gLQqHKx5JCacYcXFL6AZowl3qIOTxo5yfBl8CepNpWY
 OOERvIUJb17WehhhbWOo9WjpBalDXBRtI1NvfArewOT8fLm7BdhYe8U45moBfkYi
@@ -16,7 +15,19 @@ EeABiLCQDZKOf0fV3U9CxLj8gXPjPY1Lu6udZUN6NG1ALJjsPkGnbpQEqEJlKNAG
 +rF+tp73TrG0PW8C/THL7fN93ET3wn5tfNu86Liui9wd8ZLuPJNEYeE6eyPAgXJ4
 p69Yb4ou5um5jWnzaVameECBZvtc4HOhy3nTEiVMDcKv/o8XxKOCLpjW1RSDirKl
 ZRIsJYPx2yuJSVMCsN5Sghp5+OCsQ+On4OFWxCskemvy97ftkv/fwUI7mQARAQAB
-tCJNZXRhc3Bsb2l0IDxtZXRhc3Bsb2l0QHJhcGlkNy5jb20+iQI9BBMBCgAnAhsD
+tCJNZXRhc3Bsb2l0IDxtZXRhc3Bsb2l0QHJhcGlkNy5jb20+iQI9BBMBCAAnAhsD
+BQsJCAcDBRUKCQgLBRYCAwEAAh4BAheABQJdY+RYBQkQZX9DAAoJEM37X6UgB7lU
+NYsP/2G3pzrFHrKsr3P/sC+ukUkqvEPZkdIs68A0UTo7fs9nwH4ypBSWupu7FBzC
+kWqyl4ilvRcPKfPHERopogRh7FxG6OYi4VfSfznIuGQyJC4jlAHp+050d4lzQD00
+nzOhQ/x3Swaudqc9HZX3VeV8gGAaiZTT5+91IvPQNoJu0wg49ri8NDm7zTzlCek0
+r5AyL80INJlPJVW8tafMootju9Fr2kJmZ2t/HyZCIFh0IasBnaekEpazN18BhjkZ
+YmuGYb64tol5AA3KvbLaDHlYFQ8heUJsAKeQ9VYqdfApu9cR6TROXaKJ3DygEyn1
+r/96eZ3jHOnSi/blrl7e9P5zFaZEMhvVe52LLwa2NJdYuaVhmmLSnSbaZMCblzgk
+yPTD4bxDBeBxhWlnMkxSJHmqzdUnNnPq50dRT6xefjVSiQksRlOTCMBNWuV5XOkp
+ME692w0jRI7Qo6mvvhOTyxZTzvtIim6MC88El8aFuRag/2+wvCS3IIqa4FT6fNgR
+xM3txuMjZKYRv47xXiRv4O0Tp98YBg7c6v7Lvp1mK8N7xQUySw6StacyqcKqr/po
+z8MF0hmUH9AW7usiHDSUkEbPb4N3FFHza7owCuKUA4BaiTeahAu0L0buZxvdEpOO
+ttwm6+iPKh76X+hEdasQk0AtwhQRYYNh1SfrEEND43sOWtcOiQI9BBMBCgAnAhsD
 BQsJCAcDBRUKCQgLBRYCAwEAAh4BAheABQJXyXj4BQkMrEd3AAoJEM37X6UgB7lU
 GBAP/2h3lRymPIwJ7m3dKQ0ftphAvYarWdy1Y/KF2HYgmWeLjuzLlCWyiTG4pDjT
 R/EtAdRsXVGI8JFI2QpPrlSlOetGipcSsjwZjq2NeflrpjixmB7srT8HX0OoVCcx
@@ -39,20 +50,20 @@ CZg10hysnGqww4oT0j7jdd9ZIMrf8GSxPaFennh+Wsva7raPTWBCzY5hla2cmcgG
 EaOnbjf2clAW3MyGmllQpBGIDtOK8GppE8DnVhhM49uIDTHF2AikMltjqwzd6HV9
 39VA77Imal/PKNHyOWEAdmIRgYwHx+cEjzJAQSQkd0G3PSfJLBaf/0Vo1nBav8q9
 VjgqhEFaNTzEj5Hqn6ldwKUul4Vb+AoSiz5Z1du32ul1CtcozUJTcWJL9ebZ8YbS
-qy7Ol4slSW3ukNaG6tBTqQYb9liIdvdQUG6oJhmzbwARAQABiQIlBBgBCgAPAhsM
-BQJXyXjnBQkMrEdiAAoJEM37X6UgB7lUJ9YP+gIFmDyjBdTD+pX+6z9FBb8p7SF8
-hLEpP51m1CSAfquDfaMOVRQ6d4P3N0KjPQs7uz1uqjQliyaek4jtEqMfkPdYwcvj
-8Zv17u41fAkS3BJFg3cR2+jtzF69sA/phHR+/a6MSnm/W+0YFOQHBKO6MIwC0an5
-qHzG1MBic6rb8qjZlsJowwlF06ZrSmodhulB2q2JMAqUvQd923wJtMIlur4wavpn
-iKdCYomlNcPF/UMVutUn0XuP7ca0yFXJgKJznLAFQ8g+b8aLyvodZYHjblaizkoj
-EWDN3zPTQebnP7N8wTl0+rc2F3Bmnak6+m0P/F1kYXyz3obSvQXwe3rYAkxarcg9
-5wXQRn6hN0PBb5lD05Ytx/peZrYpYFe4CYPtiL+y7sseExQhrRjpWr3FKGCKBpsr
-QkGUk3MiZ4iHVvlyKv/Z9IMYNRmVzMXUM2QAbRgYD0x4kvdXso6YR2rn8sC89c/O
-xIBK1HRwVgfRofUe9PmdeKhsBVYEQkNb8V18YP0GswrBc4cjoGqDwV64yPAotP2t
-B9QhqjJFM9xDT/wJSxKi1uzzSwQBfpD/ylsTB6/v1K3dksvQ6cVZqaBt4g2hq78r
-Eq+ZyncUD2z3eXXrlVheqJdXZXoayQFaTo4iIAc7wbraZZ6mDr6mxxFMlUqO2qxT
-h3RIcafYvaF7yUDA
-=hQKe
+qy7Ol4slSW3ukNaG6tBTqQYb9liIdvdQUG6oJhmzbwARAQABiQIlBBgBCAAPAhsM
+BQJdY+RyBQkQZX9xAAoJEM37X6UgB7lUg90QAJ4KB7m5LyHa5U+CzM+id/1D25O1
+kEOTIBVkWgUIgEKiy4ZjaFhjK51zASjcsHbYlm3yYUbDGl9qlOA+hWi0dtCNth9+
+zZJcslIf4DBq9DogqtLkqReRJ7C8s3nfw4SDoGO4NvZJAHkZ6lF1nfDsuwNfQ3u+
+46NSi4iry5cQVJBFQNwkNXrQ5JFHUN/jnh8lZZgmA31sTyYZMBPwjjS1/nFc7TZq
+plz05NXOm1eKRCWACnH6sDMrp3bGH8W5Yp0QJV5vwOC46IvQ/PL6yG8O/Ve49rZR
+GMwL4mrwval49TA4OcnDnLg30IfZZ0ROuvtHCr3JWu+puRJquW50kIwl0COUvowR
+WfpVMCoKnxRQGIcUTTe5ckD4YNHinLFnH0Oj4EC6JZVuGHLiT2JKq3IR9vX1e6px
+ZP7/lXtlYv5uR8tj/YnfdUvCDc8cyiXy1r/MlVNGg0BMXxs7mtAd9f8DZ/3KDwR3
++rocntzu4jTvMsyvP6H/ngTloPvhALg1mtaxuJqV/tSrCDbL4ntrKTJBb9ire9mf
+i1Il0avchVdM6MjqjfPcNsP27f99iRvCuqZnuNsEa3DSWiCglPFB8KnvanloWoHa
+WWBTmlI5VLnYz/YNy9QpTdh+ba9CY/gFqujqHyoJcz4yh88XoKDw/z44O7HQpsfa
+LvsZoz197/1VjPgy
+=t7Y1
 -----END PGP PUBLIC KEY BLOCK-----
 EOF
 }
@@ -60,11 +71,9 @@ EOF
 install_deb() {
   LIST_FILE=/etc/apt/sources.list.d/metasploit-framework.list
   PREF_FILE=/etc/apt/preferences.d/pin-metasploit.pref
-  if [ ! -f $LIST_FILE ]; then
-    echo -n "Adding metasploit-framework to your repository list.."
-    echo "deb $DOWNLOAD_URI/apt lucid main" > $LIST_FILE
-    print_pgp_key | apt-key add -
-  fi
+  echo -n "Adding metasploit-framework to your repository list.."
+  echo "deb $DOWNLOAD_URI/apt lucid main" > $LIST_FILE
+  print_pgp_key | apt-key add -
   if [ ! -f $PREF_FILE ]; then
     mkdir -p /etc/apt/preferences.d/
     cat > $PREF_FILE <<EOF
@@ -84,10 +93,9 @@ install_rpm() {
   echo "Checking for and installing update.."
   REPO_FILE=/etc/yum.repos.d/metasploit-framework.repo
   GPG_KEY_FILE=/etc/pki/rpm-gpg/RPM-GPG-KEY-Metasploit
-  if [ ! -f $REPO_FILE ]; then
-    echo -n "Adding metasploit-framework to your repository list.."
+  echo -n "Adding metasploit-framework to your repository list.."
 
-    cat > /etc/yum.repos.d/metasploit-framework.repo <<EOF
+  cat > /etc/yum.repos.d/metasploit-framework.repo <<EOF
 [metasploit]
 name=Metasploit
 baseurl=$DOWNLOAD_URI/rpm
@@ -95,8 +103,7 @@ gpgcheck=1
 gpgkey=file://$GPG_KEY_FILE
 enabled=1
 EOF
-    print_pgp_key > ${GPG_KEY_FILE}
-  fi
+  print_pgp_key > ${GPG_KEY_FILE}
   yum install -y metasploit-framework
 }
 
