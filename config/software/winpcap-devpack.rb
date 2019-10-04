@@ -36,7 +36,7 @@ build do
   else
     copy "#{project_dir}/Lib/x64/*", "#{install_dir}/embedded/lib"
   end
-  mkdir "#{install_dir}/embedded/include/ruby-2.5.0"
-  copy "#{project_dir}/Include/*", "#{install_dir}/embedded/include/ruby-2.5.0"
+  mkdir "#{install_dir}/embedded/include/ruby-2.6.0"
+  copy "#{project_dir}/Include/*", "#{install_dir}/embedded/include/ruby-2.6.0"
 
 end
