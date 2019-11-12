@@ -82,7 +82,7 @@ build do
     "no-mdc2",
     "no-rc5",
     "no-ssl2",
-    "no-ssl3",
+    "enable-ssl3",
     "no-zlib",
     "shared",
   ]
