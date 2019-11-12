@@ -30,6 +30,7 @@ default_version "1.1.1b"
 # Skip error checking.
 source url: "https://www.openssl.org/source/openssl-#{version}.tar.gz", extract: :lax_tar
 
+version("1.1.1d") { source sha256: "1e3a91bc1f9dfce01af26026f856e064eab4c8ee0a8f457b5ae30b40b8b711f2" }
 version("1.1.1b") { source sha256: "5c557b023230413dfb0756f3137a13e6d726838ccd1430888ad15bfb2b43ea4b" }
 version("1.1.1a") { source sha256: "fc20130f8b7cbd2fb918b2f14e2f429e109c31ddd0fb38fc5d71d9ffed3f9f41" }
 version("1.1.1") { source sha256: "2836875a0f89c03d0fdf483941512613a50cfb421d6fd94b9f41d7279d586a3d" }
