@@ -1,0 +1,25 @@
+name: CI
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Run a one-line script
+      run: echo Hello, world!
+    - name: Run a multi-line script
+      run: |
+        echo Add other actions to build,- 
+        
+        name: Upload artifact
+  uses: actions/upload-artifact@v1.0.0
+  with:
+    # Artifact name
+    name: 
+    # Directory containing files to upload
+    path: 
+        echo test, and deploy your project.
