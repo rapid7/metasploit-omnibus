@@ -2,13 +2,10 @@
 *~
 .bundle
 .DS_Store
-.kitchen/
-.kitchen.local.yml
 local/build
 local/src
 vendor/bundle
 pkg/*
-.vagrant
 bin/*
 files/**/cache/
 vendor/cookbooks
