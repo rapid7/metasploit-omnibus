@@ -69,6 +69,11 @@ relative_path "ruby-#{version}"
 
 env = with_standard_compiler_flags(with_embedded_path)
 
+jemalloc_required = linux? || windows? || mac_os_x?
+if jemalloc_required
+  dependency "jemalloc"
+end
+
 if mac_os_x?
   # -Qunused-arguments suppresses "argument unused during compilation"
   # warnings. These can be produced if you compile a program that doesn't
@@ -168,6 +173,7 @@ build do
                        "--without-tk",
                        "--disable-dtrace"]
   configure_command << "--with-bundled-md5" if fips_mode?
+  configure_command << "--with-jemalloc" if jemalloc_required
 
   # jit doesn't compile on all platforms in 2.6.0
   # we should evaluate this when new releases come out to see if we can turn it back on
