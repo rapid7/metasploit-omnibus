@@ -57,7 +57,6 @@ GEM
     mixlib-shellout (2.4.4)
     mixlib-versioning (1.2.7)
     multipart-post (2.0.0)
-    nio4r (1.2.1)
     ohai (14.8.10)
       chef-config (>= 12.8, < 15)
       ffi (~> 1.9)
@@ -91,7 +90,6 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  nio4r (~> 1.2.1)
   omnibus!
 
 BUNDLED WITH
