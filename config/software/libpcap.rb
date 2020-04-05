@@ -28,6 +28,7 @@ build do
 
   command "./configure" \
           " --disable-bluetooth --disable-canusb --disable-can --disable-dbus" \
+          " --disable-universal" \
           " --prefix=#{install_dir}/embedded", env: env
 
   make "-j #{workers}", env: env
