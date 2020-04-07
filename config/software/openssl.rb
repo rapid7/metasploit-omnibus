@@ -1,5 +1,5 @@
 #
-# Copyright 2012-2016 Chef Software, Inc.
+# Copyright 2012-2019, Chef Software Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,44 +21,29 @@ license_file "LICENSE"
 skip_transitive_dependency_licensing true
 
 dependency "cacerts"
-dependency "makedepend" unless aix? || windows?
 dependency "openssl-fips" if fips_mode?
 
-default_version "1.1.1d"
+default_version "1.1.1f"
 
 # OpenSSL source ships with broken symlinks which windows doesn't allow.
 # Skip error checking.
 source url: "https://www.openssl.org/source/openssl-#{version}.tar.gz", extract: :lax_tar
 
+version("1.1.1f") { source sha256: "186c6bfe6ecfba7a5b48c47f8a1673d0f3b0e5ba2e25602dd23b629975da3f35" }
 version("1.1.1d") { source sha256: "1e3a91bc1f9dfce01af26026f856e064eab4c8ee0a8f457b5ae30b40b8b711f2" }
-version("1.1.1b") { source sha256: "5c557b023230413dfb0756f3137a13e6d726838ccd1430888ad15bfb2b43ea4b" }
-version("1.1.1a") { source sha256: "fc20130f8b7cbd2fb918b2f14e2f429e109c31ddd0fb38fc5d71d9ffed3f9f41" }
-version("1.1.1") { source sha256: "2836875a0f89c03d0fdf483941512613a50cfb421d6fd94b9f41d7279d586a3d" }
 version("1.1.0i") { source sha256: "ebbfc844a8c8cc0ea5dc10b86c9ce97f401837f3fa08c17b2cdadc118253cf99" }
+version("1.1.0l") { source sha256: "74a2f756c64fd7386a29184dc0344f4831192d61dc2481a93a4c5dd727f41148" }
 version("1.1.0h") { source sha256: "5835626cde9e99656585fc7aaa2302a73a7e1340bf8c14fd635a62c66802a517" }
-version("1.1.0g") { source sha256: "de4d501267da39310905cb6dc8c6121f7a2cad45a7707f76df828fe1b85073af" }
-version("1.1.0f") { source sha256: "12f746f3f2493b2f39da7ecf63d7ee19c6ac9ec6a4fcd8c229da8a522cb12765" }
-version("1.0.2r") { source sha256: "ae51d08bba8a83958e894946f15303ff894d75c2b8bbd44a852b64e3fe11d0d6" }
-version("1.0.2q") { source sha256: "5744cfcbcec2b1b48629f7354203bc1e5e9b5466998bbccc5b5fcde3b18eb684" }
-version("1.0.2p") { source sha256: "50a98e07b1a89eb8f6a99477f262df71c6fa7bef77df4dc83025a2845c827d00" }
-version("1.0.2o") { source sha256: "ec3f5c9714ba0fd45cb4e087301eb1336c317e0d20b575a125050470e8089e4d" }
-version("1.0.2n") { source sha256: "370babb75f278c39e0c50e8c4e7493bc0f18db6867478341a832a982fd15a8fe" }
-version("1.0.2m") { source sha256: "8c6ff15ec6b319b50788f42c7abc2890c08ba5a1cdcd3810eb9092deada37b0f" }
-version("1.0.2l") { source sha256: "ce07195b659e75f4e1db43552860070061f156a98bb37b672b101ba6e3ddf30c" }
-version("1.0.2k") { source sha256: "6b3977c61f2aedf0f96367dcfb5c6e578cf37e7b8d913b4ecb6643c3cb88d8c0" }
-version("1.0.2j") { source sha256: "e7aff292be21c259c6af26469c7a9b3ba26e9abaaffd325e3dccc9785256c431" }
-version("1.0.2i") { source sha256: "9287487d11c9545b6efb287cdb70535d4e9b284dd10d51441d9b9963d000de6f" }
-version("1.0.2h") { source sha256: "1d4007e53aad94a5b2002fe045ee7bb0b3d98f1a47f8b2bc851dcd1c74332919" }
-version("1.0.2g") { source sha256: "b784b1b3907ce39abf4098702dade6365522a253ad1552e267a9a0e89594aa33" }
+version("1.0.2u") { source sha256: "ecd0c6ffb493dd06707d38b14bb4d8c2288bb7033735606569d8f90f89669d16" }
+version("1.0.2t") { source sha256: "14cb464efe7ac6b54799b34456bd69558a749a4931ecfd9cf9f71d7881cac7bc" }
+version("1.0.2s") { source sha256: "cabd5c9492825ce5bd23f3c3aeed6a97f8142f606d893df216411f07d1abab96" }
 version("1.0.1u") { source sha256: "4312b4ca1215b6f2c97007503d80db80d5157f76f8f7d3febbe6b4c56ff26739" }
 version("1.0.1t") { source sha256: "4a6ee491a2fdb22e519c76fdc2a628bb3cec12762cd456861d207996c8a07088" }
 version("1.0.1s") { source sha256: "e7e81d82f3cd538ab0cdba494006d44aab9dd96b7f6233ce9971fb7c7916d511" }
-version("1.0.1r") { source sha256: "784bd8d355ed01ce98b812f873f8b2313da61df7c7b5677fcf2e57b0863a3346" }
 
 relative_path "openssl-#{version}"
 
 build do
-
   env = with_standard_compiler_flags(with_embedded_path)
   if aix?
     env["M4"] = "/opt/freeware/bin/m4"
@@ -134,10 +119,6 @@ build do
     patch source: "openssl-1.0.1f-do-not-build-docs.patch", env: patch_env
   elsif version.start_with? "1.1"
     patch source: "openssl-1.1.0f-do-not-install-docs.patch", env: patch_env
-  end
-
-  if version == "1.0.2k"
-    patch source: "openssl-1.0.2k-no-bang.patch", env: patch_env, plevel: 1
   end
 
   if windows?

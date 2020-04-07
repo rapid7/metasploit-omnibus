@@ -25,17 +25,17 @@ dependency "ruby-windows-msys2"
 
 if windows_arch_i386?
   version "4.5.2-20111229-1559" do
-    source url: "http://cloud.github.com/downloads/oneclick/rubyinstaller/DevKit-tdm-32-#{version}-sfx.exe",
+    source url: "https://dl.bintray.com/oneclick/rubyinstaller/DevKit-tdm-32-#{version}-sfx.exe",
            md5: "4bf8f2dd1d582c8733a67027583e19a6"
   end
 
   version "4.7.2-20130224" do
-    source url: "http://cdn.rubyinstaller.org/archives/devkits/DevKit-mingw64-32-#{version}-1151-sfx.exe",
+    source url: "https://dl.bintray.com/oneclick/rubyinstaller/DevKit-mingw64-32-#{version}-1151-sfx.exe",
            md5: "9383f12958aafc425923e322460a84de"
   end
 else
   version "4.7.2-20130224" do
-    source url: "http://cdn.rubyinstaller.org/archives/devkits/DevKit-mingw64-64-#{version}-1432-sfx.exe",
+    source url: "https://dl.bintray.com/oneclick/rubyinstaller/DevKit-mingw64-64-#{version}-1432-sfx.exe",
            md5: "ce99d873c1acc8bffc639bd4e764b849"
   end
 end
@@ -43,14 +43,12 @@ build do
   env = with_standard_compiler_flags(with_embedded_path)
 
   embedded_dir = "#{install_dir}/embedded"
-  devkit_dir = "#{embedded_dir}/devkit"
 
-  command "#{project_file} -y -o#{windows_safe_path(devkit_dir)}", env: env
-
-  command "echo - #{embedded_dir} > config.yml", cwd: devkit_dir
-  ruby "dk.rb install", env: env, cwd: devkit_dir
+  command "#{project_file} -y -o#{windows_safe_path(embedded_dir)}", env: env
 
   mkdir "#{install_dir}/bin"
+  command "echo - #{install_dir}/embedded > config.yml", cwd: embedded_dir
+  ruby "dk.rb install", env: env, cwd: embedded_dir
 
   # Normally we would symlink the required unix tools.
   # However with the introduction of git-cache to speed up omnibus builds,
@@ -61,14 +59,14 @@ build do
   # many gems that ship with native extensions assume tar will be available
   # in the PATH.
   {
-    "tar.exe"          => "bsdtar.exe",
+    "tar.exe" => "bsdtar.exe",
     "libarchive-2.dll" => "libarchive-2.dll",
-    "libexpat-1.dll"   => "libexpat-1.dll",
-    "liblzma-1.dll"    => "liblzma-1.dll",
-    "libbz2-2.dll"     => "libbz2-2.dll",
-    "libz-1.dll"       => "libz-1.dll",
+    "libexpat-1.dll" => "libexpat-1.dll",
+    "liblzma-1.dll" => "liblzma-1.dll",
+    "libbz2-2.dll" => "libbz2-2.dll",
+    "libz-1.dll" => "libz-1.dll",
   }.each do |target, to|
-    copy "#{devkit_dir}/mingw/bin/#{to}", "#{install_dir}/bin/#{target}"
+    copy "#{install_dir}/embedded/mingw/bin/#{to}", "#{install_dir}/bin/#{target}"
   end
 
   command "#{embedded_dir}/bin/ridk.cmd install 2 3", env: env, cwd: embedded_dir

@@ -15,7 +15,7 @@
 #
 
 name "ruby-windows"
-default_version "2.6.5-1"
+default_version "2.6.6-1"
 
 if windows_arch_i386?
   relative_path "rubyinstaller-#{version}-x86"
@@ -42,6 +42,9 @@ else
   end
   version "2.6.5-1" do
     source sha256: "9b1866e59fe1e7336c4e3231823ff24e121878ed1bac8194ad3fe5e9f2f9ef69"
+  end
+  version "2.6.6-1" do
+    source sha256: "fe5ca2e3ceffa1a98051a85b4028a2bb57332ad4dbb439e377c5775e463096e3"
   end
 
   source url: "https://github.com/oneclick/rubyinstaller2/releases/download/rubyinstaller-#{version}/rubyinstaller-#{version}-x64.7z"

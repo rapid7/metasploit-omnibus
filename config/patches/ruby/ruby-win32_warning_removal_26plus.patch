@@ -1,0 +1,12 @@
+--- a/ext/win32/lib/Win32API.rb
++++ b/ext/win32/lib/Win32API.rb
+@@ -1,9 +1,6 @@
+ # -*- ruby -*-
+ # frozen_string_literal: true
+ 
+-# for backward compatibility
+-warn "Win32API is deprecated after Ruby 1.9.1; use fiddle directly instead", uplevel: 2
+-
+ require 'fiddle/import'
+ 
+ class Win32API

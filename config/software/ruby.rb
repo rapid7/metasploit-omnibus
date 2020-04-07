@@ -1,5 +1,5 @@
 #
-# Copyright 2012-2019, Chef Software Inc.
+# Copyright 2012-2020, Chef Software Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,19 +25,25 @@ skip_transitive_dependency_licensing true
 # the default versions should always be the latest release of ruby
 # if you consume this definition it is your responsibility to pin
 # to the desired version of ruby. don't count on this not changing.
-default_version "2.6.5"
+default_version "2.6.6"
 
 dependency "zlib"
 dependency "openssl"
 dependency "libffi"
 dependency "libyaml"
 
+version("2.7.1")      { source sha256: "d418483bdd0000576c1370571121a6eb24582116db0b7bb2005e90e250eae418" }
+version("2.7.0")      { source sha256: "8c99aa93b5e2f1bc8437d1bbbefd27b13e7694025331f77245d0c068ef1f8cbe" }
+
+version("2.6.6")      { source sha256: "364b143def360bac1b74eb56ed60b1a0dca6439b00157ae11ff77d5cd2e92291" }
 version("2.6.5")      { source sha256: "66976b716ecc1fd34f9b7c3c2b07bbd37631815377a2e3e85a5b194cfdcbed7d" }
 version("2.6.4")      { source sha256: "4fc1d8ba75505b3797020a6ffc85a8bcff6adc4dabae343b6572bf281ee17937" }
 version("2.6.3")      { source sha256: "577fd3795f22b8d91c1d4e6733637b0394d4082db659fccf224c774a2b1c82fb" }
 version("2.6.2")      { source sha256: "a0405d2bf2c2d2f332033b70dff354d224a864ab0edd462b7a413420453b49ab" }
 version("2.6.1")      { source sha256: "17024fb7bb203d9cf7a5a42c78ff6ce77140f9d083676044a7db67f1e5191cb8" }
 
+version("2.5.8")      { source sha256: "6c0bdf07876c69811a9e7dc237c43d40b1cb6369f68e0e17953d7279b524ad9a" }
+version("2.5.7")      { source sha256: "0b2d0d5e3451b6ab454f81b1bfca007407c0548dea403f1eba2e429da4add6d4" }
 version("2.5.6")      { source sha256: "1d7ed06c673020cd12a737ed686470552e8e99d72b82cd3c26daa3115c36bea7" }
 version("2.5.5")      { source sha256: "28a945fdf340e6ba04fc890b98648342e3cccfd6d223a48f3810572f11b2514c" }
 version("2.5.4")      { source sha256: "0e4042bce749352dfcf1b9e3013ba7c078b728f51f8adaf6470ce37675e3cb1f" }
@@ -45,23 +51,8 @@ version("2.5.3")      { source sha256: "9828d03852c37c20fa333a0264f2490f07338576
 version("2.5.1")      { source sha256: "dac81822325b79c3ba9532b048c2123357d3310b2b40024202f360251d9829b1" }
 version("2.5.0")      { source sha256: "46e6f3630f1888eb653b15fa811d77b5b1df6fd7a3af436b343cfe4f4503f2ab" }
 
-version("2.4.7")      { source sha256: "cd6efc720ca6a622745e2bac79f45e6cd63ab0f5a53ad7eb881545f58ff38b89" }
-version("2.4.6")      { source sha256: "de0dc8097023716099f7c8a6ffc751511b90de7f5694f401b59f2d071db910be" }
-version("2.4.5")      { source sha256: "6737741ae6ffa61174c8a3dcdd8ba92bc38827827ab1d7ea1ec78bc3cefc5198" }
-version("2.4.4")      { source sha256: "254f1c1a79e4cc814d1e7320bc5bdd995dc57e08727d30a767664619a9c8ae5a" }
-version("2.4.3")      { source sha256: "fd0375582c92045aa7d31854e724471fb469e11a4b08ff334d39052ccaaa3a98" }
-version("2.4.2")      { source sha256: "93b9e75e00b262bc4def6b26b7ae8717efc252c47154abb7392e54357e6c8c9c" }
-version("2.4.1")      { source sha256: "a330e10d5cb5e53b3a0078326c5731888bb55e32c4abfeb27d9e7f8e5d000250" }
-version("2.4.0")      { source sha256: "152fd0bd15a90b4a18213448f485d4b53e9f7662e1508190aa5b702446b29e3d" }
-
-version("2.3.8")      { source sha256: "b5016d61440e939045d4e22979e04708ed6c8e1c52e7edb2553cf40b73c59abf" }
-version("2.3.7")      { source sha256: "35cd349cddf78e4a0640d28ec8c7e88a2ae0db51ebd8926cd232bb70db2c7d7f" }
-version("2.3.6")      { source sha256: "8322513279f9edfa612d445bc111a87894fac1128eaa539301cebfc0dd51571e" }
-version("2.3.5")      { source sha256: "5462f7bbb28beff5da7441968471ed922f964db1abdce82b8860608acc23ddcc" }
-version("2.3.4")      { source sha256: "98e18f17c933318d0e32fed3aea67e304f174d03170a38fd920c4fbe49fec0c3" }
-version("2.3.3")      { source sha256: "241408c8c555b258846368830a06146e4849a1d58dcaf6b14a3b6a73058115b7" }
-version("2.3.1")      { source sha256: "b87c738cb2032bf4920fef8e3864dc5cf8eae9d89d8d523ce0236945c5797dcd" }
-version("2.3.0")      { source sha256: "ba5ba60e5f1aa21b4ef8e9bf35b9ddb57286cb546aac4b5a28c71f459467e507" }
+version("2.4.10")     { source sha256: "93d06711795bfb76dbe7e765e82cdff3ddf9d82eff2a1f24dead9bb506eaf2d0" }
+version("2.4.9")      { source sha256: "f99b6b5e3aa53d579a49eb719dd0d3834d59124159a6d4351d1e039156b1c6ae" }
 
 source url: "https://cache.ruby-lang.org/pub/ruby/#{version.match(/^(\d+\.\d+)/)[0]}/ruby-#{version}.tar.gz"
 
@@ -103,10 +94,9 @@ elsif solaris_11?
 elsif windows?
   env["CFLAGS"] = "-I#{install_dir}/embedded/include -DFD_SETSIZE=2048"
   if windows_arch_i386?
-    # 32-bit windows can't compile ruby with -O2 due to compiler bugs.
-    env["CFLAGS"] << " -m32 -march=i686 -O"
+    env["CFLAGS"] << " -m32 -march=i686 -O3"
   else
-    env["CFLAGS"] << " -m64 -march=x86-64 -O2"
+    env["CFLAGS"] << " -m64 -march=x86-64 -O3"
   end
   env["CPPFLAGS"] = env["CFLAGS"]
   env["CXXFLAGS"] = env["CFLAGS"]
@@ -119,11 +109,49 @@ build do
   patch_env = env.dup
   patch_env["PATH"] = "/opt/freeware/bin:#{env["PATH"]}" if aix?
 
-  # wrlinux7/ios_xr build boxes from Cisco include libssp and there is no way to
-  # disable ruby from linking against it, but Cisco switches will not have the
-  # library.  Disabling it as we do for Solaris.
-  if ios_xr?
-    patch source: "ruby-no-stack-protector.patch", plevel: 1, env: patch_env
+  # remove the warning that the win32 api is going away.
+  if windows?
+    if version.satisfies?(">= 2.6")
+      patch source: "ruby-win32_warning_removal_26plus.patch", plevel: 1, env: patch_env
+    else
+      patch source: "ruby-win32_warning_removal_25_and_below.patch", plevel: 1, env: patch_env
+    end
+  end
+
+  # RHEL6 has a base compiler that does not support -fstack-protector-strong, but we
+  # cannot build modern ruby on the RHEL6 base compiler, and the configure script
+  # determines that it supports that flag and so includes it and then ultimately
+  # pushes that into native gem compilations which then blows up for end users when
+  # they try to install native gems.  So, we have to hack this up to avoid using
+  # that flag on RHEL6.
+  #
+  if rhel? && platform_version.satisfies?("< 7") && version.satisfies?(">= 2.6")
+    patch source: "ruby-no-stack-protector-strong.patch", plevel: 1, env: patch_env
+  end
+
+  # accelerate requires of c-extension.
+  #
+  # this would break code which did `require "thing"` and loaded thing.so and
+  # then fiddled with the libpath and did `require "thing"` and loaded thing.rb
+  # over the top of it.  AFAIK no sane ruby code should need to do that, and the
+  # cost of this behavior in core ruby is enormous.
+  #
+  patch source: "ruby-fast-load_26.patch", plevel: 1, env: patch_env
+
+  # accelerate requires by removing a File.expand_path
+  #
+  # the expand_path here seems to be largely useless and produces a large amount
+  # of lstat(2) calls on unix, and increases the runtime of a chef-client --version
+  # test by 33% on windows.  on modern linuxen that have openat(2) it is totally
+  # useless.  this patch breaks no built-in tests on ruby on old platforms, and
+  # it is unclear why or if it is necessary (hand crafted tests designed to try to
+  # abuse it all succeeded after this test).
+  #
+  if version.satisfies?("~> 2.6.0")
+    patch source: "ruby-faster-load_26.patch", plevel: 1, env: patch_env
+  end
+  if version.satisfies?(">= 2.7")
+    patch source: "ruby-faster-load_27.patch", plevel: 1, env: patch_env
   end
 
   # disable libpath in mkmf across all platforms, it trolls omnibus and
@@ -136,13 +164,6 @@ build do
   #
   # Also, fix paths emitted in the makefile on windows on both msys and msys2.
   patch source: "ruby-mkmf.patch", plevel: 1, env: patch_env
-
-  # Fix find_proxy with IP format proxy and domain format uri raises an exception.
-  # This only affects 2.4 and the fix is expected to be included in 2.4.2
-  # https://github.com/ruby/ruby/pull/1513
-  if version == "2.4.0" || version == "2.4.1"
-    patch source: "2.4_no_proxy_exception.patch", plevel: 1, env: patch_env
-  end
 
   # RHEL 6's gcc doesn't support `#pragma GCC diagnostic` inside functions, so
   # we'll guard their inclusion more specifically. As of 2018-01-25 this is fixed
@@ -177,7 +198,7 @@ build do
     # need to patch ruby's configure file so it knows how to find shared libraries
     if version.satisfies?(">= 2.6")
       patch source: "ruby-aix-configure_26_and_later.patch", plevel: 1, env: patch_env
-      if version.satisfies?("= 2.6.4")
+      if version.satisfies?("~> 2.6.4")
         patch source: "ruby-2.6.4-bug14834.patch", plevel: 1, env: patch_env
       end
     else
@@ -200,11 +221,6 @@ build do
     configure_command << "ac_cv_header_execinfo_h=no"
     configure_command << "--with-opt-dir=#{install_dir}/embedded"
   elsif smartos?
-    # Chef patch - sean@sean.io
-    # GCC 4.7.0 chokes on mismatched function types between OpenSSL 1.0.1c and Ruby 1.9.3-p286
-    # patch included upstream in Ruby 2.4.1
-    patch source: "ruby-openssl-1.0.1c.patch", plevel: 1, env: patch_env unless version.satisfies?(">= 2.4.1")
-
     # Patches taken from RVM.
     # http://bugs.ruby-lang.org/issues/5384
     # https://www.illumos.org/issues/1587
@@ -221,21 +237,9 @@ build do
     # force that API off.
     configure_command << "ac_cv_func_arc4random_buf=no"
   elsif windows?
-    if version.satisfies?(">= 2.3") &&
-        version.satisfies?("< 2.5")
-      # Windows Nano Server COM libraries do not support Apartment threading
-      # instead COINIT_MULTITHREADED must be used
-      patch source: "ruby_nano.patch", plevel: 1, env: patch_env
-    end
-
     configure_command << " debugflags=-g"
   else
     configure_command << "--with-opt-dir=#{install_dir}/embedded"
-  end
-
-  # This patch is expected to be included in 2.3.5 and is already in 2.4.1.
-  if version == "2.3.4"
-    patch source: "ruby_2_3_gcc7.patch", plevel: 0, env: patch_env
   end
 
   # FFS: works around a bug that infects AIX when it picks up our pkg-config
@@ -254,6 +258,7 @@ build do
       "libwinpthread-1",
       "libstdc++-6",
     ]
+
     if windows_arch_i386?
       dlls << "libgcc_s_dw2-1"
     else
@@ -271,13 +276,11 @@ build do
       end
     end
 
-    if version.satisfies?(">= 2.4")
-      %w{ erb gem irb rdoc ri }.each do |cmd|
-        copy "#{project_dir}/bin/#{cmd}", "#{install_dir}/embedded/bin/#{cmd}"
-      end
+    %w{ erb gem irb rdoc ri }.each do |cmd|
+      copy "#{project_dir}/bin/#{cmd}", "#{install_dir}/embedded/bin/#{cmd}"
     end
 
-    # Ruby 2.4 seems to mark rake.bat as read-only.
+    # Ruby seems to mark rake.bat as read-only.
     # Mark it as writable so that we can install other version of rake without
     # running into permission errors.
     command "attrib -r #{install_dir}/embedded/bin/rake.bat"
