@@ -1,0 +1,11 @@
+--- ruby-2.6.5/configure.old	2019-12-06 13:03:20.962288441 -0800
++++ ruby-2.6.5/configure	2019-12-06 13:03:32.242919275 -0800
+@@ -8409,7 +8409,7 @@
+ esac
+     if test -z "${stack_protector+set}"; then :
+ 
+-	for opt in -fstack-protector-strong -fstack-protector
++	for opt in -fstack-protector
+ do :
+ 
+ 
