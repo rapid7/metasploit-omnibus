@@ -95,4 +95,46 @@ build do
     delete "#{install_dir}/devkit"
   end
   copy "#{project_dir}/Gemfile.lock", "#{install_dir}/embedded/framework/Gemfile.lock"
+
+  # Darwin needs extra tweaks to library files to work relatively.
+  #
+  # We need to replace all hard coded `/opt/metasploit-framework` load commands in library files, such as:
+  #
+  #    $ otool -L ./embedded/lib/ruby/gems/2.6.0/gems/eventmachine-1.2.7/lib/rubyeventmachine.bundle
+  #    ./embedded/lib/ruby/gems/2.6.0/gems/eventmachine-1.2.7/lib/rubyeventmachine.bundle:
+  #      @executable_path/../lib/libruby.2.6.dylib (compatibility version 2.6.0, current version 2.6.6)
+  #      /opt/metasploit-framework/embedded/lib/libssl.1.1.dylib (compatibility version 1.1.0, current version 1.1.0)
+  #      /opt/metasploit-framework/embedded/lib/libcrypto.1.1.dylib (compatibility version 1.1.0, current version 1.1.0)
+  #      /usr/lib/libc++.1.dylib (compatibility version 1.0.0, current version 120.1.0)
+  #      /usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1226.10.1)
+  #
+  # To instead use a relative path:
+  #      @executable_path/../lib/libcrypto.1.1.dylib
+  #
+  # Full context: https://github.com/rapid7/metasploit-omnibus/pull/127#issuecomment-632842474
+  if mac_os_x?
+    block do
+      build_files = Dir[
+        "#{install_dir}/embedded/bin/*",
+        "#{install_dir}/embedded/lib/**/*"
+      ]
+      absolute_lib_path = "#{install_dir}/embedded/lib"
+
+      build_files.each do |file|
+        load_commands = %x{ otool -L '#{file}' 2>/dev/null }.lines.map(&:strip)
+        load_commands.each do |load_command|
+          next unless load_command.start_with?(absolute_lib_path)
+          next if load_command.end_with?(':')
+
+          if (match = load_command.match(/^(?<old_path>.*) (?<version_notes>\(.*\))$/))
+            old_absolute_path = match[:old_path]
+            new_relative_path = old_absolute_path.gsub(/^#{absolute_lib_path}/, "@executable_path/../lib")
+            command("install_name_tool -change '#{old_absolute_path}' '#{new_relative_path}' '#{file}'")
+          else
+            raise "Could not successfully patch load_command for relative dynamic linking for dependency '#{file}'"
+          end
+        end
+      end
+    end
+  end
 end
