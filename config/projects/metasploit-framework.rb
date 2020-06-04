@@ -16,6 +16,10 @@ end
 exclude "**/.git"
 exclude "**/bundler/git"
 
+if mac_os_x?
+  require_portable_links true
+end
+
 project_location_dir = name
 package :msi do
   upgrade_code 'A3C83F57-6D8F-453A-9559-0D650A95EB21'

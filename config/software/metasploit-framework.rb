@@ -108,27 +108,51 @@ build do
   #      /usr/lib/libc++.1.dylib (compatibility version 1.0.0, current version 120.1.0)
   #      /usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1226.10.1)
   #
-  # To instead use a relative path:
+  # To instead use relative paths:
   #      @executable_path/../lib/libcrypto.1.1.dylib
   #
   # Full context: https://github.com/rapid7/metasploit-omnibus/pull/127#issuecomment-632842474
   if mac_os_x?
     block do
-      build_files = Dir[
-        "#{install_dir}/embedded/bin/*",
-        "#{install_dir}/embedded/lib/**/*"
-      ]
       absolute_lib_path = "#{install_dir}/embedded/lib"
+      relative_lib_path = "@executable_path/../lib"
 
-      build_files.each do |file|
-        load_commands = %x{ otool -L '#{file}' 2>/dev/null }.lines.map(&:strip)
+      macho_files = shellout("find #{project.install_dir}/embedded/{bin,lib} -type f | xargs file | grep Mach-O | awk -F: '{print $1}'").stdout.lines.map(&:strip)
+      macho_files.each do |file|
+        next if file.end_with?(".a")
+
+        # The first line from otools is the file name. For a valid Mach-O file this will only contain the name:
+        #
+        #   bin/ruby:
+        #      ... load commands...
+        #
+        # If there's an error, this will be found at the end:
+        #
+        #   /opt/metasploit-framework/embedded/lib/postgresql/pgxs/config/install-sh: is not an object file
+        #
+        # Followed by the required load commands
+        file_header, *load_commands = shellout("otool -L '#{file}' 2>&1").stdout.lines.map(&:strip)
+        # Similar to the output of `-L`, the first line will be the file, followed by the dylib_id
+        _file_header, dylib_id = shellout("otool -D '#{file}' 2>&1").stdout.lines.map(&:strip)
+
+        unless file_header.include?(":")
+          raise "Expected file header output of otools to contain a ':', but instead found: '#{file_header}'"
+        end
+
+        # Handling the LC_ID_DYLIB load command
+        unless dylib_id.nil?
+          new_relative_id = dylib_id.gsub(/^#{absolute_lib_path}/, relative_lib_path)
+          command("install_name_tool -id '#{new_relative_id}' '#{file}'")
+        end
+
+        # Handling load commands that import libraries, note that the LC_ID_DYLIB may be part of this list.
+        # However, install_name_tool will ignore the `-change` command safely.
         load_commands.each do |load_command|
           next unless load_command.start_with?(absolute_lib_path)
-          next if load_command.end_with?(':')
 
           if (match = load_command.match(/^(?<old_path>.*) (?<version_notes>\(.*\))$/))
             old_absolute_path = match[:old_path]
-            new_relative_path = old_absolute_path.gsub(/^#{absolute_lib_path}/, "@executable_path/../lib")
+            new_relative_path = old_absolute_path.gsub(/^#{absolute_lib_path}/, relative_lib_path)
             command("install_name_tool -change '#{old_absolute_path}' '#{new_relative_path}' '#{file}'")
           else
             raise "Could not successfully patch load_command for relative dynamic linking for dependency '#{file}'"
