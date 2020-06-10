@@ -95,4 +95,70 @@ build do
     delete "#{install_dir}/devkit"
   end
   copy "#{project_dir}/Gemfile.lock", "#{install_dir}/embedded/framework/Gemfile.lock"
+
+  # Darwin needs extra tweaks to library files to work relatively.
+  #
+  # We need to replace all hard coded `/opt/metasploit-framework` load commands in library files, such as:
+  #
+  #    $ otool -L ./embedded/lib/ruby/gems/2.6.0/gems/eventmachine-1.2.7/lib/rubyeventmachine.bundle
+  #    ./embedded/lib/ruby/gems/2.6.0/gems/eventmachine-1.2.7/lib/rubyeventmachine.bundle:
+  #      @executable_path/../lib/libruby.2.6.dylib (compatibility version 2.6.0, current version 2.6.6)
+  #      /opt/metasploit-framework/embedded/lib/libssl.1.1.dylib (compatibility version 1.1.0, current version 1.1.0)
+  #      /opt/metasploit-framework/embedded/lib/libcrypto.1.1.dylib (compatibility version 1.1.0, current version 1.1.0)
+  #      /usr/lib/libc++.1.dylib (compatibility version 1.0.0, current version 120.1.0)
+  #      /usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1226.10.1)
+  #
+  # To instead use relative paths:
+  #      @executable_path/../lib/libcrypto.1.1.dylib
+  #
+  # Full context: https://github.com/rapid7/metasploit-omnibus/pull/127#issuecomment-632842474
+  if mac_os_x?
+    block do
+      absolute_lib_path = "#{install_dir}/embedded/lib"
+      relative_lib_path = "@executable_path/../lib"
+
+      macho_files = shellout("find #{project.install_dir}/embedded/{bin,lib} -type f | xargs file | grep Mach-O | awk -F: '{print $1}'").stdout.lines.map(&:strip)
+      macho_files.each do |file|
+        next if file.end_with?(".a")
+
+        # The first line from otools is the file name. For a valid Mach-O file this will only contain the name:
+        #
+        #   bin/ruby:
+        #      ... load commands...
+        #
+        # If there's an error, this will be found at the end:
+        #
+        #   /opt/metasploit-framework/embedded/lib/postgresql/pgxs/config/install-sh: is not an object file
+        #
+        # Followed by the required load commands
+        file_header, *load_commands = shellout("otool -L '#{file}' 2>&1").stdout.lines.map(&:strip)
+        # Similar to the output of `-L`, the first line will be the file, followed by the dylib_id
+        _file_header, dylib_id = shellout("otool -D '#{file}' 2>&1").stdout.lines.map(&:strip)
+
+        unless file_header.include?(":")
+          raise "Expected file header output of otools to contain a ':', but instead found: '#{file_header}'"
+        end
+
+        # Handling the LC_ID_DYLIB load command
+        unless dylib_id.nil?
+          new_relative_id = dylib_id.gsub(/^#{absolute_lib_path}/, relative_lib_path)
+          command("install_name_tool -id '#{new_relative_id}' '#{file}'")
+        end
+
+        # Handling load commands that import libraries, note that the LC_ID_DYLIB may be part of this list.
+        # However, install_name_tool will ignore the `-change` command safely.
+        load_commands.each do |load_command|
+          next unless load_command.start_with?(absolute_lib_path)
+
+          if (match = load_command.match(/^(?<old_path>.*) (?<version_notes>\(.*\))$/))
+            old_absolute_path = match[:old_path]
+            new_relative_path = old_absolute_path.gsub(/^#{absolute_lib_path}/, relative_lib_path)
+            command("install_name_tool -change '#{old_absolute_path}' '#{new_relative_path}' '#{file}'")
+          else
+            raise "Could not successfully patch load_command for relative dynamic linking for dependency '#{file}'"
+          end
+        end
+      end
+    end
+  end
 end
