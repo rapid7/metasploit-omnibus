@@ -96,6 +96,17 @@ EOF
   yum install -y metasploit-framework
 }
 
+install_suse() {
+  echo "Checking for and installing update.."
+  GPG_KEY_FILE=/etc/pki/rpm-gpg/RPM-GPG-KEY-Metasploit
+  echo -n "Adding metasploit-framework to your repository list.."
+
+  zypper ar  -f $DOWNLOAD_URI/rpm metasploit
+  print_pgp_key > ${GPG_KEY_FILE}
+  rpmkeys --import ${GPG_KEY_FILE}
+  zypper install -y metasploit-framework
+}
+
 install_pkg()
 {
   (
@@ -128,6 +139,8 @@ elif [ -f /etc/system-release ] ; then
 else
   if uname -sv | grep 'Darwin' > /dev/null; then
     PKGTYPE=pkg
+  elif [ -f /usr/bin/zypper ] ; then
+    PKGTYPE=sus
   else
     PKGTYPE=deb
   fi
@@ -147,6 +160,9 @@ fi
 case $PKGTYPE in
   deb)
     install_deb
+    ;;
+  sus)
+    install_suse
     ;;
   rpm)
     install_rpm
