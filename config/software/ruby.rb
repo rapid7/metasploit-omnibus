@@ -173,6 +173,7 @@ build do
 
   configure_command = ["--with-out-ext=dbm,readline",
                        "--enable-shared",
+                       "--enable-load-relative",
                        "--disable-install-doc",
                        "--without-gmp",
                        "--without-gdbm",
