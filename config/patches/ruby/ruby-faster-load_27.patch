@@ -1,0 +1,11 @@
+--- ruby-2.7.0/load.c.orig	2020-02-26 12:19:04.963826602 -0800
++++ ruby-2.7.0/load.c	2020-02-26 12:28:55.865876051 -0800
+@@ -578,7 +578,7 @@
+         rb_parser_set_context(parser, NULL, FALSE);
+         ast = (rb_ast_t *)rb_parser_load_file(parser, fname);
+         iseq = rb_iseq_new_top(&ast->body, rb_fstring_lit("<top (required)>"),
+-                               fname, rb_realpath_internal(Qnil, fname, 1), NULL);
++                               fname, fname, NULL);
+         rb_ast_dispose(ast);
+     }
+     rb_exec_event_hook_script_compiled(ec, iseq, Qnil);

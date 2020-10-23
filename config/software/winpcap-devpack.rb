@@ -29,6 +29,7 @@ relative_path "WpdPack"
 source url: "https://www.winpcap.org/install/bin/WpdPack_4_1_2.zip"
 
 build do
+  ruby_api_version = "2.7.0"
 
   mkdir "#{install_dir}/embedded/lib"
   if windows_arch_i386?
@@ -36,7 +37,7 @@ build do
   else
     copy "#{project_dir}/Lib/x64/*", "#{install_dir}/embedded/lib"
   end
-  mkdir "#{install_dir}/embedded/include/ruby-2.6.0"
-  copy "#{project_dir}/Include/*", "#{install_dir}/embedded/include/ruby-2.6.0"
+  mkdir "#{install_dir}/embedded/include/ruby-#{ruby_api_version}"
+  copy "#{project_dir}/Include/*", "#{install_dir}/embedded/include/ruby-#{ruby_api_version}"
 
 end
