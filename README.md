@@ -106,6 +106,13 @@ bin/omnibus build metasploit-framework
 ```
 when complete, there will be a new installable .deb file under the 'pkg' directory.
 
+## Building on Windows
+
+From Windows 10, install ruby, msys2, ruby-devkit, wixtoolset, git. Add the following command to the the preparation steps before executing the `build` command.
+```
+xz -d local/cache/*.xz
+``` 
+
 ## Building on OS X
 
 From OS X, first install XCode and the command line development tools. I use ruby, bundler, git, bison and flex from the Mac Homebrew project. The rest of the steps are identical to building on Ubuntu. A .pkg file will be under the pkg directory instead.
