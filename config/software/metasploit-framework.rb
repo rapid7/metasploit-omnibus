@@ -69,6 +69,9 @@ build do
         vars: { install_dir: install_dir }
   end
 
+  unless windows?
+    bundle "config set force_ruby_platform true", env: env
+  end
   bundle "install", env: env
 
   if windows?
