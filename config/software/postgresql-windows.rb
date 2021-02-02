@@ -15,7 +15,7 @@
 #
 
 name "postgresql-windows"
-default_version "9.6.7"
+default_version "9.6.20"
 
 relative_path "pgsql"
 
@@ -46,6 +46,10 @@ if windows_arch_i386?
 
   source url: "http://get.enterprisedb.com/postgresql/postgresql-#{version}-1-windows-binaries.zip"
 else
+  version "9.6.20" do
+    source sha256: "a76e41e3101e09a2e772a26f0b93b405a97482b42b0695893465f3533c76d326"
+  end
+
   version "9.6.11" do
     source sha256: "39df7a8212df8ce86ebae7f728cac7327a5e9ab821e351ac623ce33de6ed2b1a"
   end
