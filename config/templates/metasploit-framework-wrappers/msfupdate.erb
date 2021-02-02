@@ -98,9 +98,12 @@ EOF
 
 install_suse() {
   echo "Checking for and installing update.."
-  GPG_KEY_FILE=/etc/pki/rpm-gpg/RPM-GPG-KEY-Metasploit
+  GPG_KEY_FILE_DIR=/etc/pki/rpm-gpg
+  GPG_KEY_FILE=${GPG_KEY_FILE_DIR}/RPM-GPG-KEY-Metasploit
   echo -n "Adding metasploit-framework to your repository list.."
-
+  if [ ! -d $GPG_KEY_FILE_DIR ]; then
+    mkdir -p $GPG_KEY_FILE_DIR
+  fi
   zypper ar  -f $DOWNLOAD_URI/rpm metasploit
   print_pgp_key > ${GPG_KEY_FILE}
   rpmkeys --import ${GPG_KEY_FILE}
