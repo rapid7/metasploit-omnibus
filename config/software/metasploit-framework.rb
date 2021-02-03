@@ -3,8 +3,9 @@ if linux? && File.exist?("/metasploit-framework")
   # supply current version of metasploit-framework at root of filesystem
   source path: "/metasploit-framework"
 else
-  source git: "https://github.com/rapid7/metasploit-framework.git"
-  default_version "master"
+  # Testing sqlite3 upgrade - https://github.com/rapid7/metasploit-framework/pull/14714
+  source git: "https://github.com/adfoster-r7/metasploit-framework.git", md5: "8b0b5c31fe5b31a0b24871e6b909f3cbdab4b1e3"
+  default_version "8b0b5c31fe5b31a0b24871e6b909f3cbdab4b1e3"
 end
 
 dependency "bundler"
