@@ -12,7 +12,6 @@ dependency "pcaprub"
 if windows?
   dependency "postgresql-windows"
   dependency "sqlite3-gem"
-  sqlite3_gem_version = "-v 1.3.13"
 else
   dependency "liblzma"
   dependency "libxslt"
@@ -79,9 +78,6 @@ build do
     # https://github.com/codahale/bcrypt-ruby/issues/139
     gem "uninstall bcrypt", env: env
     gem "install bcrypt --no-document --platform=ruby", env: env
-
-    gem "uninstall sqlite3", env: env
-    gem "install sqlite3 #{sqlite3_gem_version} --no-document --platform=ruby", env: env
 
     delete "#{install_dir}/devkit"
   end
