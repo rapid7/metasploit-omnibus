@@ -1,0 +1,41 @@
+{
+  "variables": {
+    "aws_access_key": "{{env `AWS_ACCESS_KEY_ID`}}",
+    "aws_secret_key": "{{env `AWS_SECRET_ACCESS_KEY`}}",
+    "region":         "us-west-1"
+  },
+  "builders": [
+    {
+      "access_key": "{{user `aws_access_key`}}",
+      "ami_name": "metasploit-omnibus-amd64-{{timestamp}}",
+      "instance_type": "t2.micro",
+      "region": "{{user `region`}}",
+      "secret_key": "{{user `aws_secret_key`}}",
+      "launch_block_device_mappings": [ {
+        "device_name": "/dev/sda1",
+        "volume_size": 20,
+        "volume_type": "gp2",
+        "delete_on_termination": true
+       } ],
+      "source_ami_filter": {
+        "filters": {
+          "virtualization-type": "hvm",
+          "name": "ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*",
+          "root-device-type": "ebs"
+      },
+      "owners": ["099720109477"],
+      "most_recent": true
+      },
+    "ssh_username": "ubuntu",
+    "type": "amazon-ebs"
+  }
+  ],
+  "provisioners": [
+    {
+      "execute_command": "{{.Vars}} sudo -E -S bash '{{.Path}}'",
+      "type": "shell",
+      "script": "./configure_ami.sh",
+      "expect_disconnect": "true"
+    }
+  ]
+}
