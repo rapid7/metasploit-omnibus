@@ -15,7 +15,7 @@
 #
 
 name "libxslt"
-default_version "1.1.30"
+default_version "1.1.34"
 
 license "MIT"
 license_file "COPYING"
@@ -25,13 +25,9 @@ dependency "libxml2"
 dependency "liblzma"
 dependency "config_guess"
 
-version "1.1.30" do
-  source sha256: "ba65236116de8326d83378b2bd929879fa185195bc530b9d1aba72107910b6b3"
-end
-
-version "1.1.29" do
-  source md5: "a129d3c44c022de3b9dcf6d6f288d72e"
-end
+# versions_list: ftp://xmlsoft.org/libxml2/ filter=*.tar.gz
+version("1.1.34") { source sha256: "98b1bd46d6792925ad2dfe9a87452ea2adebf69dcb9919ffd55bf926a7f93f7f" }
+version("1.1.30") { source sha256: "ba65236116de8326d83378b2bd929879fa185195bc530b9d1aba72107910b6b3" }
 
 source url: "ftp://xmlsoft.org/libxml2/libxslt-#{version}.tar.gz"
 
@@ -42,29 +38,25 @@ build do
 
   env = with_standard_compiler_flags(with_embedded_path)
 
-  patch source: "libxslt-solaris-configure.patch", env: env if solaris? || omnios? || smartos?
+  patch source: "libxslt-solaris-configure.patch", env: env if solaris2? || omnios? || smartos?
 
-  if windows? && version.satisfies?(">=1.1.30")
-    patch source: "libxslt-windows-relocate-1.1.30.patch", env: env
+  if windows?
+    patch source: "libxslt-windows-relocate.patch", env: env
   end
+
   # the libxslt configure script iterates directories specified in
   # --with-libxml-prefix looking for the libxml2 config script. That
   # iteration treats colons as a delimiter so we are using a cygwin
   # style path to accomodate
   configure_commands = [
-    "--with-libxml-prefix=#{install_dir.sub('C:', '/C')}/embedded",
-    "--with-libxml-include-prefix=#{install_dir}/embedded/include",
-    "--with-libxml-libs-prefix=#{install_dir}/embedded/lib",
+    "--with-libxml-prefix=#{install_dir.sub("C:", "/C")}/embedded",
     "--without-python",
     "--without-crypto",
+    "--without-profiler",
+    "--without-debugger",
   ]
 
   configure(*configure_commands, env: env)
-
-  if windows? && version.satisfies?("<1.1.30")
-    # Apply a post configure patch to prevent dll base address clash
-    patch source: "libxslt-windows-relocate.patch", env: env
-  end
 
   make "-j #{workers}", env: env
   make "install", env: env

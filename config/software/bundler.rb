@@ -28,6 +28,8 @@ else
   dependency "rubygems"
 end
 
+default_version "2.1.4"
+
 build do
   env = with_standard_compiler_flags(with_embedded_path)
   env['SSL_CERT_FILE'] = "#{install_dir}/embedded/ssl/cert.pem"

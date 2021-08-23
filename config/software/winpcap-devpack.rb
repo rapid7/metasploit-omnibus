@@ -29,7 +29,7 @@ relative_path "WpdPack"
 source url: "https://www.winpcap.org/install/bin/WpdPack_4_1_2.zip"
 
 build do
-  ruby_api_version = "2.7.0"
+  ruby_api_version = "3.0.0"
 
   mkdir "#{install_dir}/embedded/lib"
   if windows_arch_i386?

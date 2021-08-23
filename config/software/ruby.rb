@@ -26,7 +26,7 @@ skip_transitive_dependency_licensing true
 # the default versions should always be the latest release of ruby
 # if you consume this definition it is your responsibility to pin
 # to the desired version of ruby. don't count on this not changing.
-default_version "2.7.1"
+default_version "3.0.2"
 
 dependency "zlib"
 dependency "openssl"
@@ -63,7 +63,7 @@ relative_path "ruby-#{version}"
 
 env = with_standard_compiler_flags(with_embedded_path)
 
-jemalloc_required = linux? || windows? || mac_os_x?
+jemalloc_required = linux? || mac_os_x?
 if jemalloc_required
   dependency "jemalloc"
 end

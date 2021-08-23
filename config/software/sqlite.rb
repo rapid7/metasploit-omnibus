@@ -24,20 +24,23 @@ source :url => "https://sqlite.org/2015/sqlite-autoconf-3080802.tar.gz",
 relative_path "sqlite-autoconf-3080802"
 
 build do
-  cmd = ["./configure",
-         "--prefix=#{install_dir}/embedded",
-         "--disable-readline"
-         ].join(" ")
+  use_bash = ""
   env = {
     "LDFLAGS" => "-L#{install_dir}/embedded/lib -I#{install_dir}/embedded/include",
     "CFLAGS" => "-L#{install_dir}/embedded/lib -I#{install_dir}/embedded/include",
     "LD_RUN_PATH" => "#{install_dir}/embedded/lib"
   }
+  if windows?
+    use_bash = "#{install_dir}/embedded/msys64/usr/bin/bash.exe -lc " # in windows we do not use ./ for location
+    env['MSYSTEM'] = windows_arch_i386? ? 'MINGW32' : 'MINGW64'
+  end
+  cmd = ["#{use_bash}./configure",
+         "--prefix=#{install_dir}/embedded",
+         "--disable-readline"
+         ].join(" ")
   command cmd, :env => env
-  #command "make -j #{max_build_jobs}", :env => {"LD_RUN_PATH" => "#{install_dir}/embedded/lib"}
-  #command "make install", :env => {"LD_RUN_PATH" => "#{install_dir}/embedded/lib"}end
   make "-j #{workers}", env: env
-  make "install", env: env
+  make "install prefix=#{install_dir}/embedded", env: env
 end
 
 

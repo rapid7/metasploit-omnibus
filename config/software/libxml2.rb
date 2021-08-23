@@ -1,5 +1,5 @@
 #
-# Copyright 2012-2018, Chef Software Inc.
+# Copyright:: Chef Software Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
 #
 
 name "libxml2"
-default_version "2.9.7"
+default_version "2.9.10" # 2.9.12 is not properly building as of 5.20.21
 
 license "MIT"
 license_file "COPYING"
@@ -25,21 +25,10 @@ dependency "zlib"
 dependency "liblzma"
 dependency "config_guess"
 
-version "2.9.7" do
-  source sha256: "f63c5e7d30362ed28b38bfa1ac6313f9a80230720b7fb6c80575eeab3ff5900c"
-end
-
-version "2.9.5" do
-  source sha256: "4031c1ecee9ce7ba4f313e91ef6284164885cdb69937a123f6a83bb6a72dcd38"
-end
-
-version "2.9.4" do
-  source md5: "ae249165c173b1ff386ee8ad676815f5"
-end
-
-version "2.9.3" do
-  source md5: "daece17e045f1c107610e137ab50c179"
-end
+# version_list: url=ftp://xmlsoft.org/libxml2/ filter=libxml2-*.tar.gz
+version("2.9.12") { source sha256: "c8d6681e38c56f172892c85ddc0852e1fd4b53b4209e7f4ebf17f7e2eae71d92" }
+version("2.9.10") { source sha256: "aafee193ffb8fe0c82d4afef6ef91972cbaf5feea100edc2f262750611b4be1f" }
+version("2.9.9")  { source sha256: "94fb70890143e3c6549f265cee93ec064c80a84c42ad0f23e85ee1fd6540a871" }
 
 source url: "ftp://xmlsoft.org/libxml2/libxml2-#{version}.tar.gz"
 
@@ -50,9 +39,17 @@ build do
 
   configure_command = [
     "--with-zlib=#{install_dir}/embedded",
+    "--with-lzma=#{install_dir}/embedded",
+    "--with-sax1", # required for nokogiri to compile
     "--without-iconv",
     "--without-python",
     "--without-icu",
+    "--without-debug",
+    "--without-mem-debug",
+    "--without-run-debug",
+    "--without-legacy", # we don't need legacy interfaces
+    "--without-catalog",
+    "--without-docbook",
   ]
 
   update_config_guess
