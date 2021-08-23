@@ -20,6 +20,7 @@ else
   dependency "sqlite"
 end
 
+ruby_abi_version = "2.7.0"
 # This depends on extra system libraries on OS X
 whitelist_file "#{install_dir}//embedded/framework/data/isight.bundle"
 
@@ -30,7 +31,7 @@ whitelist_file "#{install_dir}//embedded/framework/data/exploits/.*"
 whitelist_file "#{install_dir}/embedded/framework/data/exploits/CVE-2016-4557/hello"
 
 # This depends on Openssl 1.x
-whitelist_file "#{install_dir}/embedded/lib/ruby/gems/2.3.0/gems/metasploit-payloads.*"
+whitelist_file "#{install_dir}/embedded/lib/ruby/gems/#{ruby_abi_version}/gems/metasploit-payloads.*"
 
 build do
   copy "#{project_dir}", "#{install_dir}/embedded/framework"
@@ -68,7 +69,9 @@ build do
         vars: { install_dir: install_dir }
   end
 
-  unless windows?
+  if windows?
+    bundle "config set install.eventmachine --platform=ruby", env: env
+  else
     bundle "config set force_ruby_platform true", env: env
   end
   bundle "install", env: env
