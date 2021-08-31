@@ -1,0 +1,281 @@
+diff -ur ruby-3.0.1/configure.ac ruby-3.0.1-patched/configure.ac
+--- ruby-3.0.1/configure.ac	2021-04-05 05:33:42.000000000 -0700
++++ ruby-3.0.1-patched/configure.ac	2021-04-09 12:42:35.578174106 -0700
+@@ -544,11 +544,16 @@
+     rpathflag=`echo "$RPATHFLAG" | sed 's/%.*//'`
+ ])
+ 
+-RUBY_TRY_CFLAGS(-fdeclspec, [
+-  RUBY_APPEND_OPTIONS(CC, -fdeclspec)
+-  RUBY_APPEND_OPTIONS(MJIT_CC, -fdeclspec)
++RUBY_TRY_LDFLAGS(-fdeclspec, [fdeclspec=yes], [fdeclspec=no])
++AS_IF([test "$fdeclspec" = yes], [
++    RUBY_APPEND_OPTIONS(CFLAGS, -fdeclspec)
++    RUBY_APPEND_OPTIONS(cflags, -fdeclspec)
++    RUBY_APPEND_OPTIONS(orig_cflags, -fdeclspec)
++])
++RUBY_TRY_CXXFLAGS(-fdeclspec, [fdeclspec=yes], [fdeclspec=no])
++AS_IF([test "$fdeclspec" = yes], [
++    RUBY_APPEND_OPTIONS(CXXFLAGS, -fdeclspec)
+ ])
+-RUBY_TRY_CXXFLAGS(-fdeclspec, [RUBY_APPEND_OPTIONS(CXX, -fdeclspec)])
+ 
+ AS_CASE([$RUBY_PATCHLEVEL], [-*],
+ 	[RUBY_DEVEL=yes], [RUBY_DEVEL=no])
+@@ -1494,7 +1499,9 @@
+ 	AC_DEFINE_UNQUOTED([RUBY_ALIAS_FUNCTION_VOID(prot, name, args)],
+ 			   [RUBY_ALIAS_FUNCTION_TYPE(void, prot, name, args)])
+     ])
++])
+ 
++{
+     AC_CACHE_CHECK([for __atomic builtins], [rb_cv_gcc_atomic_builtins], [
+ 	AC_TRY_LINK([unsigned int atomic_var;],
+ 		    [
+@@ -1525,7 +1532,6 @@
+     AS_IF([test "$rb_cv_gcc_sync_builtins" = yes], [
+ 	AC_DEFINE(HAVE_GCC_SYNC_BUILTINS)
+     ])
+-])
+ 
+     AC_CACHE_CHECK(for __builtin_unreachable, rb_cv_func___builtin_unreachable,
+     [RUBY_WERROR_FLAG(
+@@ -1538,6 +1544,7 @@
+     AS_IF([test "$rb_cv_func___builtin_unreachable" = yes], [
+ 	AC_DEFINE_UNQUOTED(UNREACHABLE, [__builtin_unreachable()])
+     ])
++}
+ 
+ AC_CACHE_CHECK(for exported function attribute, rb_cv_func_exported, [
+ rb_cv_func_exported=no
+diff -ur ruby-3.0.1/internal/bits.h ruby-3.0.1-patched/internal/bits.h
+--- ruby-3.0.1/internal/bits.h	2021-04-05 05:33:42.000000000 -0700
++++ ruby-3.0.1-patched/internal/bits.h	2021-04-09 12:42:35.578845209 -0700
+@@ -284,7 +284,7 @@
+     }
+     else {
+         /* :FIXME: Is there a way to make this branch a compile-time error? */
+-        __builtin_unreachable();
++        UNREACHABLE_RETURN(~0);
+     }
+ 
+ #else
+@@ -419,7 +419,7 @@
+     }
+     else {
+         /* :FIXME: Is there a way to make this branch a compile-time error? */
+-        __builtin_unreachable();
++        UNREACHABLE_RETURN(~0);
+     }
+ 
+ #else
+@@ -492,7 +492,7 @@
+     }
+     else {
+         /* :FIXME: Is there a way to make this branch a compile-time error? */
+-        __builtin_unreachable();
++        UNREACHABLE_RETURN(~0);
+     }
+ 
+ #else
+diff -ur ruby-3.0.1/template/Makefile.in ruby-3.0.1-patched/template/Makefile.in
+--- ruby-3.0.1/template/Makefile.in	2021-04-05 05:33:42.000000000 -0700
++++ ruby-3.0.1-patched/template/Makefile.in	2021-04-09 12:42:35.579834751 -0700
+@@ -75,7 +75,7 @@
+ CC_VERSION = @CC_VERSION@
+ OUTFLAG = @OUTFLAG@$(empty)
+ COUTFLAG = @COUTFLAG@$(empty)
+-CPPOUTFLAG = $(COUTFLAG)
++CPPOUTFLAG = >
+ ARCH_FLAG = @ARCH_FLAG@
+ CFLAGS_NO_ARCH = @CFLAGS@
+ CFLAGS = $(CFLAGS_NO_ARCH) $(ARCH_FLAG)
+diff -ur ruby-3.0.1/configure ruby-3.0.1-patched/configure
+--- ruby-3.0.1/configure	2021-04-05 05:33:44.000000000 -0700
++++ ruby-3.0.1-patched/configure	2021-04-09 13:21:37.087380251 -0700
+@@ -9345,8 +9345,10 @@
+ fi
+ 
+ 
+-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether -fdeclspec is accepted as CFLAGS" >&5
+-$as_echo_n "checking whether -fdeclspec is accepted as CFLAGS... " >&6; }
++    save_LDFLAGS="$LDFLAGS"
++    LDFLAGS="$LDFLAGS -fdeclspec"
++    { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether -fdeclspec is accepted as LDFLAGS" >&5
++$as_echo_n "checking whether -fdeclspec is accepted as LDFLAGS... " >&6; }
+     save_CFLAGS="$CFLAGS"
+ CFLAGS="$CFLAGS $rb_cv_warnflags"
+ if test "${ac_c_werror_flag+set}"; then :
+@@ -9360,7 +9362,6 @@
+ fi
+ ac_c_werror_flag=yes
+ 
+-    CFLAGS="$CFLAGS -fdeclspec"
+     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+ /* end confdefs.h.  */
+ 
+@@ -9372,39 +9373,17 @@
+   return 0;
+ }
+ _ACEOF
+-if ac_fn_c_try_compile "$LINENO"; then :
+-
+-  # RUBY_APPEND_OPTIONS(CC)
+-	for rb_opt in -fdeclspec; do
+-	case " ${CC-} " in #(
+-  *" ${rb_opt} "*) :
+-     ;; #(
+-  '  ') :
+-     CC="${rb_opt}" ;; #(
+-  *) :
+-     CC="$CC ${rb_opt}" ;;
+-esac
+-	done
+-  # RUBY_APPEND_OPTIONS(MJIT_CC)
+-	for rb_opt in -fdeclspec; do
+-	case " ${MJIT_CC-} " in #(
+-  *" ${rb_opt} "*) :
+-     ;; #(
+-  '  ') :
+-     MJIT_CC="${rb_opt}" ;; #(
+-  *) :
+-     MJIT_CC="$MJIT_CC ${rb_opt}" ;;
+-esac
+-	done
+-
++if ac_fn_c_try_link "$LINENO"; then :
++  fdeclspec=yes
+ 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+     $as_echo "${msg_result_yes}yes${msg_reset}" >&6 ; }
+ else
+-
++  fdeclspec=no
+ 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+     $as_echo "${msg_result_no}no${msg_reset}" >&6 ; }
+ fi
+-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
++rm -f core conftest.err conftest.$ac_objext \
++    conftest$ac_exeext conftest.$ac_ext
+ 
+ CFLAGS="$save_CFLAGS"
+ save_CFLAGS=
+@@ -9417,7 +9396,46 @@
+   unset ac_c_werror_flag
+ 
+ fi
++    LDFLAGS="$save_LDFLAGS"
++    save_LDFLAGS=
+ 
++if test "$fdeclspec" = yes; then :
++
++    # RUBY_APPEND_OPTIONS(CFLAGS)
++	for rb_opt in -fdeclspec; do
++	case " ${CFLAGS-} " in #(
++  *" ${rb_opt} "*) :
++     ;; #(
++  '  ') :
++     CFLAGS="${rb_opt}" ;; #(
++  *) :
++     CFLAGS="$CFLAGS ${rb_opt}" ;;
++esac
++	done
++    # RUBY_APPEND_OPTIONS(cflags)
++	for rb_opt in -fdeclspec; do
++	case " ${cflags-} " in #(
++  *" ${rb_opt} "*) :
++     ;; #(
++  '  ') :
++     cflags="${rb_opt}" ;; #(
++  *) :
++     cflags="$cflags ${rb_opt}" ;;
++esac
++	done
++    # RUBY_APPEND_OPTIONS(orig_cflags)
++	for rb_opt in -fdeclspec; do
++	case " ${orig_cflags-} " in #(
++  *" ${rb_opt} "*) :
++     ;; #(
++  '  ') :
++     orig_cflags="${rb_opt}" ;; #(
++  *) :
++     orig_cflags="$orig_cflags ${rb_opt}" ;;
++esac
++	done
++
++fi
+ 
+ 
+     save_CXXFLAGS="$CXXFLAGS"
+@@ -9455,21 +9473,11 @@
+ }
+ _ACEOF
+ if ac_fn_cxx_try_link "$LINENO"; then :
+-  # RUBY_APPEND_OPTIONS(CXX)
+-	for rb_opt in -fdeclspec; do
+-	case " ${CXX-} " in #(
+-  *" ${rb_opt} "*) :
+-     ;; #(
+-  '  ') :
+-     CXX="${rb_opt}" ;; #(
+-  *) :
+-     CXX="$CXX ${rb_opt}" ;;
+-esac
+-	done
++  fdeclspec=yes
+ 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+     $as_echo "${msg_result_yes}yes${msg_reset}" >&6 ; }
+ else
+-
++  fdeclspec=no
+ 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+     $as_echo "${msg_result_no}no${msg_reset}" >&6 ; }
+ fi
+@@ -9496,6 +9504,21 @@
+     CXXFLAGS="$save_CXXFLAGS"
+     save_CXXFLAGS=
+ 
++if test "$fdeclspec" = yes; then :
++
++    # RUBY_APPEND_OPTIONS(CXXFLAGS)
++	for rb_opt in -fdeclspec; do
++	case " ${CXXFLAGS-} " in #(
++  *" ${rb_opt} "*) :
++     ;; #(
++  '  ') :
++     CXXFLAGS="${rb_opt}" ;; #(
++  *) :
++     CXXFLAGS="$CXXFLAGS ${rb_opt}" ;;
++esac
++	done
++
++fi
+ 
+ case $RUBY_PATCHLEVEL in #(
+   -*) :
+@@ -19369,6 +19392,9 @@
+ 
+ fi
+ 
++fi
++
++{
+     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for __atomic builtins" >&5
+ $as_echo_n "checking for __atomic builtins... " >&6; }
+ if ${rb_cv_gcc_atomic_builtins+:} false; then :
+@@ -19450,8 +19476,6 @@
+ 
+ fi
+ 
+-fi
+-
+     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for __builtin_unreachable" >&5
+ $as_echo_n "checking for __builtin_unreachable... " >&6; }
+ if ${rb_cv_func___builtin_unreachable+:} false; then :
+@@ -19511,6 +19535,7 @@
+ 
+ 
+ fi
++}
+ 
+ { $as_echo "$as_me:${as_lineno-$LINENO}: checking for exported function attribute" >&5
+ $as_echo_n "checking for exported function attribute... " >&6; }
