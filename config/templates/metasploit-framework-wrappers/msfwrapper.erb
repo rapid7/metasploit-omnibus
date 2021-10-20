@@ -106,11 +106,11 @@ if [ -e "$FRAMEWORK/$cmd" ]; then
     cmd="$cmd $db_args"
   fi
 
-  $BIN/ruby $FRAMEWORK/$cmd "$@"
+  exec $BIN/ruby $FRAMEWORK/$cmd "$@"
 else
   if [ "$FROM_CONSOLE_PATH" = true ]; then
     (cd $FRAMEWORK && $BIN/ruby $BIN/$cmd "$@")
   else
-    $BIN/ruby $BIN/$cmd "$@"
+    exec $BIN/ruby $BIN/$cmd "$@"
   fi
 fi
