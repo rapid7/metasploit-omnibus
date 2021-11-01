@@ -20,6 +20,7 @@ license "MIT"
 license_file "https://raw.githubusercontent.com/bundler/bundler/master/LICENSE.md"
 skip_transitive_dependency_licensing true
 
+dependency "cacerts"
 if windows?
   dependency "ruby-windows"
   dependency "rubygems"
@@ -29,6 +30,7 @@ end
 
 build do
   env = with_standard_compiler_flags(with_embedded_path)
+  env['SSL_CERT_FILE'] = "#{install_dir}/embedded/ssl/cert.pem"
 
   v_opts = "--version '#{version}'" unless version.nil?
   gem [

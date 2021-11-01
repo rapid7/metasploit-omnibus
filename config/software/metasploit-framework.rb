@@ -7,6 +7,7 @@ else
   default_version "master"
 end
 
+dependency "cacerts"
 dependency "bundler"
 dependency "pcaprub"
 if windows?
@@ -61,6 +62,7 @@ build do
   end
 
   env = with_standard_compiler_flags(with_embedded_path)
+  env['SSL_CERT_FILE'] = "#{install_dir}/embedded/ssl/cert.pem"
   unless windows?
     erb source: 'msfdb-kali.erb',
         dest: "#{install_dir}/embedded/framework/msfdb-kali",

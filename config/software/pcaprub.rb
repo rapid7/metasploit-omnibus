@@ -26,10 +26,12 @@ else
   dependency "libpcap"
 end
 
+dependency "cacerts"
 dependency "rubygems"
 
 build do
   env = with_standard_compiler_flags(with_embedded_path)
+  env['SSL_CERT_FILE'] = "#{install_dir}/embedded/ssl/cert.pem"
   gem "install pcaprub" \
     " --version '#{version}' --no-document", env: env
 end
