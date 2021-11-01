@@ -1,5 +1,5 @@
 #
-# Copyright 2012-2014 Chef Software, Inc.
+# Copyright 2012-2019, Chef Software Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,21 +15,21 @@
 #
 
 name "ncurses"
-default_version "6.0-20150810"
+default_version "6.2"
 
 license "MIT"
 license_file "http://invisible-island.net/ncurses/ncurses-license.html"
 license_file "http://invisible-island.net/ncurses/ncurses.faq.html"
 skip_transitive_dependency_licensing true
 
-dependency "libtool" if aix?
 dependency "config_guess"
-dependency "patch" if solaris_10?
 
-version("5.9") { source md5: "8cb9c412e5f2d96bc6f459aa8c6282a1", url: "https://ftp.gnu.org/gnu/ncurses/ncurses-5.9.tar.gz" }
-version("5.9-20150530") { source md5: "bb2cbe1d788d3ab0138fc2734e446b43", url: "ftp://invisible-island.net/ncurses/current/ncurses-5.9-20150530.tgz" }
-version("6.0-20150613") { source md5: "0c6a0389d004c78f4a995bc61884a563", url: "ftp://invisible-island.net/ncurses/current/ncurses-6.0-20150613.tgz" }
-version("6.0-20150810") { source md5: "78bfcb4634a87b4cda390956586f8f1f", url: "ftp://invisible-island.net/ncurses/current/ncurses-6.0-20150810.tgz" }
+# versions_list: https://ftp.gnu.org/gnu/ncurses/ filter=*.tar.gz
+version("6.2") { source sha256: "30306e0c76e0f9f1f0de987cf1c82a5c21e1ce6568b9227f7da5b71cbea86c9d" }
+version("6.1") { source sha256: "aa057eeeb4a14d470101eff4597d5833dcef5965331be3528c08d99cebaa0d17" }
+version("5.9") { source sha256: "9046298fb440324c9d4135ecea7879ffed8546dd1b58e59430ea07a4633f563b" }
+
+source url: "https://ftp.gnu.org/gnu/ncurses/ncurses-#{version}.tar.gz"
 
 relative_path "ncurses-#{version}"
 
@@ -64,7 +64,7 @@ build do
     patch source: "patch-cxx_cursesf.h", plevel: 0, env: env
     patch source: "patch-cxx_cursesm.h", plevel: 0, env: env
 
-    # Opscode patches - <someara@opscode.com>
+    # Chef patches - <sean@sean.io>
     # The configure script from the pristine tarball detects xopen_source_extended incorrectly.
     # Manually working around a false positive.
     patch source: "ncurses-5.9-solaris-xopen_source_extended-detection.patch", plevel: 0, env: env
@@ -81,7 +81,7 @@ build do
   end
 
   if mac_os_x? ||
-    # Clang became the default compiler in FreeBSD 10+
+      # Clang became the default compiler in FreeBSD 10+
       (freebsd? && ohai["os_version"].to_i >= 1000024)
     # References:
     # https://github.com/Homebrew/homebrew-dupes/issues/43
@@ -128,10 +128,6 @@ build do
     # use gnu install from the coreutils IBM rpm package
     env["INSTALL"] = "/opt/freeware/bin/install"
   end
-
-  # only Solaris 10 sh has a problem with
-  # parens enclosed case statement conditions the configure script
-  configure_command.unshift "bash" if solaris_10?
 
   command configure_command.join(" "), env: env
 
