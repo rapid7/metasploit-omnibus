@@ -1,5 +1,5 @@
 #
-# Copyright 2012-2015 Chef Software, Inc.
+# Copyright:: Chef Software, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,20 +15,18 @@
 #
 
 name "libffi"
-
-default_version "3.2.1"
+default_version "3.4.2"
 
 license "MIT"
 license_file "LICENSE"
 skip_transitive_dependency_licensing true
 
-# Is libtool actually necessary? Doesn't configure generate one?
-dependency "libtool" unless windows?
+# version_list: url=https://github.com/libffi/libffi/releases filter=*.tar.gz
 
-version("3.0.13") { source md5: "45f3b6dbc9ee7c7dfbbbc5feba571529" }
-version("3.2.1")  { source md5: "83b89587607e3eb65c70d361f13bab43" }
+version("3.4.2") { source sha256: "540fb721619a6aba3bdeef7d940d8e9e0e6d2c193595bc243241b77ff9e93620" }
+version("3.3")   { source sha256: "72fba7922703ddfa7a028d513ac15a85c8d54c8d67f55fa5a4802885dc652056" }
 
-source url: "ftp://sourceware.org/pub/libffi/libffi-#{version}.tar.gz"
+source url: "https://github.com/libffi/libffi/releases/download/v#{version}/libffi-#{version}.tar.gz"
 
 relative_path "libffi-#{version}"
 
@@ -37,30 +35,34 @@ build do
 
   env["INSTALL"] = "/opt/freeware/bin/install" if aix?
 
-  configure_command = []
+  # disable option checking as disable-docs is 3.3+ only
+  configure_command = ["--disable-option-checking",
+                       "--disable-docs",
+  ]
+
+  if version == "3.3" && mac_os_x? && arm?
+    patch source: "libffi-3.3-arm64.patch", plevel: 1, env: env
+  end
 
   # AIX's old version of patch doesn't like the patch here
   unless aix?
-    # Patch to disable multi-os-directory via configure flag (don't use /lib64)
+    # disable multi-os-directory via configure flag (don't use /lib64)
     # Works on all platforms, and is compatible on 32bit platforms as well
+    configure_command << "--disable-multi-os-directory"
+
+    # add the --disable-multi-os-directory flag to 3.2.1
     if version == "3.2.1"
       patch source: "libffi-3.2.1-disable-multi-os-directory.patch", plevel: 1, env: env
-      configure_command << "--disable-multi-os-directory"
     end
   end
 
   configure(*configure_command, env: env)
 
-  if solaris_10?
-    # run old make :(
-    make env: env, bin: "/usr/ccs/bin/make"
-    make "install", env: env, bin: "/usr/ccs/bin/make"
-  else
-    make "-j #{workers}", env: env
-    make "-j #{workers} install", env: env
-  end
+  make "-j #{workers}", env: env
+  make "-j #{workers} install", env: env
 
   # libffi's default install location of header files is awful...
-  copy "#{install_dir}/embedded/lib/libffi-#{version}/include/*", "#{install_dir}/embedded/include"
+  mkdir "#{install_dir}/embedded/include"
+  copy "#{install_dir}/embedded/lib/libffi-#{version}/include/*", "#{install_dir}/embedded/include/"
 
 end
