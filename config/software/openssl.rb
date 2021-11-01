@@ -1,5 +1,5 @@
 #
-# Copyright 2012-2019, Chef Software Inc.
+# Copyright:: Copyright (c) Chef Software Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,21 +25,26 @@ dependency "openssl-fips" if fips_mode?
 
 default_version "1.1.1f"
 
-# OpenSSL source ships with broken symlinks which windows doesn't allow.
-# Skip error checking.
-source url: "https://www.openssl.org/source/openssl-#{version}.tar.gz", extract: :lax_tar
+# Openssl builds engines as libraries into a special directory. We need to include
+# that directory in lib_dirs so omnibus can sign them during macOS deep signing.
+lib_dirs lib_dirs.concat(["#{install_dir}/embedded/lib/engines"])
+lib_dirs lib_dirs.concat(["#{install_dir}/embedded/lib/engines-1.1"]) if version.start_with?("1.1")
 
+# 1.0.2u was the last public release of 1.0.2. Subsequent releases come from a support contract with OpenSSL Software Services
+if version.satisfies?("< 1.1.0")
+  source url: "https://s3.amazonaws.com/chef-releng/openssl/openssl-#{version}.tar.gz", extract: :lax_tar
+else
+  # As of 2020-09-09 even openssl-1.0.0.tar.gz can be downloaded from /source/openssl-VERSION.tar.gz
+  # However, the latest releases are not in /source/old/VERSION/openssl-VERSION.tar.gz.
+  # Let's stick with the simpler one for now.
+  source url: "https://www.openssl.org/source/openssl-#{version}.tar.gz", extract: :lax_tar
+end
+
+version("1.1.1l") { source sha256: "0b7a3e5e59c34827fe0c3a74b7ec8baef302b98fa80088d7f9153aa16fa76bd1" }
 version("1.1.1f") { source sha256: "186c6bfe6ecfba7a5b48c47f8a1673d0f3b0e5ba2e25602dd23b629975da3f35" }
-version("1.1.1d") { source sha256: "1e3a91bc1f9dfce01af26026f856e064eab4c8ee0a8f457b5ae30b40b8b711f2" }
-version("1.1.0i") { source sha256: "ebbfc844a8c8cc0ea5dc10b86c9ce97f401837f3fa08c17b2cdadc118253cf99" }
-version("1.1.0l") { source sha256: "74a2f756c64fd7386a29184dc0344f4831192d61dc2481a93a4c5dd727f41148" }
-version("1.1.0h") { source sha256: "5835626cde9e99656585fc7aaa2302a73a7e1340bf8c14fd635a62c66802a517" }
-version("1.0.2u") { source sha256: "ecd0c6ffb493dd06707d38b14bb4d8c2288bb7033735606569d8f90f89669d16" }
-version("1.0.2t") { source sha256: "14cb464efe7ac6b54799b34456bd69558a749a4931ecfd9cf9f71d7881cac7bc" }
-version("1.0.2s") { source sha256: "cabd5c9492825ce5bd23f3c3aeed6a97f8142f606d893df216411f07d1abab96" }
-version("1.0.1u") { source sha256: "4312b4ca1215b6f2c97007503d80db80d5157f76f8f7d3febbe6b4c56ff26739" }
-version("1.0.1t") { source sha256: "4a6ee491a2fdb22e519c76fdc2a628bb3cec12762cd456861d207996c8a07088" }
-version("1.0.1s") { source sha256: "e7e81d82f3cd538ab0cdba494006d44aab9dd96b7f6233ce9971fb7c7916d511" }
+
+version("1.0.2zb") { source sha256: "b7d8f8c895279caa651e7f3de9a7b87b8dd01a452ca3d9327f45a9ef31d0c518" }
+version("1.0.2za") { source sha256: "86ec5d2ecb53839e9ec999db7f8715d0eb7e534d8a1d8688ef25280fbeee2ff8" }
 
 relative_path "openssl-#{version}"
 
@@ -47,6 +52,8 @@ build do
   env = with_standard_compiler_flags(with_embedded_path)
   if aix?
     env["M4"] = "/opt/freeware/bin/m4"
+  elsif mac_os_x? && arm?
+    env["CFLAGS"] << " -Qunused-arguments"
   elsif freebsd?
     # Should this just be in standard_compiler_flags?
     env["LDFLAGS"] += " -Wl,-rpath,#{install_dir}/embedded/lib"
@@ -63,6 +70,7 @@ build do
 
   configure_args = [
     "--prefix=#{install_dir}/embedded",
+    "no-unit-test",
     "no-comp",
     "no-idea",
     "no-mdc2",
@@ -73,20 +81,27 @@ build do
     "shared",
   ]
 
+  # https://www.openssl.org/blog/blog/2021/09/13/LetsEncryptRootCertExpire/
+  configure_args += [ "-DOPENSSL_TRUSTED_FIRST_DEFAULT" ] if version.satisfies?(">= 1.0.2zb") && version.satisfies?("< 1.1.0")
+
   configure_args += ["--with-fipsdir=#{install_dir}/embedded", "fips"] if fips_mode?
 
   configure_cmd =
     if aix?
       "perl ./Configure aix64-cc"
     elsif mac_os_x?
-      "./Configure darwin64-x86_64-cc"
+      intel? ? "./Configure darwin64-x86_64-cc" : "./Configure darwin64-arm64-cc no-asm"
     elsif smartos?
       "/bin/bash ./Configure solaris64-x86_64-gcc -static-libgcc"
     elsif omnios?
       "/bin/bash ./Configure solaris-x86-gcc"
-    elsif solaris_11?
+    elsif solaris2?
       platform = sparc? ? "solaris64-sparcv9-gcc" : "solaris64-x86_64-gcc"
-      "/bin/bash ./Configure #{platform} -static-libgcc"
+      if version.satisfies?("< 1.1.0")
+        "/bin/bash ./Configure #{platform} -static-libgcc"
+      else
+        "./Configure #{platform} -static-libgcc"
+      end
     elsif windows?
       platform = windows_arch_i386? ? "mingw" : "mingw64"
       "perl.exe ./Configure #{platform}"
@@ -109,7 +124,7 @@ build do
                 # from fileset 'X11.adt.imake' (AIX install media)
                 env["PATH"] = "/usr/lpp/X11/bin:#{ENV["PATH"]}"
                 penv = env.dup
-                penv["PATH"] = "/opt/freeware/bin:#{env['PATH']}"
+                penv["PATH"] = "/opt/freeware/bin:#{env["PATH"]}"
                 penv
               else
                 env
@@ -121,7 +136,11 @@ build do
     patch source: "openssl-1.1.0f-do-not-install-docs.patch", env: patch_env
   end
 
-  if windows?
+  if version.start_with?("1.0.2") && mac_os_x? && arm?
+    patch source: "openssl-1.0.2x-darwin-arm64.patch"
+  end
+
+  if version.start_with?("1.0.2") && windows?
     # Patch Makefile.org to update the compiler flags/options table for mingw.
     patch source: "openssl-1.0.1q-fix-compiler-flags-table-for-msys.patch", env: env
   end
@@ -134,7 +153,7 @@ build do
 
   command configure_command, env: env, in_msys_bash: true
 
-  if windows?
+  if version.start_with?("1.0.2") && windows?
     patch source: "openssl-1.0.1j-windows-relocate-dll.patch", env: env
   end
 
