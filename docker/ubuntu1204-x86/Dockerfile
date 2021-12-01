@@ -41,13 +41,13 @@ RUN mkdir -p /etc/sudoers.d
 RUN echo "jenkins    ALL=NOPASSWD: ALL" > /etc/sudoers.d/jenkins
 RUN chmod 440 /etc/sudoers.d/jenkins
 
-RUN su jenkins -c 'command curl -sSL https://rvm.io/mpapis.asc | gpg --import - && \
-  command curl -sSL https://rvm.io/pkuczynski.asc | gpg --import - && \
-  curl -L -sSL https://get.rvm.io | bash -s stable'
+RUN su jenkins -c 'command curl --insecure -sSL https://rvm.io/mpapis.asc | gpg --import - && \
+  command curl --insecure -sSL https://rvm.io/pkuczynski.asc | gpg --import - && \
+  curl --insecure -L -sSL https://get.rvm.io | bash -s stable'
 
 RUN su jenkins -c "/bin/bash -l -c 'rvm requirements'"
 RUN su jenkins -c "linux32 /bin/bash -l -c 'rvm install 2.6.5'"
-RUN su jenkins -c "linux32 /bin/bash -l -c 'gem install bundler -v 1.17.3 --no-document'"
+RUN su jenkins -c "linux32 /bin/bash -l -c 'gem install bundler -v 2.1.4 --no-document'"
 
 # pre-load the omnibus dependencies
 RUN su jenkins -c "/bin/bash -l -c 'cd ~/ && git clone https://github.com/rapid7/metasploit-omnibus.git && \

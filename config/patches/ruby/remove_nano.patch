@@ -1,0 +1,10 @@
+--- ruby-2.7.2-orig/ext/win32ole/win32ole.c	2020-10-01 05:15:38.000000000 -0700
++++ ruby-2.7.2/ext/win32ole/win32ole.c	2021-03-24 07:59:55.000000000 -0700
+@@ -3969,7 +3969,6 @@
+ {
+     cWIN32OLE_lcid = LOCALE_SYSTEM_DEFAULT;
+     g_ole_initialized_init();
+-    check_nano_server();
+ 
+     com_vtbl.QueryInterface = QueryInterface;
+     com_vtbl.AddRef = AddRef;

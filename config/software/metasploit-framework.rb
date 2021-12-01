@@ -7,19 +7,20 @@ else
   default_version "master"
 end
 
+dependency "cacerts"
 dependency "bundler"
 dependency "pcaprub"
+dependency "sqlite"
 if windows?
   dependency "postgresql-windows"
-  dependency "sqlite3-gem"
 else
   dependency "liblzma"
   dependency "libxslt"
   dependency "ruby"
   dependency "postgresql"
-  dependency "sqlite"
 end
 
+ruby_abi_version = "3.0.0"
 # This depends on extra system libraries on OS X
 whitelist_file "#{install_dir}//embedded/framework/data/isight.bundle"
 
@@ -30,7 +31,10 @@ whitelist_file "#{install_dir}//embedded/framework/data/exploits/.*"
 whitelist_file "#{install_dir}/embedded/framework/data/exploits/CVE-2016-4557/hello"
 
 # This depends on Openssl 1.x
-whitelist_file "#{install_dir}/embedded/lib/ruby/gems/2.3.0/gems/metasploit-payloads.*"
+whitelist_file "#{install_dir}/embedded/lib/ruby/gems/#{ruby_abi_version}/gems/metasploit-payloads.*"
+
+# Also whitelist mettle
+whitelist_file "#{install_dir}/embedded/lib/ruby/gems/#{ruby_abi_version}/gems/metasploit_payloads.*"
 
 build do
   copy "#{project_dir}", "#{install_dir}/embedded/framework"
@@ -61,6 +65,7 @@ build do
   end
 
   env = with_standard_compiler_flags(with_embedded_path)
+  env['SSL_CERT_FILE'] = "#{install_dir}/embedded/ssl/cert.pem"
   unless windows?
     erb source: 'msfdb-kali.erb',
         dest: "#{install_dir}/embedded/framework/msfdb-kali",
@@ -68,18 +73,15 @@ build do
         vars: { install_dir: install_dir }
   end
 
-  unless windows?
-    bundle "config set force_ruby_platform true", env: env
+  if windows?
+    sqlite_config = " --with-sqlite3-include=#{install_dir}/embedded/include --with-sqlite3-lib=#{install_dir}/embedded/lib"
+    bundle "config set build.sqlite3 #{sqlite_config}", env: env
   end
+  bundle "config set force_ruby_platform true", env: env
   bundle "install", env: env
 
   if windows?
-    # Workaround missing Ruby 2.3 support for bcrypt on Windows
-    # https://github.com/codahale/bcrypt-ruby/issues/139
-    gem "uninstall bcrypt", env: env
-    gem "install bcrypt --no-document --platform=ruby", env: env
-
-    delete "#{install_dir}/devkit"
+    delete "#{install_dir}/embedded/msys64"
   end
   copy "#{project_dir}/Gemfile.lock", "#{install_dir}/embedded/framework/Gemfile.lock"
 
