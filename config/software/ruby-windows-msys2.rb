@@ -15,7 +15,7 @@
 #
 
 name "ruby-windows-msys2"
-default_version "20210604"
+default_version "20220118"
 
 license "BSD-3-Clause"
 license_file "https://raw.githubusercontent.com/Alexpux/MSYS2-packages/master/LICENSE"
@@ -43,6 +43,12 @@ else
     # file has to be decompressed from local cache using xz before build executes
     source url: "https://repo.msys2.org/distrib/x86_64/msys2-base-x86_64-#{version}.tar",
            sha256: "8738e8f0d3e096a8bf581f9ceb674afdcc2fe3202dd1d69f39d9b8d7e3a5e099"
+    relative_path "msys64"
+  end
+  version "20220118" do
+    # file has to be decompressed from local cache using xz before build executes
+    source url: "https://repo.msys2.org/distrib/x86_64/msys2-base-x86_64-#{version}.tar",
+           sha256: "f4f428797a285d29225aebd535d83a4f530fdc3870d8b0a8afa784532472e19d"
     relative_path "msys64"
   end
 end
