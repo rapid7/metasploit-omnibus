@@ -72,10 +72,10 @@ Pin-Priority: 1000
 EOF
   fi
   echo -n "Updating package cache.."
-  apt-get update > /dev/null
+  apt update > /dev/null
   echo "OK"
   echo "Checking for and installing update.."
-  apt-get install -y --allow-downgrades metasploit-framework
+  apt install -y --allow-downgrades metasploit-framework
 }
 
 install_rpm() {
