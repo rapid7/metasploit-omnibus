@@ -25,8 +25,7 @@ add_path() {
 
 check_db() {
   if [ ! -e $LOCALCONF/database.yml ]; then
-    while true; do
-      read -p "Would you like to use and setup a new database (recommended)? " yn
+    while read -p "Would you like to use and setup a new database (recommended)? " yn; do
       case $yn in
         [Yy]* ) $SCRIPTDIR/msfdb init; break;;
         [Nn]* ) break;;
@@ -38,14 +37,13 @@ check_db() {
 
 check_path() {
   if ! hash $cmd 2>/dev/null; then
-    while true; do
-      read -p "Would you like to add $cmd and other programs to your default PATH? " yn
-        case $yn in
-          [Yy]* ) add_path; break;;
-          [Nn]* ) break;;
-              * ) echo "Please answer yes or no.";;
-        esac
-      done
+    while read -p "Would you like to add $cmd and other programs to your default PATH? " yn; do
+      case $yn in
+        [Yy]* ) add_path; break;;
+        [Nn]* ) break;;
+            * ) echo "Please answer yes or no.";;
+      esac
+    done
   fi
 }
 
