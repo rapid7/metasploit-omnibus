@@ -16,12 +16,12 @@
 #
 
 name "sqlite"
-default_version "3.8.8.2"
+default_version "3.39.3"
 
-source :url => "https://sqlite.org/2015/sqlite-autoconf-3080802.tar.gz",
-       :md5 => "3425fa580a56880f56bcb887dd26cc06"
+source :url => "https://www.sqlite.org/2022/sqlite-autoconf-3390300.tar.gz",
+       :md5 => "b77730d5c2f8c85b223d1959d08b6514"
 
-relative_path "sqlite-autoconf-3080802"
+relative_path "sqlite-autoconf-3390300"
 
 build do
   use_bash = ""
