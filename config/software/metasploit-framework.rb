@@ -36,7 +36,7 @@ whitelist_file "#{install_dir}/embedded/lib/ruby/gems/#{ruby_abi_version}/gems/m
 # Also whitelist mettle
 whitelist_file "#{install_dir}/embedded/lib/ruby/gems/#{ruby_abi_version}/gems/metasploit_payloads.*"
 
-# Also whitelist sqlite deps to as libz is provided just not first on path
+# Also whitelist sqlite deps too as libz is provided just not first on path
 whitelist_file "#{install_dir}/embedded/lib/ruby/gems/#{ruby_abi_version}/gems/sqlite3-.*"
 
 build do
