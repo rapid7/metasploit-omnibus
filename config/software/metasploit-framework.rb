@@ -36,6 +36,9 @@ whitelist_file "#{install_dir}/embedded/lib/ruby/gems/#{ruby_abi_version}/gems/m
 # Also whitelist mettle
 whitelist_file "#{install_dir}/embedded/lib/ruby/gems/#{ruby_abi_version}/gems/metasploit_payloads.*"
 
+# Also whitelist sqlite deps too as libz is provided just not first on path
+whitelist_file "#{install_dir}/embedded/lib/ruby/gems/#{ruby_abi_version}/gems/sqlite3-.*"
+
 build do
   copy "#{project_dir}", "#{install_dir}/embedded/framework"
 
@@ -73,10 +76,8 @@ build do
         vars: { install_dir: install_dir }
   end
 
-  if windows?
-    sqlite_config = " --with-sqlite3-include=#{install_dir}/embedded/include --with-sqlite3-lib=#{install_dir}/embedded/lib"
-    bundle "config set build.sqlite3 #{sqlite_config}", env: env
-  end
+  sqlite_config = "--enable-system-libraries --with-sqlite3-include=#{install_dir}/embedded/include --with-sqlite3-lib=#{install_dir}/embedded/lib"
+  bundle "config set build.sqlite3 #{sqlite_config}", env: env
   bundle "config set force_ruby_platform true", env: env
   bundle "install", env: env
 
