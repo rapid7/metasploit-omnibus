@@ -1,13 +1,13 @@
 name "jemalloc"
 
-default_version "5.2.1"
+default_version "5.3.0"
 
 license_file "COPYING"
 
 skip_transitive_dependency_licensing true
 
-version "5.2.1" do
-  source sha256: "34330e5ce276099e2e8950d9335db5a875689a4c6a56751ef3b1d8c537f887f6"
+version "5.3.0" do
+  source sha256: "2db82d1e7119df3e71b7640219b6dfe84789bc0537983c3b7ac4f7189aecfeaa"
 end
 
 source url: "https://github.com/jemalloc/jemalloc/releases/download/#{version}/jemalloc-#{version}.tar.bz2"
