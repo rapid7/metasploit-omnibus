@@ -18,7 +18,7 @@ name "config_guess"
 default_version "master"
 
 # Use our github mirror of the savannah repository
-source git: "https://github.com/chef/config-mirror.git"
+source git: "https://github.com/chef-boneyard/config-mirror.git"
 
 # http://savannah.gnu.org/projects/config
 license "GPL-3.0 (with exception)"
