@@ -34,7 +34,7 @@ whitelist_file "#{install_dir}/embedded/framework/data/exploits/CVE-2016-4557/he
 whitelist_file "#{install_dir}/embedded/lib/ruby/gems/#{ruby_abi_version}/gems/metasploit-payloads.*"
 
 # Also whitelist mettle
-whitelist_file "#{install_dir}/embedded/lib/ruby/gems/#{ruby_abi_version}/gems/metasploit_payloads.*"
+whitelist_file "#{install_dir}//embedded/lib/ruby/gems/#{ruby_abi_version}/gems/metasploit_payloads.*"
 
 # Also whitelist sqlite deps too as libz is provided just not first on path
 whitelist_file "#{install_dir}/embedded/lib/ruby/gems/#{ruby_abi_version}/gems/sqlite3-.*"
