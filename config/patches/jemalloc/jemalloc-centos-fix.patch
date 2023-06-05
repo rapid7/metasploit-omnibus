@@ -1,0 +1,24 @@
+diff --git a/include/jemalloc/internal/pac.h b/include/jemalloc/internal/pac.h
+index 01c4e6a..9122aa0 100644
+--- a/include/jemalloc/internal/pac.h
++++ b/include/jemalloc/internal/pac.h
+@@ -74,7 +74,6 @@ struct pac_stats_s {
+        atomic_zu_t abandoned_vm;
+ };
+ 
+-typedef struct pac_s pac_t;
+ struct pac_s {
+        /*
+         * Must be the first member (we convert it to a PAC given only a
+diff --git a/include/jemalloc/internal/san_bump.h b/include/jemalloc/internal/san_bump.h
+index 8ec4a71..d5902ba 100644
+--- a/include/jemalloc/internal/san_bump.h
++++ b/include/jemalloc/internal/san_bump.h
+@@ -9,7 +9,6 @@
+ 
+ extern bool opt_retain;
+ 
+-typedef struct ehooks_s ehooks_t;
+ typedef struct pac_s pac_t;
+ 
+ typedef struct san_bump_alloc_s san_bump_alloc_t;
