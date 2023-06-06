@@ -10,7 +10,6 @@ end
 dependency "cacerts"
 dependency "bundler"
 dependency "pcaprub"
-dependency "sqlite"
 if windows?
   dependency "postgresql-windows"
 else
@@ -76,8 +75,6 @@ build do
         vars: { install_dir: install_dir }
   end
 
-  sqlite_config = "--enable-system-libraries --with-sqlite3-include=#{install_dir}/embedded/include --with-sqlite3-lib=#{install_dir}/embedded/lib"
-  bundle "config set build.sqlite3 #{sqlite_config}", env: env
   bundle "config set force_ruby_platform true", env: env
   bundle "install", env: env
 
