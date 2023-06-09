@@ -37,6 +37,7 @@ whitelist_file "#{install_dir}//embedded/lib/ruby/gems/#{ruby_abi_version}/gems/
 
 # Also whitelist sqlite deps too as libz is provided just not first on path
 whitelist_file "#{install_dir}/embedded/lib/ruby/gems/#{ruby_abi_version}/gems/sqlite3-.*"
+whitelist_file "#{install_dir}//embedded/lib/ruby/gems/#{ruby_abi_version}/.*/sqlite3.*"
 
 build do
   copy "#{project_dir}", "#{install_dir}/embedded/framework"
