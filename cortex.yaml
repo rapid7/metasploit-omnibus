@@ -1,0 +1,15 @@
+---
+info:
+  title: Metasploit Omnibus
+  description: Packaging metasploit-framework with omnibus
+  x-cortex-git:
+    github:
+      alias: r7org
+      repository: rapid7/metasploit-omnibus
+  x-cortex-tag: metasploit-omnibus
+  x-cortex-type: service
+  x-cortex-domain-parents:
+  - tag: metasploit
+openapi: 3.0.1
+servers:
+- url: "/"
