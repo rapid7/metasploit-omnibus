@@ -1,3 +1,4 @@
 [submodule "local/cache"]
 	path = local/cache
-	url = https://github.com/rapid7/metasploit-omnibus-cache.git
+	url = https://github.com/adfoster-r7/metasploit-omnibus-cache.git
+	branch = prepare-for-ruby-3.1-update
