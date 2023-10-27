@@ -40,8 +40,8 @@ RUN chmod 440 /etc/sudoers.d/jenkins
 RUN apt-get remove -y libpq-dev libpq5
 
 RUN su jenkins -c 'command curl -sSL https://rvm.io/mpapis.asc | gpg --import - && \
-  command curl -sSL https://rvm.io/pkuczynski.asc | gpg --import - && \
-  curl -L -sSL https://get.rvm.io | bash -s stable'
+    command curl -sSL https://rvm.io/pkuczynski.asc | gpg --import - && \
+    curl -L -sSL https://raw.githubusercontent.com/rvm/rvm/1.29.12/binscripts/rvm-installer | bash -s stable '
 
 RUN curl -O http://ftp.gnu.org/gnu/gawk/gawk-4.2.1.tar.gz && \
   tar zxf gawk-4.2.1.tar.gz && \
@@ -56,14 +56,19 @@ RUN curl -O ftp://ftp.tcl.tk/pub/tcl/tcl8_6/tcl8.6.9-src.tar.gz && \
   ./configure && make && make install && \
   cd ../../ && rm -rf tcl8.6.9*
 
-RUN curl -O https://www.sqlite.org/src/tarball/sqlite.tar.gz?r=release && \
-  tar zxf sqlite.tar.gz?r=release && \
+RUN curl --insecure --output ./sqlite.tar.gz 'https://www.sqlite.org/src/tarball/sqlite.tar.gz?r=release' && \
+  echo "bc98a3e61d25882ee62c037c9513f65ba3a1a206e68edbf8e9a6514cbd7d4373  ./sqlite.tar.gz" > sqlite.tar.gz.sha256 && \
+  sha256sum -c sqlite.tar.gz.sha256 && \
+  tar zxf sqlite.tar.gz && \
   mkdir bld && cd bld && ../sqlite/configure && \
   make && make install && \
-  cd ../ && rm -rf sqlite* && rm -rf bld
+  cd ../ && rm -rf sqlite* && rm -rf bld && echo hello
+
+# rvm autolibs disable
+# RUN su jenkins -c "/bin/bash -l -c 'rvm requirements'"
+# RUN su jenkins -c "/bin/bash -l -c 'rvm install 3.0.6'"
+# RUN su jenkins -c "/bin/bash -l -c 'gem install bundler -v 2.2.3 --no-document'"
 
 # pre-load the omnibus dependencies
-RUN su jenkins -c "/bin/bash -l -c 'rvm install 2.6.5 --autolibs=0'"
-RUN su jenkins -c "/bin/bash -l -c 'rvm use 2.6.5 && gem install bundler -v 1.17.3 --no-document'"
-RUN su jenkins -c "/bin/bash -l -c 'rvm use 2.6.5 && cd ~/ && git clone https://github.com/rapid7/metasploit-omnibus.git && \
-  cd metasploit-omnibus && bundle install --binstubs && cd .. && rm -rf metasploit-omnibus'"
+# RUN su jenkins -c "/bin/bash -l -c 'cd ~/ && git clone https://github.com/rapid7/metasploit-omnibus.git && \
+#         cd ~/metasploit-omnibus && bundle install && bundle binstubs --all && cd ~/ && rm -fr metasploit-omnibus'"

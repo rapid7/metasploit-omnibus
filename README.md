@@ -29,6 +29,12 @@ cd metasploit-omnibus
 docker build --tag metasploit-omnibus-builder - < ./docker/ubuntu1204-x86/Dockerfile
 ```
 
+Or on OSX you can use the following script to build all images following the latest Docker image naming convention:
+
+```shell
+export BUILD_DATE=$(date "+%y_%m"); ls ./docker | xargs -I IMAGE_NAME /bin/bash -x -c "docker build --tag rapid7/IMAGE_NAME-omnibus:$BUILD_DATE -f ./docker/IMAGE_NAME/Dockerfile ./docker/IMAGE_NAME"
+```
+
 You can then run a new container using the above tagged image, whilst mounting the current directory as a volume:
 
 ```shell
@@ -107,7 +113,7 @@ Checkout the metasploit-framework installer builder and install omnibus' depende
 git clone https://github.com/rapid7/metasploit-omnibus.git
 cd metasploit-omnibus
 # install omnibus' dependencies
-bundle install --binstubs
+bundle install && bundle binstubs --all
 ```
 
 Finally, build the installer itself:

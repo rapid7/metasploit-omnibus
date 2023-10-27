@@ -1,0 +1,57 @@
+name: Verify
+
+# https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#permissions
+permissions:
+  actions: none
+  checks: none
+  contents: read
+  deployments: none
+  id-token: none
+  issues: none
+  discussions: none
+  packages: none
+  pages: none
+  pull-requests: none
+  repository-projects: none
+  security-events: none
+  statuses: none
+
+on:
+  push:
+    branches:
+      - '*'
+  pull_request:
+    branches:
+      - '*'
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+        # From: 'ls ./docker/'
+        image_name:
+          - centos6-x64
+          - debian-armv7
+          - fedora30-x64
+          - kali109-x64
+          - ubuntu1204-x64
+          - ubuntu1204-x86
+          - ubuntu1804-x64
+
+    name: ${{ matrix.os }} - ${{ matrix.image_name }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Build Docker image
+        run: |
+          export BUILD_DATE=$(date "+%y_%m")
+          /bin/bash -x -c "docker build --tag rapid7/${IMAGE_NAME}-omnibus:${BUILD_DATE} -f ./docker/${IMAGE_NAME}/Dockerfile ./docker/${IMAGE_NAME}"
+        env:
+          IMAGE_NAME: ${{ matrix.image_name }}
