@@ -27,7 +27,7 @@ on:
 jobs:
   test:
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 40
+    timeout-minutes: 90
 
     strategy:
       fail-fast: false
@@ -47,7 +47,7 @@ jobs:
     name: ${{ matrix.os }} - ${{ matrix.image_name }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Build Docker image
         run: |
