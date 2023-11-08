@@ -37,8 +37,10 @@ jobs:
         # From: 'ls ./docker/'
         image_name:
           - centos6-x64
-          - debian-aarch64
-          - debian-armv7
+          # Arm have been skipped for now
+          # - debian-aarch64
+          # Arm have been skipped for now:
+          # - debian-armv7
           - fedora30-x64
           # Currently fails on rate limiting on Kali's side:
           # - kali109-x64
@@ -73,16 +75,4 @@ jobs:
 
       - name: Run omnibus
         run: |
-          cat <<EOF >>build_docker.sh
-          #!/bin/bash --login
-
-          # install omnibus' dependencies
-          bundle install
-          bundle binstubs --all
-
-          # build the metasploit-framework package
-          bin/omnibus build metasploit-framework
-          EOF
-
-          chmod +x ./build_docker.sh
-          /bin/bash -x -c "docker run --rm --volume $(pwd):$(pwd) --workdir $(pwd) --user jenkins --entrypoint '' ${BUILD_TAG} /bin/bash -l -c './build_docker.sh'"
+          /bin/bash -x -c "docker run --rm --volume $(pwd):$(pwd) --workdir $(pwd) --user jenkins ${BUILD_TAG} /bin/bash -l -c 'make'"

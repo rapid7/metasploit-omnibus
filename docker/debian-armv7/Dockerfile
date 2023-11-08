@@ -48,6 +48,7 @@ ENV JENKINS_HOME /home/jenkins
 RUN useradd -d "$JENKINS_HOME" -u 1001 -m -s /bin/sh jenkins
 RUN cp ~/.gitconfig "$JENKINS_HOME"
 RUN chown -R jenkins "$JENKINS_HOME"
+RUN echo "jenkins ALL=(ALL) NOPASSWD: ALL" | tee -a /etc/sudoers
 
 RUN mkdir -p /var/cache/omnibus
 RUN mkdir -p /opt/metasploit-framework

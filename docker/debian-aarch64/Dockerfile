@@ -56,9 +56,10 @@ RUN /bin/bash -l -c 'cd ~/ && git clone https://github.com/rapid7/metasploit-omn
         cd ~/metasploit-omnibus && bundle install && bundle binstubs --all && cd ~/ && rm -fr metasploit-omnibus'
 
 ENV JENKINS_HOME /home/jenkins
-RUN useradd -d "$JENKINS_HOME" -u 1001 -m -s /bin/sh jenkins
+RUN id jenkins || useradd -d "$JENKINS_HOME" -u 1001 -m -s /bin/sh jenkins
 RUN cp ~/.gitconfig "$JENKINS_HOME"
 RUN chown -R jenkins "$JENKINS_HOME"
+RUN echo "jenkins ALL=(ALL) NOPASSWD: ALL" | tee -a /etc/sudoers
 
 RUN mkdir -p /var/cache/omnibus
 RUN mkdir -p /opt/metasploit-framework
