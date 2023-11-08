@@ -5,7 +5,7 @@ MAINTAINER Rapid7 Release Engineering <r7_re@rapid7.com>
 
 VOLUME /pkg
 
-# https://stackoverflow.com/questions/21396508/yumrepo-error-all-mirror-urls-are-not-using-ftp-https-or-file
+# # Copy newer apt sources that are valid/use https
 COPY yum.repos.d /etc/yum.repos.d
 
 RUN rpm -ivh https://dl.fedoraproject.org/pub/archive/epel/6/x86_64/epel-release-6-8.noarch.rpm

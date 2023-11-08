@@ -53,10 +53,7 @@ RUN curl -O ftp://ftp.tcl.tk/pub/tcl/tcl8_6/tcl8.6.9-src.tar.gz && \
   ./configure && make && make install && \
   cd ../../ && rm -rf tcl8.6.9*
 
-# Update certs to fix later git clone issues:
-#   error: server certificate verification failed. CAfile: /etc/ssl/certs/ca-certificates.crt CRLfile: none while accessing https://github.com/rapid7/metasploit-omnibus.git/info/refs
-# We extract a new https://curl.se/docs/caextract.html bundle using the sha256summ
-# from https://curl.se/ca/cacert-2023-08-22.pem.sha256
+# Update certs as the current ones have expired
 RUN mkdir -p /tmp/updated_certs && \
     cd /tmp/updated_certs && \
     curl --location --insecure --output cacert-2023-08-22.pem https://curl.se/ca/cacert-2023-08-22.pem && \

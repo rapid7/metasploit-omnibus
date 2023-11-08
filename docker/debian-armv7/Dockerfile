@@ -4,7 +4,7 @@ MAINTAINER Rapid7 Release Engineering <r7_re@rapid7.com>
 
 RUN ["cross-build-start"]
 
-# https://unix.stackexchange.com/questions/508724/failed-to-fetch-jessie-backports-repository/508728
+# Copy newer apt sources that are valid
 COPY apt /etc/apt
 
 RUN apt-get update && apt-get install -y \

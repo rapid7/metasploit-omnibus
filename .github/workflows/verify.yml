@@ -27,7 +27,7 @@ on:
 jobs:
   test:
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 90
+    timeout-minutes: 180
 
     strategy:
       fail-fast: false
@@ -37,9 +37,11 @@ jobs:
         # From: 'ls ./docker/'
         image_name:
           - centos6-x64
+          - debian-aarch64
           - debian-armv7
           - fedora30-x64
-          - kali109-x64
+          # Currently fails on rate limiting on Kali's side:
+          # - kali109-x64
           - ubuntu1204-x64
           - ubuntu1204-x86
           - ubuntu1804-x64
@@ -49,9 +51,38 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Build Docker image
+      - name: Set the docker build metadata
         run: |
-          export BUILD_DATE=$(date "+%y_%m")
-          /bin/bash -x -c "docker build --tag rapid7/${IMAGE_NAME}-omnibus:${BUILD_DATE} -f ./docker/${IMAGE_NAME}/Dockerfile ./docker/${IMAGE_NAME}"
+          export BUILD_DATE=$(date "+%Y_%m")
+          echo "BUILD_DATE=$BUILD_DATE" >> "$GITHUB_ENV"
+          echo "BUILD_TAG=rapid7/${IMAGE_NAME}-omnibus:${BUILD_DATE}" >> "$GITHUB_ENV"
         env:
           IMAGE_NAME: ${{ matrix.image_name }}
+
+      - name: Build Docker image
+        run: |
+          /bin/bash -x -c "docker build --tag ${BUILD_TAG} -f ./docker/${IMAGE_NAME}/Dockerfile ./docker/${IMAGE_NAME}"
+        env:
+          IMAGE_NAME: ${{ matrix.image_name }}
+
+      # Checkout again - but with the submodules enabled to start a real build
+      - name: Checkout submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Run omnibus
+        run: |
+          cat <<EOF >>build_docker.sh
+          #!/bin/bash --login
+
+          # install omnibus' dependencies
+          bundle install
+          bundle binstubs --all
+
+          # build the metasploit-framework package
+          bin/omnibus build metasploit-framework
+          EOF
+
+          chmod +x ./build_docker.sh
+          /bin/bash -x -c "docker run --rm --volume $(pwd):$(pwd) --workdir $(pwd) --user jenkins --entrypoint '' ${BUILD_TAG} /bin/bash -l -c './build_docker.sh'"

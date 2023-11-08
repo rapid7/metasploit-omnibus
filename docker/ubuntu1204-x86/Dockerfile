@@ -19,6 +19,7 @@ RUN rm -fr /var/lib/apt/lists && \
         libcurl4-openssl-dev \
         libexpat1-dev \
         libicu-dev \
+        libc6-dev-amd64 \
         reprepro \
         sudo && \
     apt-get clean && \
