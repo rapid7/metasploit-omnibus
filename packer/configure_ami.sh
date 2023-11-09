@@ -59,7 +59,7 @@ su $BUILD_USER -c 'command curl -sSL https://rvm.io/mpapis.asc | gpg --import - 
   curl -L -sSL https://raw.githubusercontent.com/rvm/rvm/1.29.12/binscripts/rvm-installer | bash -s stable'
 
 su $BUILD_USER -c "/bin/bash -l -c 'rvm requirements'"
-su $BUILD_USER -c "/bin/bash -l -c 'rvm install 2.6.5'"
+su $BUILD_USER -c "/bin/bash -l -c 'rvm install 3.0.6'"
 su $BUILD_USER -c "/bin/bash -l -c 'gem install bundler -v 2.2.3 --no-document'"
 su $BUILD_USER -c "/bin/bash -l -c 'cd ~/ && git clone https://github.com/rapid7/metasploit-omnibus.git && \
         cd ~/metasploit-omnibus && bundle install && bundle binstubs --all && cd ~/ && rm -fr metasploit-omnibus'"

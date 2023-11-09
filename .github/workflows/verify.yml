@@ -28,7 +28,8 @@ jobs:
   # The job checkout structure is:
   #  .
   #  ├── metasploit-omnibus
-  #  └── metasploit-framework (Only if ARM builds)
+  #  └── metasploit-framework (Only if ARM/Windows builds)
+  # For windows we additionally move metasploit-framework into the omnibus local cache
   #
   docker_arm:
     runs-on: ${{ matrix.os }}
@@ -208,12 +209,10 @@ jobs:
           # If required, change reported architecture in new program environment and set personality flags
           if [ ! -z "${LINUX32}" ] ; then
             echo 'setting linux32'
-            architecturePrefix='linux32'
+            /bin/bash -x -c "docker run --rm --volume $(pwd):$(pwd) --workdir $(pwd) --user jenkins ${DOCKER_IMAGE} linux32 /bin/bash -l -c 'cd metasploit-omnibus && ARCH=x86_64 make'"
           else
-            echo 'no arch prefix supplied'
-            architecturePrefix=''
+            /bin/bash -x -c "docker run --rm --volume $(pwd):$(pwd) --workdir $(pwd) --user jenkins ${DOCKER_IMAGE} /bin/bash -l -c 'cd metasploit-omnibus && make'"
           fi
-          /bin/bash -x -c "docker run --rm --volume $(pwd):$(pwd) --workdir $(pwd) --user jenkins ${DOCKER_IMAGE} ${architecturePrefix} /bin/bash -l -c 'cd metasploit-omnibus && make'"
         env:
           LINUX32: ${{ matrix.docker.linux32 }}
 
@@ -227,13 +226,14 @@ jobs:
         os:
           - macos-11
         ruby:
-          - 2.6
+          - 3.0.6
 
     name: ${{ matrix.os }}
     steps:
       - name: Checkout omnibus
         uses: actions/checkout@v4
         with:
+          submodules: true
           path: metasploit-omnibus
 
       - name: Setup Ruby
@@ -244,6 +244,7 @@ jobs:
           ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
           cache-version: 4
+          working-directory: metasploit-omnibus
 
       - name: Run omnibus
         run: |
@@ -252,5 +253,59 @@ jobs:
           sudo chown `whoami` /var/cache/omnibus
           sudo chown `whoami` /opt/metasploit-framework
 
+          cd metasploit-omnibus
+          make
+
+  windows:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 180
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - windows-2019
+        ruby:
+          - 3.0.6
+
+    name: ${{ matrix.os }}
+    steps:
+      - name: Checkout omnibus
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          path: metasploit-omnibus
+
+      - name: Setup Ruby
+        env:
+          BUNDLE_FORCE_RUBY_PLATFORM: true
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: false
+          cache-version: 4
+          working-directory: metasploit-omnibus
+          # Github actions with Ruby requires Bundler 2.2.18+
+          # https://github.com/ruby/setup-ruby/tree/d2b39ad0b52eca07d23f3aa14fdf2a3fcc1f411c#windows
+          bundler: 2.2.33
+
+      # Checkout framework
+      - name: Checkout metasploit-framework code
+        uses: actions/checkout@v4
+        with:
+          repository: rapid7/metasploit-framework
+          path: metasploit-framework
+
+      - name: Extract xz files
+        run: |
+          cd metasploit-omnibus
+          xz -d local/cache/*.xz
+
+      - name: Run omnibus
+        run: |
+          # mkdir -p metasploit-omnibus/local/cache/git_cache/c
+          # mv metasploit-framework/ metasploit-omnibus/local/cache/git_cache/c
+          # dir metasploit-omnibus/local/cache/git_cache/c
+          # dir metasploit-omnibus/local/cache/git_cache/c/metasploit-framework
           cd metasploit-omnibus
           make

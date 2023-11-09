@@ -63,7 +63,7 @@ RUN mkdir -p /tmp/updated_certs && \
     rm -rf /tmp/updated_certs
 
 RUN su jenkins -c "/bin/bash -l -c 'rvm requirements'"
-RUN su jenkins -c "/bin/bash -l -c 'rvm install 2.6.5'"
+RUN su jenkins -c "/bin/bash -l -c 'rvm install 3.0.6'"
 RUN su jenkins -c "/bin/bash -l -c 'gem install bundler -v 2.2.3 --no-document'"
 
 # pre-load the omnibus dependencies

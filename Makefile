@@ -2,7 +2,7 @@
 
 .PHONY: all
 all: certs/ca-certificates.crt
-	export SSL_CERT_FILE=${PWD}/certs/ca-certificates.crt
+	# export SSL_CERT_FILE=${PWD}/certs/ca-certificates.crt
 
 	# Ensure consistent bundler versions
 	gem install bundler -v 2.2.3
@@ -11,8 +11,10 @@ all: certs/ca-certificates.crt
 	bundle install
 	bundle binstubs --all
 
+	gem install win32-process -v 0.9.0
+
 	# build the metasploit-framework package
-	bin/omnibus build metasploit-framework
+	ruby bin/omnibus build metasploit-framework
 
 certs/ca-certificates.crt:
 	mkdir -p certs

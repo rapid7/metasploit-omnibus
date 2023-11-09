@@ -46,7 +46,7 @@ RUN su jenkins -c 'command curl -sSL https://rvm.io/mpapis.asc | gpg --import - 
     curl -L -sSL https://raw.githubusercontent.com/rvm/rvm/1.29.12/binscripts/rvm-installer | bash -s stable '
 
 RUN su jenkins -c "/bin/bash -l -c 'rvm requirements'"
-RUN su jenkins -c "/bin/bash -l -c 'rvm install 2.6.5'"
+RUN su jenkins -c "/bin/bash -l -c 'rvm install 3.0.6'"
 RUN su jenkins -c "/bin/bash -l -c 'gem install bundler -v 2.2.3 --no-document'"
 
 # pre-load the omnibus dependencies

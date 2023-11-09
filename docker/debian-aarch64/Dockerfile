@@ -48,7 +48,7 @@ RUN command curl -sSL https://rvm.io/mpapis.asc | gpg --import - && \
     command curl -sSL https://rvm.io/pkuczynski.asc | gpg --import - && \
     curl -L -sSL https://get.rvm.io | bash -s stable
 RUN /bin/bash -l -c "rvm requirements"
-RUN /bin/bash -l -c "rvm install 2.6.5"
+RUN /bin/bash -l -c "rvm install 3.0.6"
 RUN /bin/bash -l -c "gem install bundler -v 2.2.3 --no-document"
 
 # pre-load the omnibus dependencies
