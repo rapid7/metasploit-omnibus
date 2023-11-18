@@ -2,6 +2,9 @@ name "metasploit-framework"
 if linux? && File.exist?("/metasploit-framework")
   # supply current version of metasploit-framework at root of filesystem
   source path: "/metasploit-framework"
+elsif windows? && File.exist?('../metasploit-framework')
+  # supply current version of metasploit-framework relative to the current directory
+  source path: "../metasploit-framework"
 else
   source git: "https://github.com/rapid7/metasploit-framework.git"
   default_version "master"
@@ -19,7 +22,7 @@ else
   dependency "postgresql"
 end
 
-ruby_abi_version = "3.0.0"
+ruby_abi_version = "3.1.0"
 # This depends on extra system libraries on OS X
 whitelist_file "#{install_dir}//embedded/framework/data/isight.bundle"
 
@@ -77,7 +80,9 @@ build do
   end
 
   bundle "config set force_ruby_platform true", env: env
-  bundle "install", env: env
+  bundle_env = with_standard_compiler_flags(with_embedded_path)
+  bundle_env['MAKE'] = 'make -j4'
+  bundle "install --jobs=4", env: bundle_env
 
   if windows?
     delete "#{install_dir}/embedded/msys64"

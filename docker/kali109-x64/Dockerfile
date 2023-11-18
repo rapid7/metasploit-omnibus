@@ -43,16 +43,6 @@ RUN echo "jenkins    ALL=NOPASSWD: ALL" > /etc/sudoers.d/jenkins
 RUN chmod 440 /etc/sudoers.d/jenkins
 RUN apt-get remove -y libpq-dev libpq5
 
-RUN su jenkins -c 'command curl -sSL https://rvm.io/mpapis.asc | gpg --import - && \
-    command curl -sSL https://rvm.io/pkuczynski.asc | gpg --import - && \
-    curl -L -sSL https://raw.githubusercontent.com/rvm/rvm/1.29.12/binscripts/rvm-installer | bash -s stable '
-
-RUN curl -O ftp://ftp.tcl.tk/pub/tcl/tcl8_6/tcl8.6.9-src.tar.gz && \
-  tar zxf tcl8.6.9-src.tar.gz && \
-  cd tcl8.6.9/unix && \
-  ./configure && make && make install && \
-  cd ../../ && rm -rf tcl8.6.9*
-
 # Update certs as the current ones have expired
 RUN mkdir -p /tmp/updated_certs && \
     cd /tmp/updated_certs && \
@@ -61,6 +51,19 @@ RUN mkdir -p /tmp/updated_certs && \
     sha256sum -c cacert-2023-08-22.pem.sha256 && \
     mv cacert-2023-08-22.pem /etc/ssl/certs/ca-certificates.crt && \
     rm -rf /tmp/updated_certs
+
+RUN su jenkins -c 'command curl -sSL https://rvm.io/mpapis.asc | gpg --import - && \
+    command curl -sSL https://rvm.io/pkuczynski.asc | gpg --import - && \
+    curl --insecure --output /tmp/rvm-installer -sSL https://raw.githubusercontent.com/rvm/rvm/1.29.12/binscripts/rvm-installer && \
+    echo "fea24461e98d41528d6e28684aa4c216dbe903869bc3fcdb3493b6518fae2e7e  /tmp/rvm-installer" | sha256sum -c && \
+    command cat /tmp/rvm-installer | bash -s stable && \
+    rm /tmp/rvm-installer'
+
+RUN curl -O ftp://ftp.tcl.tk/pub/tcl/tcl8_6/tcl8.6.9-src.tar.gz && \
+  tar zxf tcl8.6.9-src.tar.gz && \
+  cd tcl8.6.9/unix && \
+  ./configure && make && make install && \
+  cd ../../ && rm -rf tcl8.6.9*
 
 RUN su jenkins -c "/bin/bash -l -c 'rvm requirements'"
 RUN su jenkins -c "/bin/bash -l -c 'rvm install 3.0.6'"

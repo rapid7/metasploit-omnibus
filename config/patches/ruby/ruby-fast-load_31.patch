@@ -1,0 +1,16 @@
+diff --git a/load.c b/load.c
+index a2b9da4..05ea96e 100644
+--- a/load.c
++++ b/load.c
+@@ -981,6 +981,11 @@ search_required(rb_vm_t *vm, VALUE fname, volatile VALUE *path, feature_func rb_
+        if (loading) *path = rb_filesystem_str_new_cstr(loading);
+        return 'r';
+     }
++    else if ((ft = rb_feature_p(vm, ftptr, 0, FALSE, FALSE, &loading)) == 's') {
++       if (loading) *path = rb_filesystem_str_new_cstr(loading);
++       return 's';
++    }
++
+     tmp = fname;
+     type = rb_find_file_ext(&tmp, ft == 's' ? ruby_ext : loadable_ext);
+     switch (type) {

@@ -26,29 +26,50 @@ skip_transitive_dependency_licensing true
 # the default versions should always be the latest release of ruby
 # if you consume this definition it is your responsibility to pin
 # to the desired version of ruby. don't count on this not changing.
-default_version "3.0.2"
+default_version "3.1.4"
 
 dependency "zlib"
 dependency "openssl"
 dependency "libffi"
 dependency "libyaml"
 
+# we build omnibus packages on freebsd 11 and use the packages on freebsd 11, 12 and 13.
+# the ruby executable has been linking to freebsds system's ncurses library files.
+# freebsd 13 system's ncurses library files have a different name than freebsd 11 and 12
+# which causes the ruby executable to fail.
+# adding ncurses as a dependency for freebsd prevents the ruby executable from linking to the
+# system's ncurses library files thereby allowing the package built on freebsd 11 to work on freebsd 13.
+dependency "ncurses" if freebsd?
+
 # version_list: url=https://cache.ruby-lang.org/pub/ruby/ filter=*.tar.gz
+version("3.2.2")      { source sha256: "96c57558871a6748de5bc9f274e93f4b5aad06cd8f37befa0e8d94e7b8a423bc" }
+version("3.2.0")      { source sha256: "daaa78e1360b2783f98deeceb677ad900f3a36c0ffa6e2b6b19090be77abc272" }
+version("3.1.4")      { source sha256: "a3d55879a0dfab1d7141fdf10d22a07dbf8e5cdc4415da1bde06127d5cc3c7b6" }
+version("3.1.3")      { source sha256: "5ea498a35f4cd15875200a52dde42b6eb179e1264e17d78732c3a57cd1c6ab9e" }
+version("3.1.2")      { source sha256: "61843112389f02b735428b53bb64cf988ad9fb81858b8248e22e57336f24a83e" }
+version("3.1.1")      { source sha256: "fe6e4782de97443978ddba8ba4be38d222aa24dc3e3f02a6a8e7701c0eeb619d" }
+
+version("3.0.6")      { source sha256: "6e6cbd490030d7910c0ff20edefab4294dfcd1046f0f8f47f78b597987ac683e" }
+version("3.0.5")      { source sha256: "9afc6380a027a4fe1ae1a3e2eccb6b497b9c5ac0631c12ca56f9b7beb4848776" }
+version("3.0.4")      { source sha256: "70b47c207af04bce9acea262308fb42893d3e244f39a4abc586920a1c723722b" }
+version("3.0.3")      { source sha256: "3586861cb2df56970287f0fd83f274bd92058872d830d15570b36def7f1a92ac" }
 version("3.0.2")      { source sha256: "5085dee0ad9f06996a8acec7ebea4a8735e6fac22f22e2d98c3f2bc3bef7e6f1" }
 version("3.0.1")      { source sha256: "369825db2199f6aeef16b408df6a04ebaddb664fb9af0ec8c686b0ce7ab77727" }
-version("3.0.0")      { source sha256: "a13ed141a1c18eb967aac1e33f4d6ad5f21be1ac543c344e0d6feeee54af8e28" }
 
+version("2.7.7")      { source sha256: "e10127db691d7ff36402cfe88f418c8d025a3f1eea92044b162dd72f0b8c7b90" }
+version("2.7.6")      { source sha256: "e7203b0cc09442ed2c08936d483f8ac140ec1c72e37bb5c401646b7866cb5d10" }
+version("2.7.5")      { source sha256: "2755b900a21235b443bb16dadd9032f784d4a88f143d852bc5d154f22b8781f1" }
 version("2.7.4")      { source sha256: "3043099089608859fc8cce7f9fdccaa1f53a462457e3838ec3b25a7d609fbc5b" }
 version("2.7.3")      { source sha256: "8925a95e31d8f2c81749025a52a544ea1d05dad18794e6828709268b92e55338" }
-version("2.7.2")      { source sha256: "6e5706d0d4ee4e1e2f883db9d768586b4d06567debea353c796ec45e8321c3d4" }
-version("2.7.1")      { source sha256: "d418483bdd0000576c1370571121a6eb24582116db0b7bb2005e90e250eae418" }
 
+version("2.6.10")     { source sha256: "0dc609f263d49c4176d5725deefc337273676395985b5e017789373e8cadf16e" }
+version("2.6.9")      { source sha256: "eb7bae7aac64bf9eb2153710a4cafae450ccbb62ae6f63d573e1786178b0efbb" }
 version("2.6.8")      { source sha256: "1807b78577bc08596a390e8a41aede37b8512190e05c133b17d0501791a8ca6d" }
 version("2.6.7")      { source sha256: "e4227e8b7f65485ecb73397a83e0d09dcd39f25efd411c782b69424e55c7a99e" }
-version("2.6.6")      { source sha256: "364b143def360bac1b74eb56ed60b1a0dca6439b00157ae11ff77d5cd2e92291" }
-version("2.6.5")      { source sha256: "66976b716ecc1fd34f9b7c3c2b07bbd37631815377a2e3e85a5b194cfdcbed7d" }
 
 source url: "https://cache.ruby-lang.org/pub/ruby/#{version.match(/^(\d+\.\d+)/)[0]}/ruby-#{version}.tar.gz"
+internal_source url: "#{ENV["ARTIFACTORY_REPO_URL"]}/#{name}/#{name}-#{version}.tar.gz",
+                authorization: "X-JFrog-Art-Api:#{ENV["ARTIFACTORY_TOKEN"]}"
 
 # In order to pass notarization we need to sign any binaries and libraries included in the package.
 # This makes sure we include and bins and libs that are brought in by gems.
@@ -63,6 +84,7 @@ relative_path "ruby-#{version}"
 
 env = with_standard_compiler_flags(with_embedded_path)
 
+# do not remove - Rapid7 custom - do not remove:
 jemalloc_required = linux? || mac_os_x?
 if jemalloc_required
   dependency "jemalloc"
@@ -121,10 +143,12 @@ build do
   patch_env = env.dup
   patch_env["PATH"] = "/opt/freeware/bin:#{env["PATH"]}" if aix?
 
-  if version.satisfies?("~> 3.0")
+  if version.satisfies?("~> 3.0.0")
     case version
-    when "3.0.0", "3.0.1"
+    when "3.0.1"
       patch source: "ruby-3.0.1-configure.patch", plevel: 1, env: patch_env
+    when "3.0.5", "3.0.6"
+      patch source: "ruby-3.0.5-configure.patch", plevel: 1, env: patch_env
     else
       patch source: "ruby-3.0.2-configure.patch", plevel: 1, env: patch_env
     end
@@ -153,7 +177,11 @@ build do
   # over the top of it.  AFAIK no sane ruby code should need to do that, and the
   # cost of this behavior in core ruby is enormous.
   #
-  patch source: "ruby-fast-load_26.patch", plevel: 1, env: patch_env
+  if version.satisfies?("< 3.1")
+    patch source: "ruby-fast-load_26.patch", plevel: 1, env: patch_env
+  else
+    patch source: "ruby-fast-load_31.patch", plevel: 1, env: patch_env
+  end
 
   # this removes a checks for windows nano in the win32-ole files.
   # windows nano is a dead platform and not supported by chef so we can avoid
@@ -178,13 +206,6 @@ build do
     patch source: "ruby-faster-load_27.patch", plevel: 1, env: patch_env
   end
 
-  # rubygems 3.1.x perf improvements
-  # this is part of ruby 2.7.3 so skip it
-  #
-  if version.satisfies?("~> 2.7") && version.satisfies?("< 2.7.3")
-    patch source: "ruby-2.7.1-rubygemsperf.patch", plevel: 1, env: patch_env
-  end
-
   # disable libpath in mkmf across all platforms, it trolls omnibus and
   # breaks the postgresql cookbook.  i'm not sure why ruby authors decided
   # this was a good idea, but it breaks our use case hard.  AIX cannot even
@@ -198,6 +219,7 @@ build do
 
   configure_command = ["--with-out-ext=dbm,readline",
                        "--enable-shared",
+                       # do not remove - Rapid7 custom - do not remove:
                        "--enable-load-relative",
                        "--disable-install-doc",
                        "--without-gmp",
@@ -206,18 +228,15 @@ build do
                        "--disable-dtrace",
                        "--disable-jit-support"]
   configure_command << "--with-bundled-md5" if fips_mode?
+  # do not remove - Rapid7 custom - do not remove:
   configure_command << "--with-jemalloc" if jemalloc_required
 
   # resolve C99 code accidentally introduced in Ruby 2.6.7 and it's still in 2.6.8 :(
-  patch source: "ruby-2.6.7_c99.patch", plevel: 1, env: patch_env if version.satisfies?("~> 2.6.7")
+  patch source: "ruby-2.6.7_c99.patch", plevel: 1, env: patch_env if version.satisfies?("~> 2.6.7", "< 2.6.10")
 
   if aix?
     # need to patch ruby's configure file so it knows how to find shared libraries
     patch source: "ruby-aix-configure_26_and_later.patch", plevel: 1, env: patch_env
-
-    if version.satisfies?("~> 2.6.4")
-      patch source: "ruby-2.6.4-bug14834.patch", plevel: 1, env: patch_env
-    end
 
     # have ruby use zlib on AIX correctly
     patch source: "ruby_aix_openssl.patch", plevel: 1, env: patch_env
