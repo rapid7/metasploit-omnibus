@@ -23,29 +23,50 @@ skip_transitive_dependency_licensing true
 dependency "cacerts"
 dependency "openssl-fips" if fips_mode?
 
-default_version "1.1.1m"
+default_version "1.1.1t" # # do not remove - Rapid7 custom - do not remove
 
 # Openssl builds engines as libraries into a special directory. We need to include
 # that directory in lib_dirs so omnibus can sign them during macOS deep signing.
 lib_dirs lib_dirs.concat(["#{install_dir}/embedded/lib/engines"])
 lib_dirs lib_dirs.concat(["#{install_dir}/embedded/lib/engines-1.1"]) if version.start_with?("1.1")
+if version.start_with?("3.")
+  lib_dirs lib_dirs.concat(["#{install_dir}/embedded/lib/engines-3"])
+  lib_dirs lib_dirs.concat(["#{install_dir}/embedded/lib/ossl-modules"])
+end
 
 # 1.0.2u was the last public release of 1.0.2. Subsequent releases come from a support contract with OpenSSL Software Services
 if version.satisfies?("< 1.1.0")
   source url: "https://s3.amazonaws.com/chef-releng/openssl/openssl-#{version}.tar.gz", extract: :lax_tar
+  internal_source url: "#{ENV["ARTIFACTORY_REPO_URL"]}/#{name}/#{name}-#{version}.tar.gz", extract: :lax_tar,
+                  authorization: "X-JFrog-Art-Api:#{ENV["ARTIFACTORY_TOKEN"]}"
 else
   # As of 2020-09-09 even openssl-1.0.0.tar.gz can be downloaded from /source/openssl-VERSION.tar.gz
   # However, the latest releases are not in /source/old/VERSION/openssl-VERSION.tar.gz.
   # Let's stick with the simpler one for now.
   source url: "https://www.openssl.org/source/openssl-#{version}.tar.gz", extract: :lax_tar
+  internal_source url: "#{ENV["ARTIFACTORY_REPO_URL"]}/#{name}/#{name}-#{version}.tar.gz", extract: :lax_tar,
+                  authorization: "X-JFrog-Art-Api:#{ENV["ARTIFACTORY_TOKEN"]}"
 end
 
-version("1.1.1m") { source sha256: "f89199be8b23ca45fc7cb9f1d8d3ee67312318286ad030f5316aca6462db6c96" }
-version("1.1.1l") { source sha256: "0b7a3e5e59c34827fe0c3a74b7ec8baef302b98fa80088d7f9153aa16fa76bd1" }
-version("1.1.1f") { source sha256: "186c6bfe6ecfba7a5b48c47f8a1673d0f3b0e5ba2e25602dd23b629975da3f35" }
+version("3.0.5")   { source sha256: "aa7d8d9bef71ad6525c55ba11e5f4397889ce49c2c9349dcea6d3e4f0b024a7a" }
+version("3.0.4")   { source sha256: "2831843e9a668a0ab478e7020ad63d2d65e51f72977472dc73efcefbafc0c00f" }
+version("3.0.3")   { source sha256: "ee0078adcef1de5f003c62c80cc96527721609c6f3bb42b7795df31f8b558c0b" }
+version("3.0.1")   { source sha256: "c311ad853353bce796edad01a862c50a8a587f62e7e2100ef465ab53ec9b06d1" } # only ruby 3.1 supports openssl-3.0.1
 
+version("1.1.1t")  { source sha256: "8dee9b24bdb1dcbf0c3d1e9b02fb8f6bf22165e807f45adeb7c9677536859d3b" }
+version("1.1.1q")  { source sha256: "d7939ce614029cdff0b6c20f0e2e5703158a489a72b2507b8bd51bf8c8fd10ca" }
+version("1.1.1p")  { source sha256: "bf61b62aaa66c7c7639942a94de4c9ae8280c08f17d4eac2e44644d9fc8ace6f" }
+version("1.1.1o")  { source sha256: "9384a2b0570dd80358841464677115df785edb941c71211f75076d72fe6b438f" }
+version("1.1.1m")  { source sha256: "f89199be8b23ca45fc7cb9f1d8d3ee67312318286ad030f5316aca6462db6c96" }
+version("1.1.1l")  { source sha256: "0b7a3e5e59c34827fe0c3a74b7ec8baef302b98fa80088d7f9153aa16fa76bd1" }
+version("1.1.1w")  { source sha256: "cf3098950cb4d853ad95c0841f1f9c6d3dc102dccfcacd521d93925208b76ac8" }
+
+version("1.0.2zg") { source sha256: "09f8372eaede77ec8e6945e2d2d8eeb1b91662980cf23fe95f627b377162296c" }
 version("1.0.2zb") { source sha256: "b7d8f8c895279caa651e7f3de9a7b87b8dd01a452ca3d9327f45a9ef31d0c518" }
 version("1.0.2za") { source sha256: "86ec5d2ecb53839e9ec999db7f8715d0eb7e534d8a1d8688ef25280fbeee2ff8" }
+version("1.0.2ze") { source sha256: "796624c593c361c695bd16314bc6f944184f5d2ff87efcf0bfa0545aa84c4d88" }
+version("1.0.2zf") { source sha256: "85d2242b7d11a33d5f239f1f34a1ff7eb37431a554b7df99c52c646b70b14b2e" }
+version("1.0.2zi") { source sha256: "80b6c07995fc92456e31c61cf1b2a18f75e314063189bb183af6ae66d0261d84" }
 
 relative_path "openssl-#{version}"
 
@@ -55,9 +76,6 @@ build do
     env["M4"] = "/opt/freeware/bin/m4"
   elsif mac_os_x? && arm?
     env["CFLAGS"] << " -Qunused-arguments"
-  elsif freebsd?
-    # Should this just be in standard_compiler_flags?
-    env["LDFLAGS"] += " -Wl,-rpath,#{install_dir}/embedded/lib"
   elsif windows?
     # XXX: OpenSSL explicitly sets -march=i486 and expects that to be honored.
     # It has OPENSSL_IA32_SSE2 controlling whether it emits optimized SSE2 code
@@ -77,15 +95,21 @@ build do
     "no-mdc2",
     "no-rc5",
     "no-ssl2",
-    "enable-ssl3",
+    "no-ssl3",
     "no-zlib",
     "shared",
   ]
 
+  configure_args += ["--libdir=#{install_dir}/embedded/lib"] if version.satisfies?(">=3.0.1")
+
   # https://www.openssl.org/blog/blog/2021/09/13/LetsEncryptRootCertExpire/
   configure_args += [ "-DOPENSSL_TRUSTED_FIRST_DEFAULT" ] if version.satisfies?(">= 1.0.2zb") && version.satisfies?("< 1.1.0")
 
-  configure_args += ["--with-fipsdir=#{install_dir}/embedded", "fips"] if fips_mode?
+  if version.satisfies?("< 3.0.0")
+    configure_args += ["--with-fipsdir=#{install_dir}/embedded", "fips"] if fips_mode?
+  else
+    configure_args += ["-enable-fips"] if fips_mode?
+  end
 
   configure_cmd =
     if aix?
@@ -135,6 +159,8 @@ build do
     patch source: "openssl-1.0.1f-do-not-build-docs.patch", env: patch_env
   elsif version.start_with? "1.1"
     patch source: "openssl-1.1.0f-do-not-install-docs.patch", env: patch_env
+  elsif version.start_with? "3.0"
+    patch source: "openssl-3.0.1-do-not-install-docs.patch", env: patch_env
   end
 
   if version.start_with?("1.0.2") && mac_os_x? && arm?
@@ -148,7 +174,7 @@ build do
 
   # Out of abundance of caution, we put the feature flags first and then
   # the crazy platform specific compiler flags at the end.
-  configure_args << env["CFLAGS"] << env["LDFLAGS"]
+  configure_args << env["CFLAGS"]
 
   configure_command = configure_args.unshift(configure_cmd).join(" ")
 

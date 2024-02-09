@@ -1,0 +1,6 @@
+[fasttrack]
+name=CentOS-6 - fasttrack
+baseurl=https://vault.centos.org/6.10/$basearch/
+gpgcheck=1
+enabled=0
+gpgkey=https://vault.centos.org/6.10/$basearch/RPM-GPG-KEY-CentOS-6

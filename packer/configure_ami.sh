@@ -56,13 +56,13 @@ cp ~/.gitconfig "$USER_HOME" && \
 
 su $BUILD_USER -c 'command curl -sSL https://rvm.io/mpapis.asc | gpg --import - && \
   command curl -sSL https://rvm.io/pkuczynski.asc | gpg --import - && \
-  curl -L -sSL https://get.rvm.io | bash -s stable'
+  curl -L -sSL https://raw.githubusercontent.com/rvm/rvm/1.29.12/binscripts/rvm-installer | bash -s stable'
 
 su $BUILD_USER -c "/bin/bash -l -c 'rvm requirements'"
-su $BUILD_USER -c "/bin/bash -l -c 'rvm install 2.6.5'"
+su $BUILD_USER -c "/bin/bash -l -c 'rvm install 3.0.6'"
 su $BUILD_USER -c "/bin/bash -l -c 'gem install bundler -v 2.2.3 --no-document'"
 su $BUILD_USER -c "/bin/bash -l -c 'cd ~/ && git clone https://github.com/rapid7/metasploit-omnibus.git && \
-        cd ~/metasploit-omnibus && bundle install --binstubs && cd ~/ && rm -fr metasploit-omnibus'"
+        cd ~/metasploit-omnibus && bundle install && bundle binstubs --all && cd ~/ && rm -fr metasploit-omnibus'"
 
 # Remove Aptitude daily cron jobs
 systemctl disable apt-daily.service
