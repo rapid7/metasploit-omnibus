@@ -127,94 +127,94 @@ jobs:
           docker rm -v $id
           docker rmi ${TEMP_DOCKER_IMAGE}
 
-  # docker_intel:
-  #   runs-on: ${{ matrix.os }}
-  #   timeout-minutes: 180
+  docker_intel:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 180
 
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       os:
-  #         - ubuntu-latest
-  #       # From: 'ls ./docker/'
-  #       image_name:
-  #         - centos6-x64
-  #         # Arm have been skipped for now
-  #         # - debian-aarch64
-  #         # Arm have been skipped for now:
-  #         # - debian-armv7
-  #         - fedora30-x64
-  #         # Currently fails on rate limiting on Kali's side:
-  #         # - kali109-x64
-  #         - ubuntu1204-x64
-  #         - ubuntu1204-x86
-  #         - ubuntu1804-x64
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+        # From: 'ls ./docker/'
+        image_name:
+          - centos6-x64
+          # Arm have been skipped for now
+          # - debian-aarch64
+          # Arm have been skipped for now:
+          # - debian-armv7
+          - fedora30-x64
+          # Currently fails on rate limiting on Kali's side:
+          # - kali109-x64
+          - ubuntu1204-x64
+          - ubuntu1204-x86
+          - ubuntu1804-x64
 
-  #   name: ${{ matrix.os }} - ${{ matrix.image_name }}
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v4
+    name: ${{ matrix.os }} - ${{ matrix.image_name }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-  #     - name: Set the docker build metadata
-  #       run: |
-  #         export BUILD_DATE=$(date "+%Y_%m")
-  #         echo "BUILD_DATE=$BUILD_DATE" >> "$GITHUB_ENV"
-  #         echo "BUILD_TAG=rapid7/${IMAGE_NAME}-omnibus:${BUILD_DATE}" >> "$GITHUB_ENV"
-  #       env:
-  #         IMAGE_NAME: ${{ matrix.image_name }}
+      - name: Set the docker build metadata
+        run: |
+          export BUILD_DATE=$(date "+%Y_%m")
+          echo "BUILD_DATE=$BUILD_DATE" >> "$GITHUB_ENV"
+          echo "BUILD_TAG=rapid7/${IMAGE_NAME}-omnibus:${BUILD_DATE}" >> "$GITHUB_ENV"
+        env:
+          IMAGE_NAME: ${{ matrix.image_name }}
 
-  #     - name: Build Docker image
-  #       run: |
-  #         /bin/bash -x -c "docker build --tag ${BUILD_TAG} -f ./docker/${IMAGE_NAME}/Dockerfile ./docker/${IMAGE_NAME}"
-  #       env:
-  #         IMAGE_NAME: ${{ matrix.image_name }}
+      - name: Build Docker image
+        run: |
+          /bin/bash -x -c "docker build --tag ${BUILD_TAG} -f ./docker/${IMAGE_NAME}/Dockerfile ./docker/${IMAGE_NAME}"
+        env:
+          IMAGE_NAME: ${{ matrix.image_name }}
 
-  #     # Checkout again - but with the submodules enabled to start a real build
-  #     - name: Checkout submodules
-  #       uses: actions/checkout@v4
-  #       with:
-  #         submodules: true
+      # Checkout again - but with the submodules enabled to start a real build
+      - name: Checkout submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: true
 
-  #     - name: Run omnibus
-  #       run: |
-  #         /bin/bash -x -c "docker run --rm --volume $(pwd):$(pwd) --workdir $(pwd) --user jenkins ${BUILD_TAG} /bin/bash -l -c 'make'"
+      - name: Run omnibus
+        run: |
+          /bin/bash -x -c "docker run --rm --volume $(pwd):$(pwd) --workdir $(pwd) --user jenkins ${BUILD_TAG} /bin/bash -l -c 'make'"
 
-  # osx:
-  #   runs-on: ${{ matrix.os }}
-  #   timeout-minutes: 180
+  osx:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 180
 
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       os:
-  #         - macos-11
-  #       ruby:
-  #         - 3.0.6
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-11
+        ruby:
+          - 3.0.6
 
-  #   name: ${{ matrix.os }}
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v4
+    name: ${{ matrix.os }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-  #     - name: Checkout submodules
-  #       uses: actions/checkout@v4
-  #       with:
-  #         submodules: true
+      - name: Checkout submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: true
 
-  #     - name: Setup Ruby
-  #       env:
-  #         BUNDLE_FORCE_RUBY_PLATFORM: true
-  #       uses: ruby/setup-ruby@v1
-  #       with:
-  #         ruby-version: ${{ matrix.ruby }}
-  #         bundler-cache: true
-  #         cache-version: 4
+      - name: Setup Ruby
+        env:
+          BUNDLE_FORCE_RUBY_PLATFORM: true
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+          cache-version: 4
 
-  #     - name: Run omnibus
-  #       run: |
-  #         sudo mkdir -p /var/cache/omnibus
-  #         sudo mkdir -p /opt/metasploit-framework
-  #         sudo chown `whoami` /var/cache/omnibus
-  #         sudo chown `whoami` /opt/metasploit-framework
+      - name: Run omnibus
+        run: |
+          sudo mkdir -p /var/cache/omnibus
+          sudo mkdir -p /opt/metasploit-framework
+          sudo chown `whoami` /var/cache/omnibus
+          sudo chown `whoami` /opt/metasploit-framework
 
-  #         make
+          make
