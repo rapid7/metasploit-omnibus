@@ -4,6 +4,7 @@ homepage "https://rapid7.com"
 
 install_dir "#{default_root}/metasploit-framework"
 
+# Version is extracted from the latest Git tag found in the local Git repository
 build_version Omnibus::BuildVersion.semver + "-1rapid7"
 build_iteration 1
 
