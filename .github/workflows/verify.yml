@@ -303,19 +303,19 @@ jobs:
           # https://github.com/ruby/setup-ruby/tree/d2b39ad0b52eca07d23f3aa14fdf2a3fcc1f411c#windows
           bundler: 2.2.33
 
-      # We need to create the pcaprub gem ourselves until 0.13.2 is released (https://github.com/pcaprub/pcaprub/issues/67)
-      - name: Checkout pcaprub
-        uses: actions/checkout@v4
-        with:
-          repository: pcaprub/pcaprub
-          path: pcaprub
-          ref: '5440ca93dafd15e7d3bb009fc1bb9a15e80d03f9'
+      # If you need to build a custom version of pcaprub:
+      # - name: Checkout pcaprub
+      #   uses: actions/checkout@v4
+      #   with:
+      #     repository: pcaprub/pcaprub
+      #     path: pcaprub
+      #     ref: '5440ca93dafd15e7d3bb009fc1bb9a15e80d03f9'
 
-      - name: Create pcaprub gem
-        run: |
-          cd pcaprub
-          bundle
-          rake gem
+      # - name: Create pcaprub gem
+      #   run: |
+      #     cd pcaprub
+      #     bundle
+      #     rake gem
 
       # Checkout framework
       - name: Checkout metasploit-framework code
