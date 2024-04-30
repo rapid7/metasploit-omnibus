@@ -19,7 +19,7 @@ permissions:
 on:
   push:
     branches:
-      - '*'
+      - 'master'
   pull_request:
     branches:
       - '*'
@@ -97,6 +97,8 @@ jobs:
         with:
           repository: rapid7/metasploit-framework
           path: metasploit-framework
+          # If testing a custom branch is required
+          # ref: 'update-bundler-version'
 
       - name: Run omnibus
         run: |
@@ -126,6 +128,17 @@ jobs:
           docker rm -v $id
           docker rmi ${TEMP_DOCKER_IMAGE}
 
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: metasploit-${{ matrix.docker.name }}-installers
+          path: |
+            metasploit-omnibus/pkg/*.pkg
+            metasploit-omnibus/pkg/*.rpm
+            metasploit-omnibus/pkg/*.msi
+            metasploit-omnibus/pkg/*.deb
+          retention-days: 1
+
   docker_intel:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 180
@@ -139,20 +152,26 @@ jobs:
         docker:
           - name: 'centos6-x64'
             previousDockerhubImage: 'rapid7/msf-centos6-x64-omnibus:2020_03'
+            installer: 'sudo rpm -i metasploit-omnibus/pkg/metasploit-framework*.rpm'
           # Currently fails as it uses an older Ruby version:
           - name: 'fedora30-x64'
             # XXX: Previous dockerhub image fails as using Ruby 2.5.3 still
             previousDockerhubImage: 'rapid7/msf-fedora30-x64-omnibus:2019_09'
+            installer: 'sudo rpm -i metasploit-omnibus/pkg/metasploit-framework*.rpm'
           # Currently fails on rate limiting on Kali's side:
           # - name: 'kali109-x64'
           #   previousDockerhubImage: 'rapid7/msf-kali109-x64-omnibus:2020_03'
+          #   installer: 'sudo dpkg -i metasploit-omnibus/pkg/metasploit-framework_*_amd64.deb'
           - name: 'ubuntu1204-x64'
             previousDockerhubImage: 'rapid7/msf-ubuntu1204-x86-omnibus:2021_11'
+            installer: 'sudo dpkg -i metasploit-omnibus/pkg/*.deb'
           - name: 'ubuntu1204-x86'
             previousDockerhubImage: 'rapid7/msf-ubuntu1204-x64-omnibus:2019_01'
             linux32: true
+            installer: 'sudo dpkg -i metasploit-omnibus/pkg/metasploit-framework_*_i386.deb'
           - name: 'ubuntu1804-x64'
             previousDockerhubImage: 'rapid7/msf-ubuntu1804-x64-omnibus:2019_09'
+            installer: 'sudo dpkg -i metasploit-omnibus/pkg/metasploit-framework_*_amd64.deb'
 
     name: ${{ matrix.os }} - ${{ matrix.docker.name }}
     steps:
@@ -215,6 +234,55 @@ jobs:
         env:
           LINUX32: ${{ matrix.docker.linux32 }}
 
+      - name: Test artifact
+        run: |
+          echo "Testing artifact"
+
+          cat > test_script.sh <<EOF
+          #!/bin/bash -ex
+          find metasploit-omnibus/pkg
+          $INSTALL_ARTIFACT
+
+          mkdir ~/.msf4; touch ~/.msf4/initial_setup_complete
+
+          msfconsole -qx 'setg variable test; version; exit'
+          msfvenom -p windows/meterpreter/reverse_tcp -f exe -o test.exe
+          msfd -h
+          msfrpc -h
+          msfrpcd -h
+          msfdb -h
+          msfbinscan -h
+          msfrop -h
+          msfelfscan -h
+          msfmachscan -h
+          msfpescan -h
+          # msfupdate
+          EOF
+
+          chmod +x ./test_script.sh
+
+          # If required, change reported architecture in new program environment and set personality flags
+          if [ ! -z "${LINUX32}" ] ; then
+            echo 'setting linux32'
+            /bin/bash -x -c "docker run --rm --volume $(pwd):$(pwd) --workdir $(pwd) --user jenkins ${DOCKER_IMAGE} linux32 /bin/bash -l -c './test_script.sh'"
+          else
+            /bin/bash -x -c "docker run --rm --volume $(pwd):$(pwd) --workdir $(pwd) --user jenkins ${DOCKER_IMAGE} /bin/bash -l -c './test_script.sh'"
+          fi
+        env:
+          LINUX32: ${{ matrix.docker.linux32 }}
+          INSTALL_ARTIFACT: ${{ matrix.docker.installer }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: metasploit-${{ matrix.docker.name }}-installers
+          path: |
+            metasploit-omnibus/pkg/*.pkg
+            metasploit-omnibus/pkg/*.rpm
+            metasploit-omnibus/pkg/*.msi
+            metasploit-omnibus/pkg/*.deb
+          retention-days: 1
+
   osx:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 180
@@ -254,6 +322,39 @@ jobs:
 
           cd metasploit-omnibus
           make
+
+      - name: Test artifact
+        run: |
+          echo "Testing artifact"
+
+          sudo rm -rf /opt/metasploit-framework
+          /usr/bin/find metasploit-omnibus/pkg
+          PACKAGE=$(pwd)/$(/usr/bin/find metasploit-omnibus/pkg/metasploit*.pkg | head -n 1)
+          sudo installer -pkg ${PACKAGE} -target /
+
+          /opt/metasploit-framework/bin/msfconsole -qx 'setg variable test; version; exit'
+          /opt/metasploit-framework/bin/msfvenom -p windows/meterpreter/reverse_tcp -f exe -o test.exe
+          /opt/metasploit-framework/bin/msfd -h
+          /opt/metasploit-framework/bin/msfrpc -h
+          /opt/metasploit-framework/bin/msfrpcd -h
+          /opt/metasploit-framework/bin/msfdb -h
+          /opt/metasploit-framework/bin/msfbinscan -h
+          /opt/metasploit-framework/bin/msfrop -h
+          /opt/metasploit-framework/bin/msfelfscan -h
+          /opt/metasploit-framework/bin/msfmachscan -h
+          /opt/metasploit-framework/bin/msfpescan -h
+          # /opt/metasploit-framework/bin/msfupdate
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: metasploit-osx-installers
+          path: |
+            metasploit-omnibus/pkg/*.pkg
+            metasploit-omnibus/pkg/*.rpm
+            metasploit-omnibus/pkg/*.msi
+            metasploit-omnibus/pkg/*.deb
+          retention-days: 1
 
   windows:
     runs-on: ${{ matrix.os }}
@@ -338,6 +439,52 @@ jobs:
           cd metasploit-omnibus
           make dependencies
 
-          rem Don't run the main build itslef under `make`, as the process will be spawned under msys2
+          rem Don't run the main build itself under `make`, as the process will be spawned under msys2
           rem and the ridk.cmd Ruby installer will forcibly kill the msys2 process before attempting to install ruby
           ruby bin/omnibus build metasploit-framework
+
+      # Currently hangs on Github actions - but passes locally, potential cause within the debug.log file:
+      #
+      #     Info 1603.The file C:\Windows\system32\vcruntime140_1.dll is being held in use.  Close that application and retry.
+      #
+      # - name: Test artifact
+      #   shell: pwsh
+      #   run: |
+      #     Set-PSDebug -Trace 1
+      #     echo "Testing artifact"
+
+      #     Remove-Item c:\metasploit-framework -Recurse -ErrorAction Ignore
+
+      #     dir metasploit-omnibus\pkg
+
+      #     echo '' > debug.log
+      #     $artifact = (Get-ChildItem -Path "metasploit-omnibus/pkg/*.msi")[0].Name
+      #     $install_process = Start-Process msiexec.exe -ArgumentList "/i metasploit-omnibus\pkg\$artifact /quiet /qn /l*v debug.log" -NoNewWindow -PassThru
+      #     $log_process = Start-Process "powershell" "Get-Content -Path debug.log -Wait" -NoNewWindow -PassThru
+      #     $install_process.WaitForExit()
+      #     $log_process.Kill()
+      #     echo "finished install"
+
+      #     c:\metasploit-framework\bin\msfconsole -qx 'setg variable test; version; exit'
+      #     c:\metasploit-framework\bin\msfvenom -p windows/meterpreter/reverse_tcp -f exe -o test.exe
+      #     c:\metasploit-framework\bin\msfd -h
+      #     c:\metasploit-framework\bin\msfrpc -h
+      #     c:\metasploit-framework\bin\msfrpcd -h
+      #     c:\metasploit-framework\bin\msfdb -h
+      #     c:\metasploit-framework\bin\msfbinscan -h
+      #     c:\metasploit-framework\bin\msfrop -h
+      #     c:\metasploit-framework\bin\msfelfscan -h
+      #     c:\metasploit-framework\bin\msfmachscan -h
+      #     c:\metasploit-framework\bin\msfpescan -h
+      #     c:\metasploit-framework\bin\msfupdate
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: metasploit-windows-installers
+          path: |
+            metasploit-omnibus/pkg/*.pkg
+            metasploit-omnibus/pkg/*.rpm
+            metasploit-omnibus/pkg/*.msi
+            metasploit-omnibus/pkg/*.deb
+          retention-days: 1

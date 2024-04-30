@@ -28,7 +28,7 @@ else
   dependency "ruby"
 end
 
-default_version "3.2.22"
+default_version "3.5.10"
 
 if version && !source
   # NOTE: 2.1.11 is the last version of rubygems before the 2.2.x change to native gem install location
@@ -40,7 +40,9 @@ if version && !source
   # we pin the previously known tarballs.
   known_tarballs = {
     "3.1.4" => "d117187a8f016cbe8f52011ae02e858b",
-    "3.2.22"=> "b128d5493da2ec7a1da49a7189c04b35",
+    "3.2.22" => "b128d5493da2ec7a1da49a7189c04b35",
+    "3.3.26" => "ba171c52fd9beda6dac7194413601795",
+    "3.5.10" => "70f46c096b4e11c42b0190cc3e3375e2"
   }
   known_tarballs.each do |vsn, md5|
     version vsn do
@@ -68,6 +70,13 @@ end
 
 build do
   env = with_standard_compiler_flags(with_embedded_path)
+
+  # Fix warning on msfconsle bootup that will be fixed when framework's bundler version is updated
+  #   NOTE: Gem::Platform.match is deprecated; use Gem::Platform.match_spec? or match_gem? instead. It will be removed in Rubygems 4
+  #   Gem::Platform.match called from /Users/adfoster/.rvm/gems/ruby-3.3.0/gems/bundler-2.1.4/lib/bundler/index.rb:198.
+  if version.satisfies?('>= 3.5.10')
+    patch source: "rubygems-3.5.10.patch", plevel: 1, env: env
+  end
 
   if source
     # Building from source:
