@@ -43,7 +43,7 @@ jobs:
         docker:
           # Skipped as not working
           # - { dockerfile: 'debian-aarch64', previousImage: '' }
-          - { name: 'debian-armv7', previousDockerhubImage: 'rapid7/msf-debian-armv7-omnibus:2020_03' }
+          - { name: 'debian-armv7', previousDockerhubImage: 'rapid7/msf-debian-armv7-omnibus:2024_04' }
 
     name: ${{ matrix.os }} - ${{ matrix.docker.name }}
     steps:
@@ -102,6 +102,7 @@ jobs:
 
       - name: Run omnibus
         run: |
+          set -x
           echo "Building new image from ${DOCKER_IMAGE}"
           mkdir -p metasploit-omnibus/certs
           curl -L -o metasploit-omnibus/certs/ca-certificates.crt https://curl.haxx.se/ca/cacert.pem
@@ -151,26 +152,26 @@ jobs:
         # From: 'ls ./docker/'
         docker:
           - name: 'centos6-x64'
-            previousDockerhubImage: 'rapid7/msf-centos6-x64-omnibus:2020_03'
+            previousDockerhubImage: 'rapid7/msf-centos6-x64-omnibus:2024_04'
             installer: 'sudo rpm -i metasploit-omnibus/pkg/metasploit-framework*.rpm'
           # Currently fails as it uses an older Ruby version:
           - name: 'fedora30-x64'
             # XXX: Previous dockerhub image fails as using Ruby 2.5.3 still
-            previousDockerhubImage: 'rapid7/msf-fedora30-x64-omnibus:2019_09'
+            previousDockerhubImage: 'rapid7/msf-fedora30-x64-omnibus:2024_04'
             installer: 'sudo rpm -i metasploit-omnibus/pkg/metasploit-framework*.rpm'
           # Currently fails on rate limiting on Kali's side:
           # - name: 'kali109-x64'
           #   previousDockerhubImage: 'rapid7/msf-kali109-x64-omnibus:2020_03'
           #   installer: 'sudo dpkg -i metasploit-omnibus/pkg/metasploit-framework_*_amd64.deb'
           - name: 'ubuntu1204-x64'
-            previousDockerhubImage: 'rapid7/msf-ubuntu1204-x86-omnibus:2021_11'
+            previousDockerhubImage: 'rapid7/msf-ubuntu1204-x64-omnibus:2024_04'
             installer: 'sudo dpkg -i metasploit-omnibus/pkg/*.deb'
           - name: 'ubuntu1204-x86'
-            previousDockerhubImage: 'rapid7/msf-ubuntu1204-x64-omnibus:2019_01'
+            previousDockerhubImage: 'rapid7/msf-ubuntu1204-x86-omnibus:2024_04'
             linux32: true
             installer: 'sudo dpkg -i metasploit-omnibus/pkg/metasploit-framework_*_i386.deb'
           - name: 'ubuntu1804-x64'
-            previousDockerhubImage: 'rapid7/msf-ubuntu1804-x64-omnibus:2019_09'
+            previousDockerhubImage: 'rapid7/msf-ubuntu1804-x64-omnibus:2024_04'
             installer: 'sudo dpkg -i metasploit-omnibus/pkg/metasploit-framework_*_amd64.deb'
 
     name: ${{ matrix.os }} - ${{ matrix.docker.name }}
@@ -221,6 +222,7 @@ jobs:
 
       - name: Run omnibus
         run: |
+          set -x
           mkdir -p metasploit-omnibus/certs
           curl -L -o metasploit-omnibus/certs/ca-certificates.crt https://curl.haxx.se/ca/cacert.pem
 
