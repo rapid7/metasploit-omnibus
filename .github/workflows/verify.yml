@@ -1,0 +1,490 @@
+name: Verify
+
+# https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#permissions
+permissions:
+  actions: none
+  checks: none
+  contents: read
+  deployments: none
+  id-token: none
+  issues: none
+  discussions: none
+  packages: none
+  pages: none
+  pull-requests: none
+  repository-projects: none
+  security-events: none
+  statuses: none
+
+on:
+  push:
+    branches:
+      - 'master'
+  pull_request:
+    branches:
+      - '*'
+
+jobs:
+  # The job checkout structure is:
+  #  .
+  #  ├── metasploit-omnibus
+  #  └── metasploit-framework (Only if ARM or Windows builds)
+  #
+  docker_arm:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 600
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+        # From: 'ls ./docker/'
+        docker:
+          # Skipped as not working
+          # - { dockerfile: 'debian-aarch64', previousImage: '' }
+          - { name: 'debian-armv7', previousDockerhubImage: 'rapid7/msf-debian-armv7-omnibus:2020_03' }
+
+    name: ${{ matrix.os }} - ${{ matrix.docker.name }}
+    steps:
+      - name: Checkout omnibus
+        uses: actions/checkout@v4
+        with:
+          path: metasploit-omnibus
+
+      - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36
+        id: changes
+        with:
+          filters: |
+            docker:
+              - 'docker/**'
+          working-directory: metasploit-omnibus
+
+      # Set the env vars for either a new build, or a previously successful build
+      - name: Set docker build metadata
+        run: |
+          export BUILD_DATE=$(date "+%Y_%m")
+          echo "BUILD_DATE=$BUILD_DATE" >> "$GITHUB_ENV"
+          if test "${HAS_MODIFIED_DOCKERFILES}" = 'true'; then
+            echo 'New build required'
+            echo "DOCKER_IMAGE=rapid7/${DOCKER_NAME}-omnibus:${BUILD_DATE}" >> "$GITHUB_ENV"
+          else
+            echo 'Reusing old image'
+            echo "DOCKER_IMAGE=${PREVIOUS_DOCKERHUB_IMAGE}" >> "$GITHUB_ENV"
+          fi
+        env:
+          HAS_MODIFIED_DOCKERFILES: ${{ steps.changes.outputs.docker }}
+          DOCKER_NAME: ${{ matrix.docker.name }}
+          PREVIOUS_DOCKERHUB_IMAGE: ${{ matrix.docker.previousDockerhubImage }}
+
+      - name: Build Docker image
+        if: steps.changes.outputs.docker == 'true'
+        run: |
+          /bin/bash -x -c "cd metasploit-omnibus && docker build --tag ${DOCKER_IMAGE} -f ./docker/${DOCKER_NAME}/Dockerfile ./docker/${DOCKER_NAME}"
+        env:
+          DOCKER_NAME: ${{ matrix.docker.name }}
+
+      # Checkout again - but with the submodules enabled to start a real build
+      - name: Checkout omnibus and submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          path: metasploit-omnibus
+
+      # Checkout framework
+      - name: Checkout metasploit-framework code
+        uses: actions/checkout@v4
+        with:
+          repository: rapid7/metasploit-framework
+          path: metasploit-framework
+          # If testing a custom branch is required
+          # ref: 'update-bundler-version'
+
+      - name: Run omnibus
+        run: |
+          echo "Building new image from ${DOCKER_IMAGE}"
+          mkdir -p metasploit-omnibus/certs
+          curl -L -o metasploit-omnibus/certs/ca-certificates.crt https://curl.haxx.se/ca/cacert.pem
+          cat > Dockerfile_temp <<EOF
+          FROM ${DOCKER_IMAGE}
+          RUN ["cross-build-start"]
+          COPY metasploit-omnibus /metasploit-omnibus
+          COPY metasploit-framework /metasploit-framework
+          RUN bash -l -c "cd /metasploit-omnibus && make"
+          RUN ["cross-build-end"]
+          EOF
+          cat > Dockerfile_temp.dockerignore <<EOF
+          *
+          !metasploit-omnibus
+          !metasploit-framework
+          EOF
+
+          export TEMP_DOCKER_IMAGE=${DOCKER_IMAGE}-build-artifacts
+          docker build --no-cache --rm --tag ${TEMP_DOCKER_IMAGE} --file Dockerfile_temp .
+
+          # Create the temp image and copy out the build assets
+          id=$(docker create ${TEMP_DOCKER_IMAGE})
+          docker cp $id:/metasploit-omnibus/pkg metasploit-omnibus
+          docker rm -v $id
+          docker rmi ${TEMP_DOCKER_IMAGE}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: metasploit-${{ matrix.docker.name }}-installers
+          path: |
+            metasploit-omnibus/pkg/*.pkg
+            metasploit-omnibus/pkg/*.rpm
+            metasploit-omnibus/pkg/*.msi
+            metasploit-omnibus/pkg/*.deb
+          retention-days: 1
+
+  docker_intel:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 180
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+        # From: 'ls ./docker/'
+        docker:
+          - name: 'centos6-x64'
+            previousDockerhubImage: 'rapid7/msf-centos6-x64-omnibus:2020_03'
+            installer: 'sudo rpm -i metasploit-omnibus/pkg/metasploit-framework*.rpm'
+          # Currently fails as it uses an older Ruby version:
+          - name: 'fedora30-x64'
+            # XXX: Previous dockerhub image fails as using Ruby 2.5.3 still
+            previousDockerhubImage: 'rapid7/msf-fedora30-x64-omnibus:2019_09'
+            installer: 'sudo rpm -i metasploit-omnibus/pkg/metasploit-framework*.rpm'
+          # Currently fails on rate limiting on Kali's side:
+          # - name: 'kali109-x64'
+          #   previousDockerhubImage: 'rapid7/msf-kali109-x64-omnibus:2020_03'
+          #   installer: 'sudo dpkg -i metasploit-omnibus/pkg/metasploit-framework_*_amd64.deb'
+          - name: 'ubuntu1204-x64'
+            previousDockerhubImage: 'rapid7/msf-ubuntu1204-x86-omnibus:2021_11'
+            installer: 'sudo dpkg -i metasploit-omnibus/pkg/*.deb'
+          - name: 'ubuntu1204-x86'
+            previousDockerhubImage: 'rapid7/msf-ubuntu1204-x64-omnibus:2019_01'
+            linux32: true
+            installer: 'sudo dpkg -i metasploit-omnibus/pkg/metasploit-framework_*_i386.deb'
+          - name: 'ubuntu1804-x64'
+            previousDockerhubImage: 'rapid7/msf-ubuntu1804-x64-omnibus:2019_09'
+            installer: 'sudo dpkg -i metasploit-omnibus/pkg/metasploit-framework_*_amd64.deb'
+
+    name: ${{ matrix.os }} - ${{ matrix.docker.name }}
+    steps:
+      - name: Checkout omnibus
+        uses: actions/checkout@v4
+        with:
+          path: metasploit-omnibus
+
+      - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36
+        id: changes
+        with:
+          filters: |
+            docker:
+              - 'docker/**'
+          working-directory: metasploit-omnibus
+
+      # Set the env vars for either a new build, or a previously successful build
+      - name: Set docker build metadata
+        run: |
+          export BUILD_DATE=$(date "+%Y_%m")
+          echo "BUILD_DATE=$BUILD_DATE" >> "$GITHUB_ENV"
+          if test "${HAS_MODIFIED_DOCKERFILES}" = 'true'; then
+            echo 'New build required'
+            echo "DOCKER_IMAGE=rapid7/${DOCKER_NAME}-omnibus:${BUILD_DATE}" >> "$GITHUB_ENV"
+          else
+            echo 'Reusing old image'
+            echo "DOCKER_IMAGE=${PREVIOUS_DOCKERHUB_IMAGE}" >> "$GITHUB_ENV"
+          fi
+        env:
+          HAS_MODIFIED_DOCKERFILES: ${{ steps.changes.outputs.docker }}
+          DOCKER_NAME: ${{ matrix.docker.name }}
+          PREVIOUS_DOCKERHUB_IMAGE: ${{ matrix.docker.previousDockerhubImage }}
+
+      - name: Build Docker image
+        if: steps.changes.outputs.docker == 'true'
+        run: |
+          /bin/bash -x -c "cd metasploit-omnibus && docker build --tag ${DOCKER_IMAGE} -f ./docker/${IMAGE_NAME}/Dockerfile ./docker/${IMAGE_NAME}"
+        env:
+          IMAGE_NAME: ${{ matrix.docker.name }}
+
+      # Checkout again - but with the submodules enabled to start a real build
+      - name: Checkout omnibus and submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          path: metasploit-omnibus
+
+      - name: Run omnibus
+        run: |
+          mkdir -p metasploit-omnibus/certs
+          curl -L -o metasploit-omnibus/certs/ca-certificates.crt https://curl.haxx.se/ca/cacert.pem
+
+          # If required, change reported architecture in new program environment and set personality flags
+          if [ ! -z "${LINUX32}" ] ; then
+            echo 'setting linux32'
+            /bin/bash -x -c "docker run --rm --volume $(pwd):$(pwd) --workdir $(pwd) --user jenkins ${DOCKER_IMAGE} linux32 /bin/bash -l -c 'cd metasploit-omnibus && ARCH=x86_64 make'"
+          else
+            /bin/bash -x -c "docker run --rm --volume $(pwd):$(pwd) --workdir $(pwd) --user jenkins ${DOCKER_IMAGE} /bin/bash -l -c 'cd metasploit-omnibus && make'"
+          fi
+        env:
+          LINUX32: ${{ matrix.docker.linux32 }}
+
+      - name: Test artifact
+        run: |
+          echo "Testing artifact"
+
+          cat > test_script.sh <<EOF
+          #!/bin/bash -ex
+          find metasploit-omnibus/pkg
+          $INSTALL_ARTIFACT
+
+          mkdir ~/.msf4; touch ~/.msf4/initial_setup_complete
+
+          msfconsole -qx 'setg variable test; version; exit'
+          msfvenom -p windows/meterpreter/reverse_tcp -f exe -o test.exe
+          msfd -h
+          msfrpc -h
+          msfrpcd -h
+          msfdb -h
+          msfbinscan -h
+          msfrop -h
+          msfelfscan -h
+          msfmachscan -h
+          msfpescan -h
+          # msfupdate
+          EOF
+
+          chmod +x ./test_script.sh
+
+          # If required, change reported architecture in new program environment and set personality flags
+          if [ ! -z "${LINUX32}" ] ; then
+            echo 'setting linux32'
+            /bin/bash -x -c "docker run --rm --volume $(pwd):$(pwd) --workdir $(pwd) --user jenkins ${DOCKER_IMAGE} linux32 /bin/bash -l -c './test_script.sh'"
+          else
+            /bin/bash -x -c "docker run --rm --volume $(pwd):$(pwd) --workdir $(pwd) --user jenkins ${DOCKER_IMAGE} /bin/bash -l -c './test_script.sh'"
+          fi
+        env:
+          LINUX32: ${{ matrix.docker.linux32 }}
+          INSTALL_ARTIFACT: ${{ matrix.docker.installer }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: metasploit-${{ matrix.docker.name }}-installers
+          path: |
+            metasploit-omnibus/pkg/*.pkg
+            metasploit-omnibus/pkg/*.rpm
+            metasploit-omnibus/pkg/*.msi
+            metasploit-omnibus/pkg/*.deb
+          retention-days: 1
+
+  osx:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 180
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-11
+        ruby:
+          - 3.0.6
+
+    name: ${{ matrix.os }}
+    steps:
+      - name: Checkout omnibus
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          path: metasploit-omnibus
+
+      - name: Setup Ruby
+        env:
+          BUNDLE_FORCE_RUBY_PLATFORM: true
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+          cache-version: 4
+          working-directory: metasploit-omnibus
+
+      - name: Run omnibus
+        run: |
+          sudo mkdir -p /var/cache/omnibus
+          sudo mkdir -p /opt/metasploit-framework
+          sudo chown `whoami` /var/cache/omnibus
+          sudo chown `whoami` /opt/metasploit-framework
+
+          cd metasploit-omnibus
+          make
+
+      - name: Test artifact
+        run: |
+          echo "Testing artifact"
+
+          sudo rm -rf /opt/metasploit-framework
+          /usr/bin/find metasploit-omnibus/pkg
+          PACKAGE=$(pwd)/$(/usr/bin/find metasploit-omnibus/pkg/metasploit*.pkg | head -n 1)
+          sudo installer -pkg ${PACKAGE} -target /
+
+          /opt/metasploit-framework/bin/msfconsole -qx 'setg variable test; version; exit'
+          /opt/metasploit-framework/bin/msfvenom -p windows/meterpreter/reverse_tcp -f exe -o test.exe
+          /opt/metasploit-framework/bin/msfd -h
+          /opt/metasploit-framework/bin/msfrpc -h
+          /opt/metasploit-framework/bin/msfrpcd -h
+          /opt/metasploit-framework/bin/msfdb -h
+          /opt/metasploit-framework/bin/msfbinscan -h
+          /opt/metasploit-framework/bin/msfrop -h
+          /opt/metasploit-framework/bin/msfelfscan -h
+          /opt/metasploit-framework/bin/msfmachscan -h
+          /opt/metasploit-framework/bin/msfpescan -h
+          # /opt/metasploit-framework/bin/msfupdate
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: metasploit-osx-installers
+          path: |
+            metasploit-omnibus/pkg/*.pkg
+            metasploit-omnibus/pkg/*.rpm
+            metasploit-omnibus/pkg/*.msi
+            metasploit-omnibus/pkg/*.deb
+          retention-days: 1
+
+  windows:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 180
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - windows-2022
+        ruby:
+          - 3.0.6
+
+    name: ${{ matrix.os }}
+    steps:
+      # https://github.com/actions/runner-images/issues/5143
+      # https://github.com/actions/runner-images/issues/9701
+      - name: Install visual studio components
+        run: |
+          Set-Location "C:\Program Files (x86)\Microsoft Visual Studio\Installer\"
+          $InstallPath = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise"
+          $componentsToRemove= @(
+            "Microsoft.VisualStudio.Component.VC.Redist.MSM"
+          )
+          [string]$workloadArgs = $componentsToRemove | ForEach-Object {" --add " +  $_}
+          $Arguments = ('/c', "vs_installer.exe", 'modify', '--installPath', "`"$InstallPath`"",$workloadArgs, '--quiet', '--norestart', '--nocache')
+          # should be run twice
+          $process = Start-Process -FilePath cmd.exe -ArgumentList $Arguments -Wait -PassThru -WindowStyle Hidden
+          $process = Start-Process -FilePath cmd.exe -ArgumentList $Arguments -Wait -PassThru -WindowStyle Hidden
+
+      - name: Checkout omnibus
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          path: metasploit-omnibus
+
+      - name: Setup Ruby
+        env:
+          BUNDLE_FORCE_RUBY_PLATFORM: true
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: false
+          cache-version: 4
+          working-directory: metasploit-omnibus
+          # Github actions with Ruby requires Bundler 2.2.18+
+          # https://github.com/ruby/setup-ruby/tree/d2b39ad0b52eca07d23f3aa14fdf2a3fcc1f411c#windows
+          bundler: 2.2.33
+
+      # If you need to build a custom version of pcaprub:
+      # - name: Checkout pcaprub
+      #   uses: actions/checkout@v4
+      #   with:
+      #     repository: pcaprub/pcaprub
+      #     path: pcaprub
+      #     ref: '5440ca93dafd15e7d3bb009fc1bb9a15e80d03f9'
+
+      # - name: Create pcaprub gem
+      #   run: |
+      #     cd pcaprub
+      #     bundle
+      #     rake gem
+
+      # Checkout framework
+      - name: Checkout metasploit-framework code
+        uses: actions/checkout@v4
+        with:
+          repository: rapid7/metasploit-framework
+          path: metasploit-framework
+
+      - name: Extract xz files
+        run: |
+          cd metasploit-omnibus
+          xz -d local/cache/*.xz
+          ls local/cache
+
+      - name: Run omnibus
+        shell: cmd
+        env:
+          MSYSTEM: MINGW64
+        run: |
+          cd metasploit-omnibus
+          make dependencies
+
+          rem Don't run the main build itself under `make`, as the process will be spawned under msys2
+          rem and the ridk.cmd Ruby installer will forcibly kill the msys2 process before attempting to install ruby
+          ruby bin/omnibus build metasploit-framework
+
+      # Currently hangs on Github actions - but passes locally, potential cause within the debug.log file:
+      #
+      #     Info 1603.The file C:\Windows\system32\vcruntime140_1.dll is being held in use.  Close that application and retry.
+      #
+      # - name: Test artifact
+      #   shell: pwsh
+      #   run: |
+      #     Set-PSDebug -Trace 1
+      #     echo "Testing artifact"
+
+      #     Remove-Item c:\metasploit-framework -Recurse -ErrorAction Ignore
+
+      #     dir metasploit-omnibus\pkg
+
+      #     echo '' > debug.log
+      #     $artifact = (Get-ChildItem -Path "metasploit-omnibus/pkg/*.msi")[0].Name
+      #     $install_process = Start-Process msiexec.exe -ArgumentList "/i metasploit-omnibus\pkg\$artifact /quiet /qn /l*v debug.log" -NoNewWindow -PassThru
+      #     $log_process = Start-Process "powershell" "Get-Content -Path debug.log -Wait" -NoNewWindow -PassThru
+      #     $install_process.WaitForExit()
+      #     $log_process.Kill()
+      #     echo "finished install"
+
+      #     c:\metasploit-framework\bin\msfconsole -qx 'setg variable test; version; exit'
+      #     c:\metasploit-framework\bin\msfvenom -p windows/meterpreter/reverse_tcp -f exe -o test.exe
+      #     c:\metasploit-framework\bin\msfd -h
+      #     c:\metasploit-framework\bin\msfrpc -h
+      #     c:\metasploit-framework\bin\msfrpcd -h
+      #     c:\metasploit-framework\bin\msfdb -h
+      #     c:\metasploit-framework\bin\msfbinscan -h
+      #     c:\metasploit-framework\bin\msfrop -h
+      #     c:\metasploit-framework\bin\msfelfscan -h
+      #     c:\metasploit-framework\bin\msfmachscan -h
+      #     c:\metasploit-framework\bin\msfpescan -h
+      #     c:\metasploit-framework\bin\msfupdate
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: metasploit-windows-installers
+          path: |
+            metasploit-omnibus/pkg/*.pkg
+            metasploit-omnibus/pkg/*.rpm
+            metasploit-omnibus/pkg/*.msi
+            metasploit-omnibus/pkg/*.deb
+          retention-days: 1

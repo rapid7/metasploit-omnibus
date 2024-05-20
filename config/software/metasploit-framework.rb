@@ -1,7 +1,19 @@
 name "metasploit-framework"
+
+# Detect a local checkout of metasploit-framework at '../metasploit-framework' - i.e. for the scenario of:
+# - c:/temp/metasploit-omnibus
+# - c:/temp/metasploit-framework (A local checkout of framework to use during the build process)
+# but try and use 'C:/metasploit-framework' - as that's the metasploit-omnibus artifacts output directory
+def has_windows_metasploit_framework_repo?
+  windows? && File.exist?('../metasploit-framework') && File.expand_path(File.join(Dir.pwd, "..", "metasploit-framework")) != "c:/metasploit-framework"
+end
+
 if linux? && File.exist?("/metasploit-framework")
   # supply current version of metasploit-framework at root of filesystem
   source path: "/metasploit-framework"
+elsif has_windows_metasploit_framework_repo?
+  # supply current version of metasploit-framework relative to the current directory
+  source path: "../metasploit-framework"
 else
   source git: "https://github.com/rapid7/metasploit-framework.git"
   default_version "master"
@@ -19,7 +31,7 @@ else
   dependency "postgresql"
 end
 
-ruby_abi_version = "3.0.0"
+ruby_abi_version = "3.1.0"
 # This depends on extra system libraries on OS X
 whitelist_file "#{install_dir}//embedded/framework/data/isight.bundle"
 
@@ -40,6 +52,8 @@ whitelist_file "#{install_dir}/embedded/lib/ruby/gems/#{ruby_abi_version}/gems/s
 whitelist_file "#{install_dir}//embedded/lib/ruby/gems/#{ruby_abi_version}/.*/sqlite3.*"
 
 build do
+  patch_env = with_standard_compiler_flags(with_embedded_path)
+  patch source: "bundler.patch", plevel: 0, env: patch_env
   copy "#{project_dir}", "#{install_dir}/embedded/framework"
 
   major, minor, patch = Omnibus::BuildVersion.semver.split('.')
@@ -76,10 +90,21 @@ build do
         vars: { install_dir: install_dir }
   end
 
+  bundle "version", env: env
   bundle "config set force_ruby_platform true", env: env
-  bundle "install", env: env
+  bundle_env = with_standard_compiler_flags(with_embedded_path)
+  bundle_env['MAKE'] = 'make -j4'
+  bundle_env['BUNDLE_FORCE_RUBY_PLATFORM'] = 'true'
+  bundle "install --jobs=4", env: bundle_env
 
   if windows?
+    # Ensure we additionally copy out 'libssp-0.dll', which is required for multiple gems:
+    #   > dumpbin /dependents  C:/metasploit-framework/embedded/lib/ruby/gems/3.1.0/gems/msgpack-1.6.1/lib/msgpack/msgpack.so
+    #       ...
+    #       libssp-0.dll
+    #       ...
+    copy "#{install_dir}/embedded/msys64/ucrt64/bin/libssp-0.dll", "#{install_dir}/embedded/bin/libssp-0.dll"
+
     delete "#{install_dir}/embedded/msys64"
   end
   copy "#{project_dir}/Gemfile.lock", "#{install_dir}/embedded/framework/Gemfile.lock"
@@ -147,6 +172,14 @@ build do
           end
         end
       end
+    end
+  end
+
+  # Workaround for a Windows bug with chef r7_9.0.23_custom that allows the `.git` folders through
+  # into the final build result, leading to the .exe being an extra 1gb in size
+  block do
+    self.project.exclusions.each do |exclusion|
+      Pathname(install_dir).glob(exclusion).each(&:rmtree)
     end
   end
 end

@@ -15,7 +15,7 @@
 #
 
 name "pcaprub"
-default_version "0.12.4"
+default_version "0.13.2"
 
 if windows?
   dependency "ruby-windows"
@@ -32,6 +32,17 @@ dependency "rubygems"
 build do
   env = with_standard_compiler_flags(with_embedded_path)
   env['SSL_CERT_FILE'] = "#{install_dir}/embedded/ssl/cert.pem"
-  gem "install pcaprub" \
-    " --version '#{version}' --no-document", env: env
+
+  # We need to create the pcaprub gem ourselves until 0.13.2 is released (https://github.com/pcaprub/pcaprub/issues/67)
+  # Use version of pcaprub relative to the current directory
+  local_pcaprub_checkout = File.expand_path(File.join(Dir.pwd, "..", "pcaprub"))
+  command "echo checking for path: #{local_pcaprub_checkout}", env: env
+  if File.exist?(local_pcaprub_checkout)
+    gem "install --local #{local_pcaprub_checkout}/pkg/pcaprub-#{version}.gem", env: env
+    command "echo after new pcaprub code", env: env
+  else
+    command "echo before old pcaprub code", env: env
+    gem "install pcaprub" \
+      " --version '#{version}' --no-document", env: env
+  end
 end

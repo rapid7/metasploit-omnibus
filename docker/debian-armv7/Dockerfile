@@ -4,7 +4,8 @@ MAINTAINER Rapid7 Release Engineering <r7_re@rapid7.com>
 
 RUN ["cross-build-start"]
 
-RUN sed -i '/jessie-update/d' /etc/apt/sources.list
+# Copy newer apt sources that are valid
+COPY apt /etc/apt
 
 RUN apt-get update && apt-get install -y \
     git \
@@ -33,14 +34,14 @@ RUN git config --global user.email "packager@example.com" && \
 
 RUN command curl -sSL https://rvm.io/mpapis.asc | gpg --import - && \
     command curl -sSL https://rvm.io/pkuczynski.asc | gpg --import - && \
-    curl -L -sSL https://get.rvm.io | bash -s stable
+    curl -L -sSL https://raw.githubusercontent.com/rvm/rvm/1.29.12/binscripts/rvm-installer | bash -s stable
 RUN /bin/bash -l -c "rvm requirements"
-RUN /bin/bash -l -c "rvm install 2.6.5"
-RUN /bin/bash -l -c "gem install bundler -v 1.17.3 --no-document"
+RUN /bin/bash -l -c "rvm install 3.0.6"
+RUN /bin/bash -l -c "gem install bundler -v 2.2.4 --no-document"
 
 # pre-load the omnibus dependencies
 RUN git clone https://github.com/rapid7/metasploit-omnibus.git
-RUN cd metasploit-omnibus && /bin/bash -l -c "bundle install --binstubs"
+RUN cd metasploit-omnibus && /bin/bash -l -c "bundle install && bundle binstubs --all"
 RUN rm -fr metasploit-omnibus
 
 ENV JENKINS_HOME /home/jenkins

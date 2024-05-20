@@ -9,6 +9,7 @@ pkg/*
 bin/*
 files/**/cache/
 vendor/cookbooks
+certs
 .idea
 
 # RVM management

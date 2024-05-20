@@ -27,5 +27,9 @@ build do
 
   embedded_dir = "#{install_dir}/embedded"
 
+  # Ruby Installer for windows:
+  # 1 - MSYS2 base installation
+  # 2 - MSYS2 system update (optional)
+  # 3 - MSYS2 and MINGW development toolchain
   command "#{embedded_dir}/bin/ridk.cmd install 2 3", env: env, cwd: embedded_dir
 end

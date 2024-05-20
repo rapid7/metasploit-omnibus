@@ -76,7 +76,24 @@
           </Directory>
         </Directory>
       </Directory>
-      <Merge Id="CRT" Language="0" SourceFile="C:\Program Files (x86)\Common Files\Merge Modules\microsoft_vc120_crt_x64.msm" DiskId="1" />
+      <%
+        # https://learn.microsoft.com/en-us/cpp/windows/redistributing-visual-cpp-files?view=msvc-170
+        # In Visual Studio 2022 and 2019, merge module files are part of an optional installable component named C++ <version>
+        # Redistributable MSMs in the Visual Studio Installer. The merge modules are installed by default as part of a C++ install
+        # in Visual Studio 2017 and Visual Studio 2015. When installed in Visual Studio 2022, you'll find the redistributable
+        # merge modules in %VCINSTALLDIR%Redist\MSVC\v143\MergeModules. In the latest version of Visual Studio 2019, the redistributable
+        # merge modules are in %VCINSTALLDIR%Redist\MSVC\v142\MergeModules. In both Visual Studio 2019 and Visual Studio 2017, they're
+        # also found in %VCToolsRedistDir%MergeModules. In Visual Studio 2015, they're found in Program Files [(x86)]\Common Files\Merge Modules.
+        possible_crt_paths = [
+          # Visual studio 2022 enterprise - when installed with vs_installer.exe
+          'C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Redist\MSVC\v143\MergeModules\Microsoft_VC143_CRT_x64.msm',
+          # Visual studio 2013 default install
+          'C:\Program Files (x86)\Common Files\Merge Modules\microsoft_vc120_crt_x64.msm'
+        ]
+        crt_path = possible_crt_paths.find { |path| File.exist?(path) }
+        raise "Could not find valid CRT path - tried #{possible_crt_paths.join(", ")}." if crt_path.nil?
+      %>
+      <Merge Id="CRT" Language="0" SourceFile="<%= crt_path %>" DiskId="1" />
     </Directory>
 
     <SetDirectory Id="WINDOWSVOLUME" Value="[WindowsVolume]" />

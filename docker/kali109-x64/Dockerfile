@@ -3,7 +3,8 @@
 FROM rapid7/build:kali109_64
 MAINTAINER Rapid7 Release Engineering <r7_re@rapid7.com>
 
-RUN echo "deb http://old.kali.org/kali moto main non-free contrib" > /etc/apt/sources.list
+# package/ruby: needs gcc and host gcc >= 4.9, available only in Sana - https://www.kali.org/blog/kali-moto-eol/
+RUN echo "deb http://old.kali.org/kali sana main non-free contrib" > /etc/apt/sources.list
 
 RUN rm -fr /var/lib/apt/lists && \
     apt-get update && \
@@ -20,6 +21,9 @@ RUN rm -fr /var/lib/apt/lists && \
     libcurl4-openssl-dev \
     libexpat1-dev \
     libicu-dev \
+    gawk \
+    pkg-config \
+    sqlite3 \
 	reprepro && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
@@ -39,16 +43,21 @@ RUN echo "jenkins    ALL=NOPASSWD: ALL" > /etc/sudoers.d/jenkins
 RUN chmod 440 /etc/sudoers.d/jenkins
 RUN apt-get remove -y libpq-dev libpq5
 
-RUN su jenkins -c 'command curl -sSL https://rvm.io/mpapis.asc | gpg --import - && \
-  command curl -sSL https://rvm.io/pkuczynski.asc | gpg --import - && \
-  curl -L -sSL https://get.rvm.io | bash -s stable'
+# Update certs as the current ones have expired
+RUN mkdir -p /tmp/updated_certs && \
+    cd /tmp/updated_certs && \
+    curl --location --insecure --output cacert-2023-08-22.pem https://curl.se/ca/cacert-2023-08-22.pem && \
+    echo '23c2469e2a568362a62eecf1b49ed90a15621e6fa30e29947ded3436422de9b9  cacert-2023-08-22.pem' > cacert-2023-08-22.pem.sha256 && \
+    sha256sum -c cacert-2023-08-22.pem.sha256 && \
+    mv cacert-2023-08-22.pem /etc/ssl/certs/ca-certificates.crt && \
+    rm -rf /tmp/updated_certs
 
-RUN curl -O http://ftp.gnu.org/gnu/gawk/gawk-4.2.1.tar.gz && \
-  tar zxf gawk-4.2.1.tar.gz && \
-  cd gawk-4.2.1 && \
-  ./configure && \
-  make && make install && \
-  cd ../ && rm -rf gawk-4.2.1*
+RUN su jenkins -c 'command curl -sSL https://rvm.io/mpapis.asc | gpg --import - && \
+    command curl -sSL https://rvm.io/pkuczynski.asc | gpg --import - && \
+    curl --insecure --output /tmp/rvm-installer -sSL https://raw.githubusercontent.com/rvm/rvm/1.29.12/binscripts/rvm-installer && \
+    echo "fea24461e98d41528d6e28684aa4c216dbe903869bc3fcdb3493b6518fae2e7e  /tmp/rvm-installer" | sha256sum -c && \
+    command cat /tmp/rvm-installer | bash -s stable && \
+    rm /tmp/rvm-installer'
 
 RUN curl -O ftp://ftp.tcl.tk/pub/tcl/tcl8_6/tcl8.6.9-src.tar.gz && \
   tar zxf tcl8.6.9-src.tar.gz && \
@@ -56,14 +65,10 @@ RUN curl -O ftp://ftp.tcl.tk/pub/tcl/tcl8_6/tcl8.6.9-src.tar.gz && \
   ./configure && make && make install && \
   cd ../../ && rm -rf tcl8.6.9*
 
-RUN curl -O https://www.sqlite.org/src/tarball/sqlite.tar.gz?r=release && \
-  tar zxf sqlite.tar.gz?r=release && \
-  mkdir bld && cd bld && ../sqlite/configure && \
-  make && make install && \
-  cd ../ && rm -rf sqlite* && rm -rf bld
+RUN su jenkins -c "/bin/bash -l -c 'rvm requirements'"
+RUN su jenkins -c "/bin/bash -l -c 'rvm install 3.0.6'"
+RUN su jenkins -c "/bin/bash -l -c 'gem install bundler -v 2.2.3 --no-document'"
 
 # pre-load the omnibus dependencies
-RUN su jenkins -c "/bin/bash -l -c 'rvm install 2.6.5 --autolibs=0'"
-RUN su jenkins -c "/bin/bash -l -c 'rvm use 2.6.5 && gem install bundler -v 1.17.3 --no-document'"
-RUN su jenkins -c "/bin/bash -l -c 'rvm use 2.6.5 && cd ~/ && git clone https://github.com/rapid7/metasploit-omnibus.git && \
-  cd metasploit-omnibus && bundle install --binstubs && cd .. && rm -rf metasploit-omnibus'"
+RUN su jenkins -c "/bin/bash -l -c 'cd ~/ && git clone https://github.com/rapid7/metasploit-omnibus.git && \
+        cd ~/metasploit-omnibus && bundle install && bundle binstubs --all && cd ~/ && rm -fr metasploit-omnibus'"
