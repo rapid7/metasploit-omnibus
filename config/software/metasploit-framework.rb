@@ -16,7 +16,7 @@ elsif has_windows_metasploit_framework_repo?
   source path: "../metasploit-framework"
 else
   source git: "https://github.com/rapid7/metasploit-framework.git"
-  default_version "master"
+  default_version "add-support-for-ruby-3.3.x"
 end
 
 dependency "cacerts"
