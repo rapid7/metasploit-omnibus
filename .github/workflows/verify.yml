@@ -98,7 +98,7 @@ jobs:
           repository: rapid7/metasploit-framework
           path: metasploit-framework
           # If testing a custom branch is required
-          # ref: 'update-bundler-version'
+          ref: 'update-nokogiri-version'
 
       - name: Run omnibus
         run: |
@@ -426,6 +426,8 @@ jobs:
         with:
           repository: rapid7/metasploit-framework
           path: metasploit-framework
+          # If testing a custom branch is required
+          ref: 'update-nokogiri-version'
 
       - name: Extract xz files
         run: |
