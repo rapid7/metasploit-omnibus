@@ -15,7 +15,7 @@
 #
 
 name "postgresql"
-default_version "9.6.20"
+default_version "13.6"
 
 license "PostgreSQL"
 license_file "COPYRIGHT"
@@ -27,6 +27,8 @@ dependency "libedit"
 dependency "libuuid" unless mac_os_x?
 dependency "ncurses"
 dependency "config_guess"
+
+version("13.6")   { source sha256: "bafc7fa3d9d4da8fe71b84c63ba8bdfe8092935c30c0aa85c24b2c08508f67fc" }
 
 version "9.6.20" do
   source sha256: "3d08cba409d45ab62d42b24431a0d55e7537bcd1db2d979f5f2eefe34d487bb6"
@@ -54,6 +56,8 @@ relative_path "postgresql-#{version}"
 
 build do
   env = with_standard_compiler_flags(with_embedded_path)
+  # https://stackoverflow.com/questions/68379786/building-postgres-from-source-throws-utils-errcodes-h-file-not-found-when-ca
+  env['MAKELEVEL'] = '0'
 
   update_config_guess(target: "config")
 
