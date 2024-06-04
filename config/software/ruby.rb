@@ -86,7 +86,7 @@ relative_path "ruby-#{version}"
 env = with_standard_compiler_flags(with_embedded_path)
 
 # do not remove - Rapid7 custom - do not remove:
-jemalloc_required = linux? || mac_os_x?
+jemalloc_required = (linux? && !arm?) || mac_os_x?
 if jemalloc_required
   dependency "jemalloc"
 end
