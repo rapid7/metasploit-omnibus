@@ -14,19 +14,17 @@
 # limitations under the License.
 #
 
-name "winpcap-devpack"
-default_version "4.1.2"
+name "npcap-sdk"
+default_version "1.13"
 
-version "4.1.2" do
-  source md5: "bae2236af062b0900ad1416b2c4878b9"
+version "1.13" do
+  source md5: "2067b3975763ddf61d4114d28d9d6c9b"
 end
 
 dependency "ruby-windows"
 dependency "ruby-windows-devkit"
 
-relative_path "WpdPack"
-
-source url: "https://www.winpcap.org/install/bin/WpdPack_4_1_2.zip"
+source url: "https://npcap.com/dist/npcap-sdk-#{version}.zip"
 
 build do
   ruby_api_version = "3.1.0"
