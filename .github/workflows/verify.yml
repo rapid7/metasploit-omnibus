@@ -407,18 +407,18 @@ jobs:
           bundler: 2.2.33
 
       # If you need to build a custom version of pcaprub:
-      # - name: Checkout pcaprub
-      #   uses: actions/checkout@v4
-      #   with:
-      #     repository: pcaprub/pcaprub
-      #     path: pcaprub
-      #     ref: '5440ca93dafd15e7d3bb009fc1bb9a15e80d03f9'
+      - name: Checkout pcaprub
+        uses: actions/checkout@v4
+        with:
+          repository: dwelch-r7/pcaprub
+          path: pcaprub
+          ref: 'npcap-support'
 
-      # - name: Create pcaprub gem
-      #   run: |
-      #     cd pcaprub
-      #     bundle
-      #     rake gem
+      - name: Create pcaprub gem
+        run: |
+          cd pcaprub
+          bundle
+          rake gem
 
       # Checkout framework
       - name: Checkout metasploit-framework code
