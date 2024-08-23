@@ -26,7 +26,7 @@ skip_transitive_dependency_licensing true
 # the default versions should always be the latest release of ruby
 # if you consume this definition it is your responsibility to pin
 # to the desired version of ruby. don't count on this not changing.
-default_version "3.1.5"
+default_version "3.2.5"
 
 dependency "zlib"
 dependency "openssl"
@@ -42,6 +42,8 @@ dependency "libyaml"
 dependency "ncurses" if freebsd?
 
 # version_list: url=https://cache.ruby-lang.org/pub/ruby/ filter=*.tar.gz
+
+version("3.2.5")      { source sha256: "ef0610b498f60fb5cfd77b51adb3c10f4ca8ed9a17cb87c61e5bea314ac34a16" }
 version("3.2.2")      { source sha256: "96c57558871a6748de5bc9f274e93f4b5aad06cd8f37befa0e8d94e7b8a423bc" }
 version("3.2.0")      { source sha256: "daaa78e1360b2783f98deeceb677ad900f3a36c0ffa6e2b6b19090be77abc272" }
 version("3.1.4")      { source sha256: "a3d55879a0dfab1d7141fdf10d22a07dbf8e5cdc4415da1bde06127d5cc3c7b6" }
