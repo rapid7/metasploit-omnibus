@@ -1,5 +1,8 @@
 metasploit-framework Omnibus project
 ==========================
+
+testing-CI
+
 This project creates full-stack platform-specific packages for
 `metasploit-framework`. This is not the same as the Metasploit Community
 edition. It only contains the framework command-line interface and the
