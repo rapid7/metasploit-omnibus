@@ -40,6 +40,7 @@ whitelist_file "#{install_dir}//embedded/framework/data/exploits/.*"
 
 # This depends on libfuse
 whitelist_file "#{install_dir}/embedded/framework/data/exploits/CVE-2016-4557/hello"
+whitelist_file "#{install_dir}/embedded/framework/data/exploits/CVE-2023-0386/cve_2023_0386.x64.elf"
 
 # This depends on Openssl 1.x
 whitelist_file "#{install_dir}/embedded/lib/ruby/gems/#{ruby_abi_version}/gems/metasploit-payloads.*"
