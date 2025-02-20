@@ -1,17 +1,36 @@
 metasploit-framework Omnibus project
 ==========================
 This project creates full-stack platform-specific packages for
-`metasploit-framework`. This is not the same as the Metasploit Community
-edition. It only contains the framework command-line interface and the
+`metasploit-framework`. This is not the same as Metasploit Pro.
+It only contains the framework command-line interface and the
 associated tools and modules.
 
-Installing the package
-------------
+# Installing the package
 
 If you just want to install this package, we provide a number of pre-built binaries for Metasploit that are rebuilt every night. See https://github.com/rapid7/metasploit-framework/wiki/Nightly-Installers for installation information.
 
-Building the package
-------------
+# Developer Upgrade Guide
+
+If you are updating software dependencies you will need to:
+
+1. Verify if the software has been updated upstream https://github.com/chef/omnibus-software
+1. Download the build artifacts and merge into the artifact cache https://github.com/rapid7/metasploit-omnibus-cache
+1. Update the git submodule within as a [prerequisite][#Prerequisites]
+1. Modify the `default_version` and `SHA` for your software
+1. Apply any additional changes required to build your software using chef/omnibus-software as a baseline were appropriate
+1. Verify that the build works locally following the build steps below. If there are issues, cross-reference the Github actions configuration as an indicator for how to build locally
+1. Verify that the update works on CI
+
+If you are updating omnibus itself:
+
+1. Clone the latest Rapid7 fork and branch from https://github.com/rapid7/omnibus/branches/all which will be referenced in the `Gemfile` ([example](https://github.com/rapid7/metasploit-omnibus/blob/3e30801521fb50291708b2e93c0940afdd11df37/Gemfile#L5))
+1. Verify the latest available code from https://github.com/chef/omnibus
+1. Create a new R7 custom branch with the additional R7 custom patches applied
+1. Update the `Gemfile` to use your new branch - [example](https://github.com/rapid7/metasploit-omnibus/blame/master/Gemfile#L5)
+1. Apply any DSL changes to the software config files in the metasploit-omnibus repo, similar to steps required update software dependencies steps above
+1. Ensure CI passes
+
+# Building the package
 
 ## Prerequisites
 
