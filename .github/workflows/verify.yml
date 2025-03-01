@@ -286,18 +286,19 @@ jobs:
           retention-days: 1
 
   osx:
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.os.name }}
     timeout-minutes: 180
 
     strategy:
       fail-fast: false
       matrix:
         os:
-          - macos-12
+          - { name: 'macos-12', arch: 'intel' }
+          - { name: 'macos-14', arch: 'aarch64' }
         ruby:
           - 3.0.6
 
-    name: ${{ matrix.os }}
+    name: ${{ matrix.os.name }} - ${{ matrix.os.arch }}
     steps:
       - name: Checkout omnibus
         uses: actions/checkout@v4
@@ -350,7 +351,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: metasploit-osx-installers
+          name: metasploit-osx-${{ matrix.os.arch }}-installers
           path: |
             metasploit-omnibus/pkg/*.pkg
             metasploit-omnibus/pkg/*.rpm
