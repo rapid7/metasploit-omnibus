@@ -295,7 +295,7 @@ jobs:
         os:
           - macos-13
         ruby:
-          - 3.0.6
+          - 3.2.5
 
     name: ${{ matrix.os }}
     steps:
@@ -368,7 +368,7 @@ jobs:
         os:
           - windows-2022
         ruby:
-          - 3.0.6
+          - 3.2.5
 
     name: ${{ matrix.os }}
     steps:
@@ -393,6 +393,12 @@ jobs:
           submodules: true
           path: metasploit-omnibus
 
+      - name: Update bundler version
+        # Github actions with Ruby requires Bundler 2.2.18+
+        # https://github.com/ruby/setup-ruby/tree/d2b39ad0b52eca07d23f3aa14fdf2a3fcc1f411c#windows
+        run: |
+          (Get-Content metasploit-omnibus\Gemfile.lock).Replace('   2.2.33', '   2.5.10') | Set-Content metasploit-omnibus\Gemfile.lock
+
       - name: Setup Ruby
         env:
           BUNDLE_FORCE_RUBY_PLATFORM: true
@@ -404,7 +410,7 @@ jobs:
           working-directory: metasploit-omnibus
           # Github actions with Ruby requires Bundler 2.2.18+
           # https://github.com/ruby/setup-ruby/tree/d2b39ad0b52eca07d23f3aa14fdf2a3fcc1f411c#windows
-          bundler: 2.2.33
+          bundler: 2.5.10
 
       # If you need to build a custom version of pcaprub:
       # - name: Checkout pcaprub
