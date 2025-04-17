@@ -1,45 +1,52 @@
 diff --git a/Gemfile.lock b/Gemfile.lock
-index 1c6294012f..cea7007a27 100644
---- Gemfile.lock	2024-05-17 12:32:16
-+++ Gemfile.lock	2024-05-17 12:32:59
-@@ -64,9 +64,7 @@ PATH
-       openssl-ccm
-       openvas-omp
+index a05bbfbdc7e..1a3cff9acc7 100644
+--- Gemfile.lock       2024-05-17 12:32:16
++++ Gemfile.lock       2024-05-17 12:32:59
+@@ -32,8 +32,6 @@ PATH
+       faraday (= 2.7.11)
+       faraday-retry
+       faye-websocket
+-      ffi (< 1.17.0)
+-      fiddle
+       filesize
+       getoptlong
+       hrr_rb_ssh-ed25519
+@@ -66,7 +64,6 @@ PATH
        ostruct
--      packetfu
+       packetfu
        patch_finder
 -      pcaprub
        pdf-reader
        pg
        puma
-@@ -358,14 +356,11 @@ GEM
+@@ -262,8 +259,6 @@ GEM
+     faye-websocket (0.11.3)
+       eventmachine (>= 0.12.0)
+       websocket-driver (>= 0.5.1)
+-    ffi (1.16.3)
+-    fiddle (1.1.6)
+     filesize (0.2.0)
+     fivemat (1.3.7)
+     forwardable (1.3.3)
+@@ -375,14 +370,11 @@ GEM
      openssl-cmac (2.0.2)
      openvas-omp (0.0.4)
      ostruct (0.6.1)
 -    packetfu (2.0.0)
 -      pcaprub (~> 0.13.1)
      parallel (1.26.3)
-     parser (3.3.5.0)
+     parser (3.3.7.1)
        ast (~> 2.4.1)
        racc
      patch_finder (1.0.2)
 -    pcaprub (0.13.3)
-     pdf-reader (2.12.0)
-       Ascii85 (~> 1.0)
+     pdf-reader (2.14.1)
+       Ascii85 (>= 1.0, < 3.0, != 2.0.0)
        afm (~> 0.2.1)
-@@ -383,7 +378,7 @@ GEM
-     puma (6.4.3)
-       nio4r (~> 2.0)
-     racc (1.8.1)
--    rack (2.2.10)
-+    rack (2.2.12)
-     rack-protection (3.2.0)
-       base64 (>= 0.1.0)
-       rack (~> 2.2, >= 2.2.4)
 diff --git a/metasploit-framework.gemspec b/metasploit-framework.gemspec
-index a7cd6306a1..b8a31fdd9a 100644
---- metasploit-framework.gemspec	2024-05-17 12:32:16
-+++ metasploit-framework.gemspec	2024-05-17 12:32:59
+index 8c620476dbc..959eb1284f8 100644
+--- metasploit-framework.gemspec       2024-05-17 12:32:16
++++ metasploit-framework.gemspec       2024-05-17 12:32:59
 @@ -87,9 +87,9 @@ Gem::Specification.new do |spec|
    # Needed by for XML parsing
    spec.add_runtime_dependency 'nokogiri'
@@ -52,3 +59,11 @@ index a7cd6306a1..b8a31fdd9a 100644
    # Used by the Metasploit data model, etc.
    # bound to 0.2x for Activerecord 4.2.8 deprecation warnings:
    # https://github.com/ged/ruby-pg/commit/c90ac644e861857ae75638eb6954b1cb49617090
+@@ -266,7 +266,6 @@ Gem::Specification.new do |spec|
+     bigdecimal
+     csv
+     drb
+-    fiddle
+     getoptlong
+     mutex_m
+     ostruct
