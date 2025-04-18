@@ -295,7 +295,7 @@ jobs:
         os:
           - macos-13
         ruby:
-          - 3.0.6
+          - 3.2.5
 
     name: ${{ matrix.os }}
     steps:
@@ -368,9 +368,9 @@ jobs:
         os:
           - windows-2022
         ruby:
-          - 3.0.6
+          - 3.2.5
 
-    name: ${{ matrix.os }}
+    name: ${{ matrix.os }} compilation
     steps:
       # https://github.com/actions/runner-images/issues/5143
       # https://github.com/actions/runner-images/issues/9701
@@ -393,6 +393,12 @@ jobs:
           submodules: true
           path: metasploit-omnibus
 
+      - name: Update bundler version
+        # Github actions with Ruby requires Bundler 2.2.18+
+        # https://github.com/ruby/setup-ruby/tree/d2b39ad0b52eca07d23f3aa14fdf2a3fcc1f411c#windows
+        run: |
+          (Get-Content metasploit-omnibus\Gemfile.lock).Replace('   2.2.33', '   2.5.10') | Set-Content metasploit-omnibus\Gemfile.lock
+
       - name: Setup Ruby
         env:
           BUNDLE_FORCE_RUBY_PLATFORM: true
@@ -404,7 +410,7 @@ jobs:
           working-directory: metasploit-omnibus
           # Github actions with Ruby requires Bundler 2.2.18+
           # https://github.com/ruby/setup-ruby/tree/d2b39ad0b52eca07d23f3aa14fdf2a3fcc1f411c#windows
-          bundler: 2.2.33
+          bundler: 2.5.10
 
       # If you need to build a custom version of pcaprub:
       # - name: Checkout pcaprub
@@ -445,41 +451,6 @@ jobs:
           rem and the ridk.cmd Ruby installer will forcibly kill the msys2 process before attempting to install ruby
           ruby bin/omnibus build metasploit-framework
 
-      # Currently hangs on Github actions - but passes locally, potential cause within the debug.log file:
-      #
-      #     Info 1603.The file C:\Windows\system32\vcruntime140_1.dll is being held in use.  Close that application and retry.
-      #
-      # - name: Test artifact
-      #   shell: pwsh
-      #   run: |
-      #     Set-PSDebug -Trace 1
-      #     echo "Testing artifact"
-
-      #     Remove-Item c:\metasploit-framework -Recurse -ErrorAction Ignore
-
-      #     dir metasploit-omnibus\pkg
-
-      #     echo '' > debug.log
-      #     $artifact = (Get-ChildItem -Path "metasploit-omnibus/pkg/*.msi")[0].Name
-      #     $install_process = Start-Process msiexec.exe -ArgumentList "/i metasploit-omnibus\pkg\$artifact /quiet /qn /l*v debug.log" -NoNewWindow -PassThru
-      #     $log_process = Start-Process "powershell" "Get-Content -Path debug.log -Wait" -NoNewWindow -PassThru
-      #     $install_process.WaitForExit()
-      #     $log_process.Kill()
-      #     echo "finished install"
-
-      #     c:\metasploit-framework\bin\msfconsole -qx 'setg variable test; version; exit'
-      #     c:\metasploit-framework\bin\msfvenom -p windows/meterpreter/reverse_tcp -f exe -o test.exe
-      #     c:\metasploit-framework\bin\msfd -h
-      #     c:\metasploit-framework\bin\msfrpc -h
-      #     c:\metasploit-framework\bin\msfrpcd -h
-      #     c:\metasploit-framework\bin\msfdb -h
-      #     c:\metasploit-framework\bin\msfbinscan -h
-      #     c:\metasploit-framework\bin\msfrop -h
-      #     c:\metasploit-framework\bin\msfelfscan -h
-      #     c:\metasploit-framework\bin\msfmachscan -h
-      #     c:\metasploit-framework\bin\msfpescan -h
-      #     c:\metasploit-framework\bin\msfupdate
-
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
@@ -490,3 +461,91 @@ jobs:
             metasploit-omnibus/pkg/*.msi
             metasploit-omnibus/pkg/*.deb
           retention-days: 1
+
+  # Ensure we can install the Windows installer on a fresh environment without any pre-existing dependencies.
+  # Additionally, running on the previous windows builder is not currently possible, as it currently hangs on
+  # on Github actions - but passes locally. The potential cause is logged to the debug.log file:
+  #
+  #     Info 1603.The file C:\Windows\system32\vcruntime140_1.dll is being held in use.  Close that application and retry.
+  #
+  windows_testing:
+    needs: windows
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 180
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - windows-2022
+
+    name: ${{ matrix.os }} testing
+    steps:
+
+      - uses: actions/download-artifact@v4
+        name: Download Windows arifacts
+        id: download_windows_artifacts
+        with:
+          name: metasploit-windows-installers
+          path: metasploit-omnibus
+
+      - name: Install artifact
+        shell: pwsh
+        run: |
+          Set-PSDebug -Trace 1
+          echo "Testing artifact"
+
+          echo '' > debug.log
+          $artifact = (Get-ChildItem -Path "metasploit-omnibus/*.msi")[0].Name
+          $install_process = Start-Process msiexec.exe -ArgumentList "/i metasploit-omnibus\$artifact /quiet /qn /l*v debug.log" -NoNewWindow -PassThru
+          $install_process_handle = $install_process.Handle # cache proc.Handle - https://stackoverflow.com/questions/10262231/obtaining-exitcode-using-start-process-and-waitforexit-instead-of-wait
+          $log_process = Start-Process "powershell" "Get-Content -Path debug.log -Wait" -NoNewWindow -PassThru
+          $install_process.WaitForExit()
+          $log_process.Kill()
+          echo "finished install"
+          Exit $install_process.ExitCode
+
+      - shell: pwsh
+        run: |
+          d:\metasploit-framework\bin\msfvenom -p windows/meterpreter/reverse_tcp -f exe -o test.exe
+          Exit $LASTEXITCODE
+      - shell: pwsh
+        run: |
+          d:\metasploit-framework\bin\msfd -h
+          Exit $LASTEXITCODE
+      - shell: pwsh
+        run: |
+          d:\metasploit-framework\bin\msfrpc -h
+          Exit $LASTEXITCODE
+      - shell: pwsh
+        run: |
+          d:\metasploit-framework\bin\msfrpcd -h
+          Exit $LASTEXITCODE
+      - shell: pwsh
+        run: |
+          d:\metasploit-framework\bin\msfdb -h
+          Exit $LASTEXITCODE
+      - shell: pwsh
+        run: |
+          d:\metasploit-framework\bin\msfbinscan -h
+          Exit $LASTEXITCODE
+      - shell: pwsh
+        run: |
+          d:\metasploit-framework\bin\msfrop -h
+          Exit $LASTEXITCODE
+      - shell: pwsh
+        run: |
+          d:\metasploit-framework\bin\msfelfscan -h
+          Exit $LASTEXITCODE
+      - shell: pwsh
+        run: |
+          d:\metasploit-framework\bin\msfmachscan -h
+          Exit $LASTEXITCODE
+      - shell: pwsh
+        run: |
+          d:\metasploit-framework\bin\msfpescan -h
+          Exit $LASTEXITCODE
+      - shell: pwsh
+        run: |
+          d:\metasploit-framework\bin\msfconsole -qx 'setg variable test; version; exit'
+          Exit $LASTEXITCODE

@@ -21,4 +21,4 @@ if exist %FRAMEWORK%\%CMD% (
   ruby %BIN%\%CMD% %*
 )
 
-endlocal
+exit /b %ERRORLEVEL%

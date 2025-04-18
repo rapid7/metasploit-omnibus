@@ -51,6 +51,8 @@ whitelist_file "#{install_dir}//embedded/lib/ruby/gems/#{ruby_abi_version}/.*/sq
 
 build do
   patch_env = with_standard_compiler_flags(with_embedded_path)
+  # Remove problematic dependencies for Windows; Fiddle will need to be re-added in a future build for Ruby 3.3 support
+  patch source: "windows.patch", plevel: 0, env: patch_env if windows?
   copy "#{project_dir}", "#{install_dir}/embedded/framework"
 
   major, minor, patch = Omnibus::BuildVersion.semver.split('.')
