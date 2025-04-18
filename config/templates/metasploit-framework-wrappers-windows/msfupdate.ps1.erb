@@ -17,6 +17,7 @@ $p = Start-Process -FilePath "msiexec" -ArgumentList $arguments -Wait -PassThru
 if($p.ExitCode -ne 0)
 {
 	Write-Output "Metasploit update failed, error code: $($p.ExitCode)"
+	Exit $p.ExitCode
 } else {
 	Write-Output "Update Complete"
 }
