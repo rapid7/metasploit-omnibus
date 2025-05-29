@@ -51,10 +51,35 @@ whitelist_file "#{install_dir}//embedded/lib/ruby/gems/#{ruby_abi_version}/.*/sq
 
 build do
   patch_env = with_standard_compiler_flags(with_embedded_path)
-  # Remove problematic dependencies for Windows; Fiddle will need to be re-added in a future build for Ruby 3.3 support
-  patch source: "windows.patch", plevel: 0, env: patch_env if windows?
-  copy "#{project_dir}", "#{install_dir}/embedded/framework"
+  block 'Patch Gem dependencies' do
+    # Skipping gem dependencies
+    ['metasploit-framework.gemspec', 'Gemfile', 'Gemfile.lock'].each do |gemfile|
+      # Remove problematic linux dependencies that require newer GCC versions that aren't currently supported on CI build envs
+      skipped_dependencies = [
+        'ruby-prof',
+        'memory_profiler'
+      ]
+      # Remove problematic dependencies for Windows; Fiddle will need to be re-added in a future build for Ruby 3.3 support
+      skipped_dependencies += [
+        'ffi (< 1.17.0)',
+        'ffi (1.16.3)',
+        "spec.add_runtime_dependency 'ffi', '< 1.17.0'",
+        'fiddle',
+        'packetfu',
+        'pcaprub'
+      ]
 
+      file_path = File.join(project_dir, gemfile)
+      old_file = File.binread(file_path)
+      new_content = old_file.lines(chomp: true).reject do |line|
+        is_skipped = skipped_dependencies.any? { |skipped_dependency| line.include?(skipped_dependency) }
+        is_skipped
+      end.join("\n")
+
+      File.open(file_path, 'wb') { |f| f.puts(new_content) }
+    end
+  end
+  copy "#{project_dir}", "#{install_dir}/embedded/framework"
   major, minor, patch = Omnibus::BuildVersion.semver.split('.')
 
   erb source: 'version.yml.erb',
@@ -94,7 +119,7 @@ build do
   bundle_env = with_standard_compiler_flags(with_embedded_path)
   bundle_env['MAKE'] = 'make -j4'
   bundle_env['BUNDLE_FORCE_RUBY_PLATFORM'] = 'true'
-  bundle "install --jobs=4", env: bundle_env
+  bundle "install --jobs=4 --verbose", env: bundle_env
 
   if windows?
     # Ensure we additionally copy out 'libssp-0.dll', which is required for multiple gems:
