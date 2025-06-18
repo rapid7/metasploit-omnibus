@@ -26,7 +26,7 @@ skip_transitive_dependency_licensing true
 # the default versions should always be the latest release of ruby
 # if you consume this definition it is your responsibility to pin
 # to the desired version of ruby. don't count on this not changing.
-default_version "3.3.8"
+default_version "3.4.4"
 
 dependency "zlib"
 dependency "openssl"
@@ -43,6 +43,7 @@ dependency "ncurses" if freebsd?
 
 # version_list: url=https://cache.ruby-lang.org/pub/ruby/ filter=*.tar.gz
 
+version("3.4.4")      { source sha256: "a0597bfdf312e010efd1effaa8d7f1d7833146fdc17950caa8158ffa3dcbfa85" }
 version("3.3.8")      { source sha256: "5ae28a87a59a3e4ad66bc2931d232dbab953d0aa8f6baf3bc4f8f80977c89cab" }
 version("3.2.8")      { source sha256: "77acdd8cfbbe1f8e573b5e6536e03c5103df989dc05fa68c70f011833c356075" }
 version("3.2.5")      { source sha256: "ef0610b498f60fb5cfd77b51adb3c10f4ca8ed9a17cb87c61e5bea314ac34a16" }
@@ -207,7 +208,9 @@ build do
   if version.satisfies?("~> 2.6.0")
     patch source: "ruby-faster-load_26.patch", plevel: 1, env: patch_env
   end
-  if version.satisfies?(">=3.3")
+  if version.satisfies?(">=3.4")
+    # No patch available for ruby-faster-load - can be added
+  elsif version.satisfies?(">=3.3")
     patch source: "ruby-faster-load_33.patch", plevel: 1, env: patch_env
   else
     if version.satisfies?(">= 2.7")
