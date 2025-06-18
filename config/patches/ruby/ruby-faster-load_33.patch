@@ -1,0 +1,11 @@
+--- ruby-3.3.0/load.c.org	2024-05-07 13:13:50
++++ ruby-3.3.0/load.c	2024-05-07 13:17:24
+@@ -764,7 +764,7 @@
+             VALUE realpath_map = get_loaded_features_realpath_map(th->vm);
+ 
+             iseq = rb_iseq_new_top(&ast->body, rb_fstring_lit("<top (required)>"),
+-                                   fname, realpath_internal_cached(realpath_map, fname), NULL);
++                                   fname, fname, NULL);
+             rb_ast_dispose(ast);
+             rb_vm_pop_frame(ec);
+             RB_GC_GUARD(v);
