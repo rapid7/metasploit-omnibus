@@ -31,7 +31,7 @@ else
   dependency "postgresql"
 end
 
-ruby_abi_version = "3.2.0"
+ruby_abi_version = "3.4.0"
 # This depends on extra system libraries on OS X
 whitelist_file "#{install_dir}//embedded/framework/data/isight.bundle"
 

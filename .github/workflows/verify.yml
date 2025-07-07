@@ -163,9 +163,10 @@ jobs:
           # - name: 'kali109-x64'
           #   previousDockerhubImage: 'rapid7/msf-kali109-x64-omnibus:2020_03'
           #   installer: 'sudo dpkg -i metasploit-omnibus/pkg/metasploit-framework_*_amd64.deb'
-          - name: 'ubuntu1204-x64'
-            previousDockerhubImage: 'rapid7/msf-ubuntu1204-x64-omnibus:2024_04'
-            installer: 'sudo dpkg -i metasploit-omnibus/pkg/*.deb'
+          # Currently fails hanging on Ruby 3.3 and Ruby 3.4 compiling eval.o
+          #- name: 'ubuntu1204-x64'
+          #  previousDockerhubImage: 'rapid7/msf-ubuntu1204-x64-omnibus:2024_04'
+          #  installer: 'sudo dpkg -i metasploit-omnibus/pkg/*.deb'
           - name: 'ubuntu1204-x86'
             previousDockerhubImage: 'rapid7/msf-ubuntu1204-x86-omnibus:2024_04'
             linux32: true
