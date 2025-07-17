@@ -185,6 +185,8 @@ build do
   #
   if version.satisfies?("< 3.1")
     patch source: "ruby-fast-load_26.patch", plevel: 1, env: patch_env
+  elsif version.satisfies?("> 3.4")
+    patch source: "ruby-faster-load_34.patch", plevel: 1, env: patch_env
   else
     patch source: "ruby-fast-load_31.patch", plevel: 1, env: patch_env
   end

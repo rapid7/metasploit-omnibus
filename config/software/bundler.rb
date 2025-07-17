@@ -28,7 +28,7 @@ else
   dependency "rubygems"
 end
 
-default_version "2.5.10"
+default_version "2.6.7"
 
 build do
   env = with_standard_compiler_flags(with_embedded_path)

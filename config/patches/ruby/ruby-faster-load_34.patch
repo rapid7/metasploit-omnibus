@@ -1,0 +1,10 @@
+--- ruby-3.3.0/load.c.org	2024-05-07 13:13:50
++++ ruby-3.3.0/load.c	2024-05-07 13:17:24
+@@ -778,7 +778,7 @@ load_iseq_eval(rb_execution_context_t *ec, VALUE fname)
+             ast = rb_ruby_ast_data_get(ast_value);
+ 
+             iseq = rb_iseq_new_top(ast_value, rb_fstring_lit("<top (required)>"),
+-                                   fname, realpath_internal_cached(realpath_map, fname), NULL);
++                                   fname, fname, NULL);
+             rb_ast_dispose(ast);
+         }
