@@ -57,17 +57,24 @@ build do
       # Remove problematic linux dependencies that require newer GCC versions that aren't currently supported on CI build envs
       skipped_dependencies = [
         'ruby-prof',
-        'memory_profiler'
+        'memory_profiler',
       ]
+      replacements = {
+        'stringio (= 3.1.1)' => 'stringio (= 3.1.2)',
+        'stringio (3.1.1)' => 'stringio (3.1.2)',
+        "spec.add_runtime_dependency 'stringio', '3.1.1'" => "spec.add_runtime_dependency 'stringio', '3.1.2'" 
+      }
       # Remove problematic dependencies for Windows; Fiddle will need to be re-added in a future build for Ruby 3.3 support
-      skipped_dependencies += [
-        'ffi (< 1.17.0)',
-        'ffi (1.16.3)',
-        "spec.add_runtime_dependency 'ffi', '< 1.17.0'",
-        'fiddle',
-        'packetfu',
-        'pcaprub'
-      ]
+      if windows?
+        skipped_dependencies += [
+          'ffi (< 1.17.0)',
+          'ffi (1.16.3)',
+          "spec.add_runtime_dependency 'ffi', '< 1.17.0'",
+          'fiddle',
+          'packetfu',
+          'pcaprub'
+        ]
+      end
 
       file_path = File.join(project_dir, gemfile)
       old_file = File.binread(file_path)
@@ -75,6 +82,7 @@ build do
         is_skipped = skipped_dependencies.any? { |skipped_dependency| line.include?(skipped_dependency) }
         is_skipped
       end.join("\n")
+      replacements.each { |old, new| new_content = new_content.gsub(old, new) }
 
       File.open(file_path, 'wb') { |f| f.puts(new_content) }
     end

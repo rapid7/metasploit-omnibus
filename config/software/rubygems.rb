@@ -28,7 +28,7 @@ else
   dependency "ruby"
 end
 
-default_version "3.5.10"
+default_version "3.6.7"
 
 if version && !source
   # NOTE: 2.1.11 is the last version of rubygems before the 2.2.x change to native gem install location
@@ -42,7 +42,8 @@ if version && !source
     "3.1.4" => "d117187a8f016cbe8f52011ae02e858b",
     "3.2.22" => "b128d5493da2ec7a1da49a7189c04b35",
     "3.3.26" => "ba171c52fd9beda6dac7194413601795",
-    "3.5.10" => "70f46c096b4e11c42b0190cc3e3375e2"
+    "3.5.10" => "70f46c096b4e11c42b0190cc3e3375e2",
+    "3.6.7" => "4e8c5641f8dc7b6cac5a4bb8d423174f"
   }
   known_tarballs.each do |vsn, md5|
     version vsn do
