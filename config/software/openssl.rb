@@ -20,10 +20,10 @@ license "OpenSSL"
 license_file "LICENSE"
 skip_transitive_dependency_licensing true
 
-dependency "cacerts"
-dependency "openssl-fips" if fips_mode?
+default_version "3.4.4" # # do not remove - Rapid7 custom - do not remove
 
-default_version "1.1.1t" # # do not remove - Rapid7 custom - do not remove
+dependency "cacerts"
+dependency "openssl-fips" if fips_mode? && !(version.satisfies?(">= 3.0.0"))
 
 # Openssl builds engines as libraries into a special directory. We need to include
 # that directory in lib_dirs so omnibus can sign them during macOS deep signing.
@@ -47,7 +47,18 @@ else
   internal_source url: "#{ENV["ARTIFACTORY_REPO_URL"]}/#{name}/#{name}-#{version}.tar.gz", extract: :lax_tar,
                   authorization: "X-JFrog-Art-Api:#{ENV["ARTIFACTORY_TOKEN"]}"
 end
+version("3.2.6") { source sha256: "89681a9ddaa9ed7cf25ea8ef61338db805200bae47d00510490623547380c148" }
+version("3.2.4") { source sha256: "b23ad7fd9f73e43ad1767e636040e88ba7c9e5775bfa5618436a0dd2c17c3716" }
+version("3.3.3") { source sha256: "712590fd20aaa60ec75d778fe5b810d6b829ca7fb1e530577917a131f9105539" }
+version("3.4.1") { source sha256: "002a2d6b30b58bf4bea46c43bdd96365aaf8daa6c428782aa4feee06da197df3" }
+version("3.4.4") { source sha256: "7bdf55ac20f2779e99e5eca306f824fad2b37dee5a06cc35ed5a8b85a6060010" }
 
+version("3.1.2") { source sha256: "a0ce69b8b97ea6a35b96875235aa453b966ba3cba8af2de23657d8b6767d6539" } # FIPS validated
+
+version("3.0.15") { source sha256: "23c666d0edf20f14249b3d8f0368acaee9ab585b09e1de82107c66e1f3ec9533" }
+version("3.0.12") { source sha256: "f93c9e8edde5e9166119de31755fc87b4aa34863662f67ddfcba14d0b6b69b61" }
+version("3.0.11")  { source sha256: "b3425d3bb4a2218d0697eb41f7fc0cdede016ed19ca49d168b78e8d947887f55" }
+version("3.0.9")   { source sha256: "eb1ab04781474360f77c318ab89d8c5a03abc38e63d65a603cabbf1b00a1dc90" } # FIPS validated
 version("3.0.5")   { source sha256: "aa7d8d9bef71ad6525c55ba11e5f4397889ce49c2c9349dcea6d3e4f0b024a7a" }
 version("3.0.4")   { source sha256: "2831843e9a668a0ab478e7020ad63d2d65e51f72977472dc73efcefbafc0c00f" }
 version("3.0.3")   { source sha256: "ee0078adcef1de5f003c62c80cc96527721609c6f3bb42b7795df31f8b558c0b" }
@@ -72,6 +83,7 @@ relative_path "openssl-#{version}"
 
 build do
   env = with_standard_compiler_flags(with_embedded_path)
+
   if aix?
     env["M4"] = "/opt/freeware/bin/m4"
   elsif mac_os_x? && arm?
@@ -108,7 +120,7 @@ build do
   if version.satisfies?("< 3.0.0")
     configure_args += ["--with-fipsdir=#{install_dir}/embedded", "fips"] if fips_mode?
   else
-    configure_args += ["-enable-fips"] if fips_mode?
+    configure_args += ["enable-fips"] if fips_mode?
   end
 
   configure_cmd =
@@ -128,7 +140,7 @@ build do
         "./Configure #{platform} -static-libgcc"
       end
     elsif windows?
-      platform = windows_arch_i386? ? "mingw" : "mingw64"
+      platform = "mingw64"
       "perl.exe ./Configure #{platform}"
     else
       prefix =
@@ -159,8 +171,17 @@ build do
     patch source: "openssl-1.0.1f-do-not-build-docs.patch", env: patch_env
   elsif version.start_with? "1.1"
     patch source: "openssl-1.1.0f-do-not-install-docs.patch", env: patch_env
-  elsif version.start_with? "3.0"
+  elsif version.start_with?("3.0") || version.start_with?("3.1")
     patch source: "openssl-3.0.1-do-not-install-docs.patch", env: patch_env
+    # Some of the algorithms which are being used are deprecated in OpenSSL3 and moved to legacy provider.
+    # We need those algorithms for the working of chef-workstation and other packages.
+    # This patch will enable the legacy providers!
+    configure_args << "enable-legacy"
+    patch source: "openssl-3.0.0-enable-legacy-provider.patch", env: patch_env
+  else
+    patch source: "openssl-3.2.4-do-not-install-docs.patch", env: patch_env
+    configure_args << "enable-legacy"
+    patch source: "openssl-3.2.4-enable-legacy-provider.patch", env: patch_env
   end
 
   if version.start_with?("1.0.2") && mac_os_x? && arm?
@@ -197,5 +218,41 @@ build do
     # Bug Ref: http://rt.openssl.org/Ticket/Display.html?id=2986&user=guest&pass=guest
     command "sudo /usr/sbin/slibclean", env: env
   end
+
   make "install", env: env
+
+  if fips_mode? && version.satisfies?(">= 3.0.0")
+    openssl_fips_version = project.overrides.dig(:openssl, :fips_version) || "3.0.9"
+
+    # Downloading the openssl-3.0.9.tar.gz file and extracting it
+    command "wget https://www.openssl.org/source/openssl-#{openssl_fips_version}.tar.gz"
+    command "tar -xf openssl-#{openssl_fips_version}.tar.gz"
+
+    # Configuring the fips provider
+    if windows?
+      platform = windows_arch_i386? ? "mingw" : "mingw64"
+      command "cd openssl-#{openssl_fips_version} && perl.exe Configure #{platform} enable-fips"
+    else
+      command "cd openssl-#{openssl_fips_version} && ./Configure enable-fips"
+    end
+
+    # Building the fips provider
+    command "cd openssl-#{openssl_fips_version} && make"
+
+    fips_provider_path = "#{install_dir}/embedded/lib/ossl-modules/fips.#{windows? ? "dll" : "so"}"
+    fips_cnf_file = "#{install_dir}/embedded/ssl/fipsmodule.cnf"
+
+    # Running the `openssl fipsinstall -out fipsmodule.cnf -module fips.so` command
+    command "#{install_dir}/embedded/bin/openssl fipsinstall -out #{fips_cnf_file} -module #{fips_provider_path}"
+
+    # Copying the fips provider and fipsmodule.cnf file to the embedded directory
+    command "cp openssl-#{openssl_fips_version}/providers/fips.#{windows? ? "dll" : "so"} #{install_dir}/embedded/lib/ossl-modules/"
+    command "cp openssl-#{openssl_fips_version}/providers/fipsmodule.cnf #{install_dir}/embedded/ssl/"
+
+    # Updating the openssl.cnf file to enable the fips provider
+    command "sed -i -e 's|# .include fipsmodule.cnf|.include #{fips_cnf_file}|g' #{install_dir}/embedded/ssl/openssl.cnf"
+    command "sed -i -e 's|# fips = fips_sect|fips = fips_sect|g' #{install_dir}/embedded/ssl/openssl.cnf"
+
+    command "#{install_dir}/embedded/bin/openssl list -providers"
+  end
 end
