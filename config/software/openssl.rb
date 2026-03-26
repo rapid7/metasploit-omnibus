@@ -108,13 +108,28 @@ build do
     "no-idea",
     "no-mdc2",
     "no-rc5",
-    "no-ssl2",
     "no-ssl3",
     "no-zlib",
     "shared",
   ]
 
+  # no-ssl2 is only valid for OpenSSL < 3.0; SSLv2 was fully removed in 3.x
+  configure_args << "no-ssl2" if version.satisfies?("< 3.0.0")
+
   configure_args += ["--libdir=#{install_dir}/embedded/lib"] if version.satisfies?(">=3.0.1")
+
+  # Older platforms (RHEL/CentOS 6, Ubuntu 12.04, etc.) ship with old binutils
+  # that don't support AVX2 instructions and old GCC that defaults to C89 mode.
+  # OpenSSL >= 3.2 generates AVX2 assembly and uses C99 syntax throughout.
+  if version.satisfies?(">= 3.2.0") && linux?
+    old_platform = (rhel? && platform_version.satisfies?("< 7")) ||
+                   (ubuntu? && platform_version.satisfies?("< 14.04")) ||
+                   (debian? && platform_version.satisfies?("< 8"))
+    if old_platform
+      configure_args << "no-asm"
+      env["CFLAGS"] << " -std=gnu99"
+    end
+  end
 
   # https://www.openssl.org/blog/blog/2021/09/13/LetsEncryptRootCertExpire/
   configure_args += [ "-DOPENSSL_TRUSTED_FIRST_DEFAULT" ] if version.satisfies?(">= 1.0.2zb") && version.satisfies?("< 1.1.0")
@@ -197,6 +212,25 @@ build do
   if version.start_with?("1.0.2") && windows?
     # Patch Makefile.org to update the compiler flags/options table for mingw.
     patch source: "openssl-1.0.1q-fix-compiler-flags-table-for-msys.patch", env: env
+  end
+
+  # OpenSSL >= 3.2 requires additional Perl modules (IPC::Cmd, Time::Piece, etc.)
+  # that may not be present on older systems like CentOS 6.
+  # Install them if not already present on the build system.
+  if version.satisfies?(">= 3.2.0")
+    if windows?
+      command "perl.exe -MIPC::Cmd -e 1 2>nul || cpan IPC::Cmd", env: env
+      command "perl.exe -MTime::Piece -e 1 2>nul || cpan Time::Piece", env: env
+    else
+      command "perl -MIPC::Cmd -e 1 2>/dev/null || " \
+              "sudo yum install -y perl-IPC-Cmd 2>/dev/null || " \
+              "sudo apt-get install -y libipc-cmd-perl 2>/dev/null || " \
+              "cpan -T IPC::Cmd", env: env
+      command "perl -MTime::Piece -e 1 2>/dev/null || " \
+              "sudo yum install -y perl-Time-Piece 2>/dev/null || " \
+              "sudo apt-get install -y libtime-piece-perl 2>/dev/null || " \
+              "cpan -T Time::Piece", env: env
+    end
   end
 
   # Out of abundance of caution, we put the feature flags first and then
