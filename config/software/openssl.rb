@@ -118,17 +118,11 @@ build do
 
   configure_args += ["--libdir=#{install_dir}/embedded/lib"] if version.satisfies?(">=3.0.1")
 
-  # Older platforms (RHEL/CentOS 6, Ubuntu 12.04, etc.) ship with old binutils
-  # that don't support AVX2 instructions and old GCC that defaults to C89 mode.
-  # OpenSSL >= 3.2 generates AVX2 assembly and uses C99 syntax throughout.
+  # OpenSSL >= 3.2 uses C99 syntax and may generate assembly that requires
+  # binutils >= 2.22. Detect the assembler version at build time and disable
+  # asm if it's too old. Also ensure C99 mode for old GCC.
   if version.satisfies?(">= 3.2.0") && linux?
-    old_platform = (rhel? && platform_version.satisfies?("< 7")) ||
-                   (ubuntu? && platform_version.satisfies?("< 14.04")) ||
-                   (debian? && platform_version.satisfies?("< 8"))
-    if old_platform
-      configure_args << "no-asm"
-      env["CFLAGS"] << " -std=gnu99"
-    end
+    env["CFLAGS"] << " -std=gnu99"
   end
 
   # https://www.openssl.org/blog/blog/2021/09/13/LetsEncryptRootCertExpire/
@@ -216,7 +210,6 @@ build do
 
   # OpenSSL >= 3.2 requires additional Perl modules (IPC::Cmd, Time::Piece, etc.)
   # that may not be present on older systems like CentOS 6.
-  # Install them if not already present on the build system.
   if version.satisfies?(">= 3.2.0")
     if windows?
       command "perl.exe -MIPC::Cmd -e 1 2>nul || cpan IPC::Cmd", env: env
@@ -237,15 +230,43 @@ build do
   # the crazy platform specific compiler flags at the end.
   configure_args << env["CFLAGS"]
 
-  configure_command = configure_args.unshift(configure_cmd).join(" ")
+  # Detect old assembler at build time and add no-asm if needed.
+  # Also disable asm on 32-bit hosts where OpenSSL's generated assembly
+  # may use instructions unsupported by the target architecture.
+  # On systems that need libatomic (32-bit ARM), statically link it to avoid
+  # a runtime dependency on the target system's GCC runtime.
+  # block runs at build time (not parse time), so shellout hits the actual build host.
+  block "Check assembler and libatomic" do
+    if version.satisfies?(">= 3.2.0") && linux?
+      is_32bit = shellout("getconf LONG_BIT 2>/dev/null").stdout.strip == "32"
+      as_output = shellout("as --version 2>/dev/null").stdout
+      as_ver = as_output.match(/(\d+\.\d+)/)
+      if is_32bit || as_ver.nil? || Gem::Version.new(as_ver[1]) < Gem::Version.new("2.22")
+        configure_args << "no-asm"
+      end
 
-  command configure_command, env: env, in_msys_bash: true
+      # Statically link libatomic if available to avoid runtime dependency.
+      # 32-bit platforms (especially ARM) need libatomic for 64-bit atomic ops.
+      libatomic_static = shellout("gcc -print-file-name=libatomic.a 2>/dev/null").stdout.strip
+      if !libatomic_static.empty? && libatomic_static != "libatomic.a" && File.exist?(libatomic_static)
+        env["LDFLAGS"] = "#{env["LDFLAGS"]} -Wl,-Bstatic -latomic -Wl,-Bdynamic"
+      end
+    end
+  end
+
+  # block above mutates configure_args before this runs.
+  # In omnibus, block and command are both queued build steps executed in order.
+  block "Run Configure" do
+    configure_command = configure_args.unshift(configure_cmd).join(" ")
+    shellout!(configure_command, env: env, cwd: project_dir)
+  end
 
   if version.start_with?("1.0.2") && windows?
     patch source: "openssl-1.0.1j-windows-relocate-dll.patch", env: env
   end
 
-  make "depend", env: env
+  # make depend is only needed for OpenSSL < 3.0; removed in 3.x
+  make "depend", env: env if version.satisfies?("< 3.0.0")
   # make -j N on openssl is not reliable
   make env: env
   if aix?
