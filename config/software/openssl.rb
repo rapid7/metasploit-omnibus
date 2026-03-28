@@ -25,6 +25,9 @@ default_version "3.6.0" # # do not remove - Rapid7 custom - do not remove
 
 dependency "cacerts"
 dependency "openssl-fips" if fips_mode? && !(version.satisfies?(">= 3.0.0"))
+# On 32-bit ARM, GCC emits calls to libatomic for 64-bit atomic operations.
+# 64-bit ARM (aarch64) has native 64-bit atomics and doesn't need this.
+dependency "libatomic" if linux? && RUBY_PLATFORM =~ /armv7l/
 
 # Openssl builds engines as libraries into a special directory. We need to include
 # that directory in lib_dirs so omnibus can sign them during macOS deep signing.
@@ -233,8 +236,6 @@ build do
   # Detect old assembler at build time and add no-asm if needed.
   # Also disable asm on 32-bit hosts where OpenSSL's generated assembly
   # may use instructions unsupported by the target architecture.
-  # On systems that need libatomic (32-bit ARM), statically link it to avoid
-  # a runtime dependency on the target system's GCC runtime.
   # block runs at build time (not parse time), so shellout hits the actual build host.
   block "Check assembler and libatomic" do
     if version.satisfies?(">= 3.2.0") && linux?
@@ -243,13 +244,6 @@ build do
       as_ver = as_output.match(/(\d+\.\d+)/)
       if is_32bit || as_ver.nil? || Gem::Version.new(as_ver[1]) < Gem::Version.new("2.22")
         configure_args << "no-asm"
-      end
-
-      # Statically link libatomic if available to avoid runtime dependency.
-      # 32-bit platforms (especially ARM) need libatomic for 64-bit atomic ops.
-      libatomic_static = shellout("gcc -print-file-name=libatomic.a 2>/dev/null").stdout.strip
-      if !libatomic_static.empty? && libatomic_static != "libatomic.a" && File.exist?(libatomic_static)
-        env["LDFLAGS"] = "#{env["LDFLAGS"]} -Wl,-Bstatic -latomic -Wl,-Bdynamic"
       end
     end
   end
