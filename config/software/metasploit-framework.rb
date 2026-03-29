@@ -39,7 +39,7 @@ whitelist_file "#{install_dir}//embedded/framework/data/isight.bundle"
 whitelist_file "#{install_dir}/embedded/framework/data/exploits/.*"
 whitelist_file "#{install_dir}//embedded/framework/data/exploits/.*"
 
-# This depends on Openssl 1.x
+# This depends on Openssl 3.x
 whitelist_file "#{install_dir}/embedded/lib/ruby/gems/#{ruby_abi_version}/gems/metasploit-payloads.*"
 
 # Also whitelist mettle
@@ -62,7 +62,7 @@ build do
       replacements = {
         'stringio (= 3.1.1)' => 'stringio (= 3.1.2)',
         'stringio (3.1.1)' => 'stringio (3.1.2)',
-        "spec.add_runtime_dependency 'stringio', '3.1.1'" => "spec.add_runtime_dependency 'stringio', '3.1.2'" 
+        "spec.add_runtime_dependency 'stringio', '3.1.1'" => "spec.add_runtime_dependency 'stringio', '3.1.2'"
       }
       # Remove problematic dependencies for Windows; Fiddle will need to be re-added in a future build for Ruby 3.3 support
       if windows?

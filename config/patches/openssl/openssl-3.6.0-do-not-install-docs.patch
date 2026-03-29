@@ -1,0 +1,21 @@
+--- openssl-3.6.0/Configurations/unix-Makefile.tmpl.org	2025-11-14 23:06:09.211938787 -0500
++++ openssl-3.6.0/Configurations/unix-Makefile.tmpl	2025-11-14 23:07:32.383914676 -0500
+@@ -670,7 +670,6 @@
+ install: Makefile ## Install software and documentation, create OpenSSL directories
+ 	$(MAKE) install_sw
+ 	$(MAKE) install_ssldirs
+-	{- "\$(MAKE) install_docs" if !$disabled{docs} -}
+ 	{- "\$(MAKE) install_fips" if !$disabled{fips} -}
+
+ uninstall: {- "uninstall_docs" if !$disabled{docs}; -} uninstall_sw {- $disabled{fips} ? "" : "uninstall_fips" -} ## Uninstall software and documentation
+
+--- openssl-3.6.0/Configurations/windows-makefile.tmpl.org	2025-11-14 23:06:09.211938787 -0500
++++ openssl-3.6.0/Configurations/windows-makefile.tmpl	2025-11-14 23:07:40.543912555 -0500
+@@ -466,7 +466,7 @@
+ 	@$(ECHO) "Tests are not supported with your chosen Configure options"
+ 	@{- output_on() if !$disabled{tests}; "\@rem" -}
+
+-install: install_sw install_ssldirs {- "install_docs" if !$disabled{docs}; -} {- $disabled{fips} ? "" : "install_fips" -}
++install: install_sw install_ssldirs {- $disabled{fips} ? "" : "install_fips" -}
+
+ uninstall: {- "uninstall_docs" if !$disabled{docs}; -} uninstall_sw {- $disabled{fips} ? "" : "uninstall_fips" -}
