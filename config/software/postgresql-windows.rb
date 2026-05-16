@@ -33,11 +33,11 @@ build do
 
   copy "#{project_dir}/bin/*", "#{install_dir}/embedded/bin"
   copy "#{project_dir}/lib/*", "#{install_dir}/embedded/lib"
+  # Remove headers that conflict with other omnibus-bundled libraries before copying
+  delete "#{project_dir}/include/libxml"
+  delete "#{project_dir}/include/libxslt"
+  delete "#{project_dir}/include/openssl"
   copy "#{project_dir}/include/*", "#{install_dir}/embedded/include"
-  # Remove headers that conflict with other omnibus-bundled libraries (e.g. nokogiri's libxml2/libxslt)
-  delete "#{install_dir}/embedded/include/libxml"
-  delete "#{install_dir}/embedded/include/libxslt"
-  delete "#{install_dir}/embedded/include/openssl"
   copy "#{project_dir}/share/*", "#{install_dir}/embedded/share"
 
 end
