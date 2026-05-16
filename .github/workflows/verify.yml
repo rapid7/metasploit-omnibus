@@ -260,6 +260,23 @@ jobs:
           msfmachscan -h
           msfpescan -h
           # msfupdate
+
+          # Test database connectivity (catches libpq/OpenSSL ABI mismatches)
+          msfdb init
+          msfconsole -qx 'db_status; exit' | tee /tmp/db_status.txt
+          grep -q "Connected" /tmp/db_status.txt
+
+          # Test TCP connection
+          ruby -ryaml -e '
+            cfg = YAML.load_file(File.expand_path("~/.msf4/database.yml"))
+            prod = cfg["production"]
+            prod["host"] = "127.0.0.1"
+            prod["port"] = prod.fetch("port", 5432)
+            prod.delete("socket")
+            File.write(File.expand_path("~/.msf4/database.yml"), YAML.dump(cfg))
+          '
+          msfconsole -qx 'db_status; exit' | tee /tmp/db_status.txt
+          grep -q "Connected" /tmp/db_status.txt
           EOF
 
           chmod +x ./test_script.sh
@@ -285,6 +302,56 @@ jobs:
             metasploit-omnibus/pkg/*.msi
             metasploit-omnibus/pkg/*.deb
           retention-days: 1
+
+  # Sanity check: install the built .deb on a modern Ubuntu and verify database connectivity.
+  # This catches ABI mismatches (e.g. bundled libpq vs bundled OpenSSL) that only manifest
+  # when msfconsole opens a real PostgreSQL connection.
+  ubuntu_db_test:
+    needs: docker_intel
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    name: ubuntu-latest db connectivity test
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: metasploit-ubuntu1804-x64-installers
+          path: pkg
+
+      - name: Install and test default database setup
+        run: |
+          set -ex
+          sudo dpkg -i pkg/metasploit-framework_*_amd64.deb
+          msfdb init
+          msfconsole -qx 'db_status; exit' | tee /tmp/db_status.txt
+          grep -q "Connected" /tmp/db_status.txt
+
+      - name: Test TCP database connection with manual database.yml
+        run: |
+          set -ex
+          # Stop the msfdb-managed database and test with a manually configured TCP connection
+          # This replicates the scenario from GitHub issue #21462
+          msfdb stop
+
+          sudo apt-get install -y -qq postgresql
+          sudo pg_ctlcluster $(pg_lsclusters -h | head -1 | awk '{print $1}') main start
+          sleep 2
+          sudo -u postgres psql -c "CREATE ROLE msf WITH LOGIN PASSWORD 'msf';" || true
+          sudo -u postgres psql -c "CREATE DATABASE msf_tcp OWNER msf;" || true
+
+          cat > ~/.msf4/database.yml <<YAML
+          production:
+            adapter: postgresql
+            database: msf_tcp
+            username: msf
+            password: msf
+            host: 127.0.0.1
+            port: 5432
+            pool: 5
+            timeout: 5
+          YAML
+
+          msfconsole -qx 'db_status; exit' | tee /tmp/db_status.txt
+          grep -q "Connected" /tmp/db_status.txt
 
   osx:
     runs-on: ${{ matrix.os }}
@@ -347,6 +414,23 @@ jobs:
           /opt/metasploit-framework/bin/msfmachscan -h
           /opt/metasploit-framework/bin/msfpescan -h
           # /opt/metasploit-framework/bin/msfupdate
+
+          # Test database connectivity
+          /opt/metasploit-framework/bin/msfdb init
+          /opt/metasploit-framework/bin/msfconsole -qx 'db_status; exit' | tee /tmp/db_status.txt
+          grep -q "Connected" /tmp/db_status.txt
+
+          # Test TCP connection (exercises libpq SSL code path)
+          /opt/metasploit-framework/bin/ruby -ryaml -e '
+            cfg = YAML.load_file(File.expand_path("~/.msf4/database.yml"))
+            prod = cfg["production"]
+            prod["host"] = "127.0.0.1"
+            prod["port"] = prod.fetch("port", 5432)
+            prod.delete("socket")
+            File.write(File.expand_path("~/.msf4/database.yml"), YAML.dump(cfg))
+          '
+          /opt/metasploit-framework/bin/msfconsole -qx 'db_status; exit' | tee /tmp/db_status.txt
+          grep -q "Connected" /tmp/db_status.txt
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -550,3 +634,27 @@ jobs:
         run: |
           d:\metasploit-framework\bin\msfconsole -qx 'setg variable test; version; exit'
           Exit $LASTEXITCODE
+
+      - name: Test database connectivity
+        shell: pwsh
+        run: |
+          d:\metasploit-framework\bin\msfdb init
+          $output = d:\metasploit-framework\bin\msfconsole -qx 'db_status; exit'
+          echo $output
+          if ($output -notmatch "Connected") { Exit 1 }
+
+      - name: Test TCP database connection
+        shell: pwsh
+        run: |
+          # Rewrite database.yml to force TCP connection (exercises libpq SSL code path)
+          d:\metasploit-framework\embedded\bin\ruby.exe -ryaml -e "
+            cfg = YAML.load_file(File.expand_path('~/.msf4/database.yml'))
+            prod = cfg['production']
+            prod['host'] = '127.0.0.1'
+            prod['port'] = prod.fetch('port', 5432)
+            prod.delete('socket')
+            File.write(File.expand_path('~/.msf4/database.yml'), YAML.dump(cfg))
+          "
+          $output = d:\metasploit-framework\bin\msfconsole -qx 'db_status; exit'
+          echo $output
+          if ($output -notmatch "Connected") { Exit 1 }
