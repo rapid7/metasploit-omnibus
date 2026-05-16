@@ -15,51 +15,15 @@
 #
 
 name "postgresql-windows"
-default_version "13.6"
+default_version "16.14"
 
 relative_path "pgsql"
 
 if windows_arch_i386?
-  version "9.6.11" do
-    source sha256: "b687faaefba5b709220b1cc360de7c4f1c5bd7f4231b07364a6eb214a90ca841"
-  end
-
-  version "9.6.7" do
-    source sha256: "68870e3f686295cce60b50cea92421fa168274790f97c4eb7bf0879c6cb28cd8"
-  end
-
-  version "9.6.2" do
-    source sha256: "a4c1f9c4e4938abee245926bbc950a5d01fc3776187044aec2fb1698120f447a"
-  end
-
-  version "9.6.1" do
-    source sha256: "16a5b97579587bf6c6ab98788b0c95e55398e87a75b990089522d4837b2da0f4"
-  end
-
-  version "9.4.6" do
-    source sha256: "c14025963bf80fac9331f45b314cc508e255048189378e2674f4aaa6fe34e2a7"
-  end
-
-  version "9.4.5" do
-    source sha256: "6d2163611b6b159246896898dd1ee23cf29972c9a0449a8aac9c126cfc88a87f"
-  end
-
-  source url: "http://get.enterprisedb.com/postgresql/postgresql-#{version}-1-windows-binaries.zip"
+  raise "32-bit Windows is no longer supported"
 else
-  version "13.6" do
-    source sha256: "44ba5f480c45afa554bf70688c025a7298a96b5541a1c302e6223988768e83a8"
-  end
-
-  version "9.6.20" do
-    source sha256: "a76e41e3101e09a2e772a26f0b93b405a97482b42b0695893465f3533c76d326"
-  end
-
-  version "9.6.11" do
-    source sha256: "39df7a8212df8ce86ebae7f728cac7327a5e9ab821e351ac623ce33de6ed2b1a"
-  end
-
-  version "9.6.7" do
-    source sha256: "026592acf6f25dfa74ded9c870a4da537e349ca5b328354437e6a48f262ea3fb"
+  version "16.14" do
+    source sha256: "f68c7fbd93029e60a4145ccb64337a32ddf02317a8194cb1f76e11557602642c"
   end
 
   source url: "http://get.enterprisedb.com/postgresql/postgresql-#{version}-1-windows-x64-binaries.zip"
@@ -70,6 +34,10 @@ build do
   copy "#{project_dir}/bin/*", "#{install_dir}/embedded/bin"
   copy "#{project_dir}/lib/*", "#{install_dir}/embedded/lib"
   copy "#{project_dir}/include/*", "#{install_dir}/embedded/include"
+  # Remove headers that conflict with other omnibus-bundled libraries (e.g. nokogiri's libxml2/libxslt)
+  delete "#{install_dir}/embedded/include/libxml"
+  delete "#{install_dir}/embedded/include/libxslt"
+  delete "#{install_dir}/embedded/include/openssl"
   copy "#{project_dir}/share/*", "#{install_dir}/embedded/share"
 
 end

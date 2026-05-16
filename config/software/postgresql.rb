@@ -15,7 +15,7 @@
 #
 
 name "postgresql"
-default_version "13.6"
+default_version "16.14"
 
 license "PostgreSQL"
 license_file "COPYRIGHT"
@@ -28,6 +28,7 @@ dependency "libuuid" unless mac_os_x?
 dependency "ncurses"
 dependency "config_guess"
 
+version("16.14")  { source sha256: "f6d077142737920858ce958ccdb75c6ee137a63b5b0853c70693d401ac7e3471" }
 version("13.6")   { source sha256: "bafc7fa3d9d4da8fe71b84c63ba8bdfe8092935c30c0aa85c24b2c08508f67fc" }
 
 version "9.6.20" do
@@ -65,6 +66,7 @@ build do
           " --prefix=#{install_dir}/embedded" \
           " --with-libedit-preferred" \
           " --with-openssl" \
+          " --without-icu" \
           " --with-uuid=e2fs" \
           " --with-includes=#{install_dir}/embedded/include" \
           " --with-libraries=#{install_dir}/embedded/lib", env: env
