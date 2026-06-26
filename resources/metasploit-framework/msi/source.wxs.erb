@@ -65,8 +65,7 @@
     <% end %>
 
     <Directory Id="TARGETDIR" Name="SourceDir">
-      <Directory Id="INSTALLLOCATION"/>
-      <Directory Id="WINDOWSVOLUME">
+      <Directory Id="INSTALLLOCATION">
         <Directory Id="PROJECTLOCATION" Name="metasploit-framework" >
           <Directory Id="PROJECTLOCATIONBIN" Name="bin" >
             <Component Id="MsfBinPath" Guid="{080A880D-BA94-4CF8-9015-5B2063073E02}" >
@@ -96,10 +95,11 @@
       <Merge Id="CRT" Language="0" SourceFile="<%= crt_path %>" DiskId="1" />
     </Directory>
 
-    <SetDirectory Id="WINDOWSVOLUME" Value="[WindowsVolume]" />
+    <!-- Default INSTALLLOCATION to the drive with the most free space -->
+    <SetDirectory Id="INSTALLLOCATION" Value="[ROOTDRIVE]" />
 
     <!-- Set the components defined in our fragment files that will be used for our feature  -->
-    <Feature Id="ProjectFeature" Title="!(loc.FeatureMainName)" Absent="disallow" AllowAdvertise="no" Level="1" ConfigurableDirectory="<%= wix_install_dir %>">
+    <Feature Id="ProjectFeature" Title="!(loc.FeatureMainName)" Absent="disallow" AllowAdvertise="no" Level="1" ConfigurableDirectory="INSTALLLOCATION">
       <ComponentGroupRef Id="ProjectDir" />
       <ComponentRef Id="MsfBinPath" />
       <MergeRef Id="CRT" />
@@ -109,11 +109,11 @@
     <Icon Id="project.ico" SourceFile="Resources\assets\project_16x16.ico"/>
     <Property Id="ARPPRODUCTICON" Value="project.ico" />
     <Property Id="ARPHELPLINK" Value="https://metasploit.com/" />
-    <Property Id="WIXUI_INSTALLDIR" Value="<%= wix_install_dir %>" />
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLLOCATION" />
 
     <UIRef Id="ProjectUI_InstallDir"/>
     <UI Id="ProjectUI_InstallDir">
-      <UIRef Id="WixUI_FeatureTree"/>
+      <UIRef Id="WixUI_InstallDir"/>
       <TextStyle Id="WixUI_Font_Normal_White" FaceName="Tahoma" Size="8" Red="255" Green="255" Blue="255" />
       <TextStyle Id="WixUI_Font_Bigger_White" FaceName="Tahoma" Size="12" Red="255" Green="255" Blue="255" />
       <TextStyle Id="WixUI_Font_Title_White" FaceName="Tahoma" Size="9" Bold="yes" Red="255" Green="255" Blue="255" />

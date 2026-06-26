@@ -77,4 +77,8 @@ build do
   command "#{msys_dir}/usr/bin/bash.exe -lc 'pacman --noconfirm -Syuu'", env: env
   command "#{msys_dir}/usr/bin/bash.exe -lc 'pacman --noconfirm -Syuu'", env: env
   command "#{msys_dir}/usr/bin/bash.exe -lc 'pacman --noconfirm -Syuu'", env: env
+  # Force reinstall OpenSSL to ensure headers and import libraries are consistent.
+  # pacman -Syuu may update headers without replacing old .dll.a import libraries
+  # due to package naming changes in OpenSSL 3.6+.
+  command "#{msys_dir}/usr/bin/bash.exe -lc 'pacman --noconfirm -S --overwrite=\"*\" mingw-w64-ucrt-x86_64-openssl'", env: env
 end

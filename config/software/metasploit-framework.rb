@@ -58,6 +58,7 @@ build do
       skipped_dependencies = [
         'ruby-prof',
         'memory_profiler',
+        'license_finder',
       ]
       replacements = {
         'stringio (= 3.1.1)' => 'stringio (= 3.1.2)',
@@ -78,10 +79,30 @@ build do
 
       file_path = File.join(project_dir, gemfile)
       old_file = File.binread(file_path)
-      new_content = old_file.lines(chomp: true).reject do |line|
-        is_skipped = skipped_dependencies.any? { |skipped_dependency| line.include?(skipped_dependency) }
-        is_skipped
-      end.join("\n")
+      lines = old_file.lines(chomp: true)
+
+      # For Gemfile.lock, we need to remove entire source blocks (GIT/PATH) that
+      # contain skipped gems, and individual lines from other sections
+      if gemfile == 'Gemfile.lock'
+        blocks = old_file.split(/\n\n/)
+        new_content = blocks.filter_map do |block|
+          if block.start_with?('GIT', 'PATH')
+            # Drop entire source block if it contains a skipped gem
+            next nil if skipped_dependencies.any? { |dep| block.include?(dep) }
+            block
+          else
+            # Line-level filtering for DEPENDENCIES, GEM specs, etc.
+            filtered = block.lines(chomp: true).reject do |line|
+              skipped_dependencies.any? { |dep| line.include?(dep) }
+            end.join("\n")
+            filtered.empty? ? nil : filtered
+          end
+        end.join("\n\n")
+      else
+        new_content = lines.reject do |line|
+          skipped_dependencies.any? { |dep| line.include?(dep) }
+        end.join("\n")
+      end
       replacements.each { |old, new| new_content = new_content.gsub(old, new) }
 
       File.open(file_path, 'wb') { |f| f.puts(new_content) }
@@ -120,6 +141,37 @@ build do
         dest: "#{install_dir}/embedded/framework/msfdb-kali",
         mode: 0755,
         vars: { install_dir: install_dir }
+  end
+
+  if windows?
+    # The openssl gem 3.3.x cannot be compiled from source on Windows:
+    # - 3.3.3 uses EVP_MD_CTX_get_size_ex which doesn't exist in OpenSSL 3.4.x
+    # - OpenSSL 3.5+ has it as inline-only (not exported from shared library)
+    # Add openssl as a path gem pointing at RubyInstaller's pre-compiled default gem.
+    # This satisfies openssl-ccm's transitive dependency without compilation.
+    block "Add openssl as path gem to skip compilation" do
+      gemfile = File.join(project_dir, "Gemfile")
+      ruby_dir = File.join(install_dir, "embedded", "lib", "ruby", ruby_abi_version)
+      default_gem_path = File.join(install_dir, "embedded", "lib", "ruby", "gems", ruby_abi_version, "gems", "openssl-3.3.1")
+
+      # Create a gemspec that uses the pre-compiled default gem files in-place
+      # (no copying — preserves RubyInstaller's side-by-side DLL manifests)
+      FileUtils.mkdir_p(default_gem_path)
+      gemspec_content = <<~GEMSPEC
+        Gem::Specification.new do |s|
+          s.name = "openssl"
+          s.version = "3.3.1"
+          s.summary = "OpenSSL for Ruby"
+          s.require_paths = ["#{ruby_dir.gsub('\\\\', '/')}", "#{ruby_dir.gsub('\\\\', '/')}/x64-mingw-ucrt"]
+          s.files = []
+          s.authors = [""]
+        end
+      GEMSPEC
+      File.write(File.join(default_gem_path, "openssl.gemspec"), gemspec_content)
+
+      content = File.read(gemfile)
+      File.write(gemfile, content + "\ngem 'openssl', path: '#{default_gem_path.gsub('\\\\', '/')}'\n")
+    end
   end
 
   bundle "version", env: env
