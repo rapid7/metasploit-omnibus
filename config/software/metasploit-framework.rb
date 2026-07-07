@@ -146,7 +146,10 @@ build do
   bundle "version", env: env
   bundle "config set force_ruby_platform true", env: env
   bundle_env = with_standard_compiler_flags(with_embedded_path)
-  bundle_env['MAKE'] = 'make -j4'
+  # Limit make parallelism on macOS to avoid a mini_portile2 race condition where
+  # parallel make subprocesses collide creating the sqlite3 ports directory during
+  # native extension compilation (Error 71: EEXIST).
+  bundle_env['MAKE'] = mac_os_x? ? 'make' : 'make -j4'
   bundle_env['BUNDLE_FORCE_RUBY_PLATFORM'] = 'true'
   bundle "install --jobs=4 --verbose", env: bundle_env
 
