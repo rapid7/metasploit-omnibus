@@ -58,6 +58,7 @@ build do
       skipped_dependencies = [
         'ruby-prof',
         'memory_profiler',
+        'license_finder',
       ]
       replacements = {
         'stringio (= 3.1.1)' => 'stringio (= 3.1.2)',
@@ -78,10 +79,30 @@ build do
 
       file_path = File.join(project_dir, gemfile)
       old_file = File.binread(file_path)
-      new_content = old_file.lines(chomp: true).reject do |line|
-        is_skipped = skipped_dependencies.any? { |skipped_dependency| line.include?(skipped_dependency) }
-        is_skipped
-      end.join("\n")
+      lines = old_file.lines(chomp: true)
+
+      # For Gemfile.lock, we need to remove entire source blocks (GIT/PATH) that
+      # contain skipped gems, and individual lines from other sections
+      if gemfile == 'Gemfile.lock'
+        blocks = old_file.split(/\r?\n\r?\n/)
+        new_content = blocks.filter_map do |block|
+          if block.start_with?('GIT', 'PATH')
+            # Drop entire source block if it contains a skipped gem
+            next nil if skipped_dependencies.any? { |dep| block.include?(dep) }
+            block
+          else
+            # Line-level filtering for DEPENDENCIES, GEM specs, etc.
+            filtered = block.lines(chomp: true).reject do |line|
+              skipped_dependencies.any? { |dep| line.include?(dep) }
+            end.join("\n")
+            filtered.empty? ? nil : filtered
+          end
+        end.join("\n\n")
+      else
+        new_content = lines.reject do |line|
+          skipped_dependencies.any? { |dep| line.include?(dep) }
+        end.join("\n")
+      end
       replacements.each { |old, new| new_content = new_content.gsub(old, new) }
 
       File.open(file_path, 'wb') { |f| f.puts(new_content) }
@@ -130,12 +151,42 @@ build do
   bundle "install --jobs=4 --verbose", env: bundle_env
 
   if windows?
-    # Ensure we additionally copy out 'libssp-0.dll', which is required for multiple gems:
-    #   > dumpbin /dependents  C:/metasploit-framework/embedded/lib/ruby/gems/3.1.0/gems/msgpack-1.6.1/lib/msgpack/msgpack.so
-    #       ...
-    #       libssp-0.dll
-    #       ...
-    copy "#{install_dir}/embedded/msys64/ucrt64/bin/libssp-0.dll", "#{install_dir}/embedded/bin/libssp-0.dll"
+    # Copy required runtime DLLs from MSYS2 ucrt64 to embedded/bin.
+    # Native gems (nokogiri, eventmachine, etc.) link against MSYS2's ucrt64
+    # libraries during bundle install. These DLLs must be available at runtime.
+    # We copy them to embedded/bin (which is in PATH) before deleting msys64.
+    msys_ucrt64_bin = "#{install_dir}/embedded/msys64/ucrt64/bin"
+    block "Copy MSYS2 runtime DLLs to embedded/bin" do
+      required_dlls = %w[
+        libxml2-2.dll
+        libiconv-2.dll
+        liblzma-5.dll
+        zlib1.dll
+        libintl-8.dll
+      ]
+      missing = []
+      required_dlls.each do |dll|
+        src = File.join(msys_ucrt64_bin, dll)
+        if File.exist?(src)
+          FileUtils.cp(src, "#{install_dir}/embedded/bin/#{dll}")
+        else
+          missing << src
+        end
+      end
+      raise "MSYS2 runtime DLLs not found:\n  #{missing.join("\n  ")}" if missing.any?
+    end
+
+    # Patch the pg gem's postgresql_lib_path.rb to disable add_dll_directory.
+    # The pg gem bakes in the compile-time absolute path to libpq which may not
+    # exist at runtime if the MSI installs to a different drive. Setting the path
+    # to false makes pg skip add_dll_directory and rely on the system PATH instead,
+    # where libpq.dll is available via embedded/bin.
+    block "Patch pg gem DLL path" do
+      pg_lib_path_file = Dir.glob("#{install_dir}/embedded/lib/ruby/gems/*/gems/pg-*/lib/pg/postgresql_lib_path.rb").first
+      if pg_lib_path_file
+        File.write(pg_lib_path_file, "module PG; POSTGRESQL_LIB_PATH = false; end\n")
+      end
+    end
 
     delete "#{install_dir}/embedded/msys64"
   end

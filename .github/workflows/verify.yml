@@ -138,7 +138,7 @@ jobs:
             metasploit-omnibus/pkg/*.rpm
             metasploit-omnibus/pkg/*.msi
             metasploit-omnibus/pkg/*.deb
-          retention-days: 1
+          retention-days: 7
 
   docker_intel:
     runs-on: ${{ matrix.os }}
@@ -306,7 +306,7 @@ jobs:
             metasploit-omnibus/pkg/*.rpm
             metasploit-omnibus/pkg/*.msi
             metasploit-omnibus/pkg/*.deb
-          retention-days: 1
+          retention-days: 7
 
   # Sanity check: install the built .deb on a modern Ubuntu and verify database connectivity.
   # This catches ABI mismatches (e.g. bundled libpq vs bundled OpenSSL) that only manifest
@@ -446,7 +446,7 @@ jobs:
             metasploit-omnibus/pkg/*.rpm
             metasploit-omnibus/pkg/*.msi
             metasploit-omnibus/pkg/*.deb
-          retention-days: 1
+          retention-days: 7
 
   windows:
     runs-on: ${{ matrix.os }}
@@ -550,7 +550,7 @@ jobs:
             metasploit-omnibus/pkg/*.rpm
             metasploit-omnibus/pkg/*.msi
             metasploit-omnibus/pkg/*.deb
-          retention-days: 1
+          retention-days: 7
 
   # Ensure we can install the Windows installer on a fresh environment without any pre-existing dependencies.
   # Additionally, running on the previous windows builder is not currently possible, as it currently hangs on
