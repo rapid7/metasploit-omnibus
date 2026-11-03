@@ -141,7 +141,7 @@ jobs:
           retention-days: 7
 
   docker_intel:
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.docker.runner || matrix.os }}
     timeout-minutes: 180
 
     strategy:
@@ -168,6 +168,8 @@ jobs:
           #  previousDockerhubImage: 'rapid7/msf-ubuntu1204-x64-omnibus:2024_04'
           #  installer: 'sudo dpkg -i metasploit-omnibus/pkg/*.deb'
           - name: 'ubuntu1204-x86'
+            # Docker 29.4.2 on Ubuntu 26 blocks this image's legacy socket calls.
+            runner: ubuntu-24.04
             previousDockerhubImage: 'rapid7/msf-ubuntu1204-x86-omnibus:2024_04'
             linux32: true
             installer: 'sudo dpkg -i metasploit-omnibus/pkg/metasploit-framework_*_i386.deb'
@@ -175,7 +177,7 @@ jobs:
             previousDockerhubImage: 'rapid7/msf-ubuntu1804-x64-omnibus:2024_04'
             installer: 'sudo dpkg -i metasploit-omnibus/pkg/metasploit-framework_*_amd64.deb'
 
-    name: ${{ matrix.os }} - ${{ matrix.docker.name }}
+    name: ${{ matrix.docker.runner || matrix.os }} - ${{ matrix.docker.name }}
     steps:
       - name: Checkout omnibus
         uses: actions/checkout@v4
