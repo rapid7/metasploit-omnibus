@@ -4,6 +4,16 @@
 # after package is installed.
 #
 
+if [ "$(uname -s)" = Darwin ] && [ "${3:-}" = / ]; then
+    previous_bom="$(dirname "$0")/previous-gems.bom"
+    if [ -f "$previous_bom" ]; then
+        /usr/bin/env -i PATH=/usr/bin:/bin:/usr/sbin:/sbin \
+            /opt/metasploit-framework/embedded/bin/ruby --disable-gems \
+            /opt/metasploit-framework/embedded/bin/retire-package-gems.rb \
+            "$previous_bom" || exit 1
+    fi
+fi
+
 BINS="msfbinscan msfconsole msfd msfdb msfelfscan msfmachscan msfpescan msfrop msfrpc msfrpcd msfupdate msfvenom"
 
 if [ -x /usr/sbin/update-alternatives -o -x /usr/bin/update-alternatives ] ; then

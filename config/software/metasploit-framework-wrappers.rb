@@ -43,4 +43,19 @@ build do
         mode: 0755,
         vars: { install_dir: install_dir }
   }
+
+  if mac_os_x?
+    erb source: 'retire-package-gems.rb.erb',
+        dest: "#{install_dir}/embedded/bin/retire-package-gems.rb",
+        mode: 0644
+
+    # Record the new payload's registrations before an upgrade can overlay it
+    # on an installation containing additional gems.
+    block do
+      require 'json'
+      specifications = Dir.glob("#{install_dir}/embedded/lib/ruby/gems/*/specifications{,/default}/*.gemspec")
+      File.write("#{install_dir}/embedded/package-gem-specifications.json",
+                 JSON.generate(specifications.map { |path| path.delete_prefix("#{install_dir}/") }.sort))
+    end
+  end
 end
