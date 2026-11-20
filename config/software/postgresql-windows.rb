@@ -38,15 +38,9 @@ build do
   # (which otherwise take precedence on the library search path at build time).
   delete "#{install_dir}/embedded/lib/libcrypto.lib"
   delete "#{install_dir}/embedded/lib/libssl.lib"
-  # The OpenSSL runtime DLLs are intentionally left to coexist rather than being
-  # unified onto a single copy:
-  # - PostgreSQL 16.x ships libpq linked against OpenSSL 3.0.x -> libcrypto-3-x64.dll / libssl-3-x64.dll
-  # - RubyInstaller 3.4.13+ bundles OpenSSL 4.x            -> libcrypto-4-x64.dll / libssl-4-x64.dll
-  # The differing sonames mean the files no longer collide in embedded/bin, so each
-  # consumer loads its matching major version: libpq uses the -3- DLLs from PostgreSQL,
-  # Ruby's openssl.so uses the -4- DLLs from its own x64-mingw-ucrt platform dir.
-  # (Unifying them was only possible while both sides were OpenSSL 3; OpenSSL 3 and 4
-  # are not ABI compatible, so replacing libpq's -3- DLLs with -4- would break it.)
+  # The framework build replaces PostgreSQL's OpenSSL 3 runtime DLLs with
+  # the MSYS2 pair used to link the openssl gem. RubyInstaller's separate
+  # OpenSSL 4 DLLs are left untouched.
   # Remove headers that conflict with other omnibus-bundled libraries before copying
   delete "#{project_dir}/include/libxml"
   delete "#{project_dir}/include/libxslt"
