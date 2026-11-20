@@ -109,6 +109,22 @@ build do
     end
   end
   copy "#{project_dir}", "#{install_dir}/embedded/framework"
+
+  unless windows?
+    erb source: 'omnibus-runtime.rb',
+        dest: "#{install_dir}/embedded/framework/config/omnibus-runtime.rb",
+        mode: 0644,
+        vars: {}
+
+    block 'Configure per-user Rails runtime state' do
+      framework = "#{install_dir}/embedded/framework"
+      FileUtils.rm_f(File.join(framework, 'tmp', 'local_secret.txt'))
+      File.open(File.join(framework, 'config', 'application.rb'), 'a') do |file|
+        file.puts "\nrequire_relative 'omnibus-runtime'"
+      end
+    end
+  end
+
   major, minor, patch = Omnibus::BuildVersion.semver.split('.')
 
   erb source: 'version.yml.erb',
