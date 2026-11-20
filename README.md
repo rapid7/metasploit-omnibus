@@ -200,3 +200,10 @@ Full help for the Omnibus command line interface can be accessed with the
 ```shell
 $ bin/omnibus help
 ```
+
+## Selecting a Framework revision
+
+Set `METASPLOIT_FRAMEWORK_REVISION` to a full 40-character Git commit SHA to
+build that Framework revision. The explicit revision takes precedence over local
+source detection, and `build_framework_rev` records the same SHA. An invalid
+value fails before building. Leaving it unset preserves current source selection.
