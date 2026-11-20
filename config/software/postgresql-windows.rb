@@ -33,25 +33,20 @@ build do
 
   copy "#{project_dir}/bin/*", "#{install_dir}/embedded/bin"
   copy "#{project_dir}/lib/*", "#{install_dir}/embedded/lib"
-  # Remove OpenSSL import libraries and DLLs bundled by PostgreSQL.
-  # PostgreSQL 16.x ships OpenSSL 3.0.x which lacks symbols (e.g. EVP_MD_CTX_get_size_ex)
-  # that are present in MSYS2's OpenSSL 3.6.x headers. This causes:
-  # 1. Linker errors: MinGW finds PostgreSQL's .lib before MSYS2's .dll.a
-  # 2. Runtime LoadErrors: openssl.so calls symbols missing from the 3.0.x DLL
-  # Replace with RubyInstaller's OpenSSL DLLs (3.6.x) which match the MSYS2 headers.
+  # Remove the OpenSSL import libraries bundled by PostgreSQL so MinGW links native
+  # extensions against MSYS2's OpenSSL .dll.a rather than PostgreSQL's older .lib
+  # (which otherwise take precedence on the library search path at build time).
   delete "#{install_dir}/embedded/lib/libcrypto.lib"
   delete "#{install_dir}/embedded/lib/libssl.lib"
-  delete "#{install_dir}/embedded/bin/libcrypto-3-x64.dll"
-  delete "#{install_dir}/embedded/bin/libssl-3-x64.dll"
-  block "Copy RubyInstaller OpenSSL DLLs to embedded/bin" do
-    ruby_platform_dir = Dir.glob("#{install_dir}/embedded/lib/ruby/*/x64-mingw-ucrt").first
-    raise "RubyInstaller platform dir not found under #{install_dir}/embedded/lib/ruby/" unless ruby_platform_dir
-    %w[libcrypto-3-x64.dll libssl-3-x64.dll].each do |dll|
-      src = File.join(ruby_platform_dir, dll)
-      raise "RubyInstaller OpenSSL DLL not found: #{src}" unless File.exist?(src)
-      FileUtils.cp(src, "#{install_dir}/embedded/bin/#{dll}")
-    end
-  end
+  # The OpenSSL runtime DLLs are intentionally left to coexist rather than being
+  # unified onto a single copy:
+  # - PostgreSQL 16.x ships libpq linked against OpenSSL 3.0.x -> libcrypto-3-x64.dll / libssl-3-x64.dll
+  # - RubyInstaller 3.4.13+ bundles OpenSSL 4.x            -> libcrypto-4-x64.dll / libssl-4-x64.dll
+  # The differing sonames mean the files no longer collide in embedded/bin, so each
+  # consumer loads its matching major version: libpq uses the -3- DLLs from PostgreSQL,
+  # Ruby's openssl.so uses the -4- DLLs from its own x64-mingw-ucrt platform dir.
+  # (Unifying them was only possible while both sides were OpenSSL 3; OpenSSL 3 and 4
+  # are not ABI compatible, so replacing libpq's -3- DLLs with -4- would break it.)
   # Remove headers that conflict with other omnibus-bundled libraries before copying
   delete "#{project_dir}/include/libxml"
   delete "#{project_dir}/include/libxslt"
