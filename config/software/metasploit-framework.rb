@@ -8,7 +8,15 @@ def has_windows_metasploit_framework_repo?
   windows? && File.exist?('../metasploit-framework') && File.expand_path(File.join(Dir.pwd, "..", "metasploit-framework")) != "c:/metasploit-framework"
 end
 
-if linux? && File.exist?("/metasploit-framework")
+framework_revision = ENV['METASPLOIT_FRAMEWORK_REVISION']
+if framework_revision && !framework_revision.match?(/\A[0-9a-f]{40}\z/)
+  raise 'METASPLOIT_FRAMEWORK_REVISION must be a full Git commit SHA'
+end
+
+if framework_revision
+  source git: "https://github.com/rapid7/metasploit-framework.git"
+  default_version framework_revision
+elsif linux? && File.exist?("/metasploit-framework")
   # supply current version of metasploit-framework at root of filesystem
   source path: "/metasploit-framework"
 elsif has_windows_metasploit_framework_repo?
@@ -118,7 +126,7 @@ build do
         major: major,
         minor: minor,
         patch: patch,
-        git_hash: `git ls-remote #{source[:git]} HEAD`.strip.split(' ')[0],
+        git_hash: ENV.fetch('METASPLOIT_FRAMEWORK_REVISION') { `git ls-remote #{source[:git]} HEAD`.strip.split(' ')[0] },
         date: Time.new.strftime("%Y%m%d")
       }
 
