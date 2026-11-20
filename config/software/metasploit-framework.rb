@@ -160,7 +160,10 @@ build do
     # We copy them to embedded/bin (which is in PATH) before deleting msys64.
     msys_ucrt64_bin = "#{install_dir}/embedded/msys64/ucrt64/bin"
     block "Copy MSYS2 runtime DLLs to embedded/bin" do
+      # Use the OpenSSL 3 pair that linked the Bundler gem, not PostgreSQL's older pair.
       required_dlls = %w[
+        libcrypto-3-x64.dll
+        libssl-3-x64.dll
         libxml2-2.dll
         libiconv-2.dll
         liblzma-5.dll
