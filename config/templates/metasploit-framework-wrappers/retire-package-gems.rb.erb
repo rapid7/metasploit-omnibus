@@ -1,0 +1,123 @@
+# Remove only obsolete, unchanged gem registrations owned by the previous pkg.
+# Gem contents and user-added registrations are deliberately left in place.
+require 'json'
+require 'open3'
+require 'set'
+require 'find'
+
+class RetirePackageGems
+  SPECIFICATION = %r{\Aembedded/lib/ruby/gems/\d+\.\d+\.\d+/specifications/(?:default/)?[A-Za-z0-9_.+-]+\.gemspec\z}
+
+  def initialize(root, output: $stdout)
+    @root = File.expand_path(root)
+    @output = output
+  end
+
+  def run(previous_bom)
+    current = JSON.parse(File.read(File.join(@root, 'embedded/package-gem-specifications.json')))
+    unless current.is_a?(Array) && !current.empty? && current.all? { |path| path.is_a?(String) && SPECIFICATION.match?(path) }
+      raise 'Invalid package gem specification inventory'
+    end
+
+    listing = capture('/usr/bin/lsbom', '-f', '-p', 'fmugsc', previous_bom)
+    previous = listing.lines.to_h do |line|
+      path, mode, uid, gid, size, checksum = line.chomp.split("\t", -1)
+      path = path.delete_prefix('./')
+      [path, [Integer(mode, 8), Integer(uid), Integer(gid), Integer(size), Integer(checksum)]]
+    end
+    current = current.to_set
+    previous.each do |path, metadata|
+      next unless SPECIFICATION.match?(path)
+      next if path.include?('/specifications/default/')
+      next if current.include?(path)
+
+      absolute = File.join(@root, path)
+      next unless File.exist?(absolute) || File.symlink?(absolute)
+      if unchanged?(path, metadata) && unchanged_gem?(path, previous)
+        File.unlink(absolute)
+        @output.puts "Retired obsolete package gem registration: #{path}"
+      else
+        @output.puts "Preserving modified or unsafe gem: #{path}"
+      end
+    end
+  end
+
+  private
+
+  def capture(*command)
+    output, errors, status = Open3.capture3(*command)
+    # lsbom can report an unreadable BOM on stderr while returning status zero.
+    unless status.success? && errors.empty? && !output.empty?
+      raise "Command failed: #{command.first} (#{status.exitstatus}): #{errors}"
+    end
+
+    output
+  end
+
+  def unchanged?(path, metadata)
+    return false unless metadata
+
+    absolute = File.join(@root, path)
+    return false unless safe_parents?(absolute)
+
+    stat = File.lstat(absolute)
+    mode, uid, gid, size, checksum = metadata
+    return false unless stat.file? && stat.nlink == 1 && [stat.mode, stat.uid, stat.gid, stat.size] == [mode, uid, gid, size]
+
+    # macOS BOMs use the POSIX cksum checksum, not a cryptographic digest.
+    actual = capture('/usr/bin/cksum', absolute).split(' ', 3).first(2).map { |value| Integer(value) }
+    actual == [checksum, size]
+  rescue Errno::ENOENT, Errno::ENOTDIR
+    false
+  end
+
+  def unchanged_gem?(specification, previous)
+    home = File.dirname(File.dirname(specification))
+    name = File.basename(specification, '.gemspec')
+    roots = ["#{home}/gems/#{name}", "#{home}/cache/#{name}.gem", "#{home}/build_info/#{name}.info"]
+    roots.concat(Dir.glob("#{@root}/#{home}/extensions/*/*/#{name}").map { |path| path.delete_prefix("#{@root}/") })
+    extension = %r{\A(#{Regexp.escape(home)}/extensions/[^/]+/[^/]+/#{Regexp.escape(name)})/}
+    roots.concat(previous.keys.filter_map { |path| extension.match(path)&.captures&.first })
+    # A user may have changed or added gem contents without editing its gemspec.
+    # In that case preserve the registration as well as the contents.
+    roots.uniq.all? do |root|
+      expected = previous.keys.select { |path| path == root || path.start_with?("#{root}/") }
+      next false unless expected.all? { |path| unchanged?(path, previous.fetch(path)) }
+
+      absolute = File.join(@root, root)
+      next true unless File.exist?(absolute) || File.symlink?(absolute)
+      next false unless safe_parents?(absolute)
+
+      Find.find(absolute).all? do |path|
+        stat = File.lstat(path)
+        if stat.directory?
+          safe_parents?(File.join(path, 'child'))
+        else
+          relative = path.delete_prefix("#{@root}/")
+          unchanged?(relative, previous[relative])
+        end
+      end
+    end
+  end
+
+  def safe_parents?(path)
+    directory = File.dirname(path)
+    loop do
+      stat = File.lstat(directory)
+      return false unless stat.directory? && [0, Process.euid].include?(stat.uid)
+      # A root-owned sticky temporary directory is safe for owned test roots.
+      writable = (stat.mode & 0022) != 0
+      return false if writable && !(stat.uid.zero? && (stat.mode & 01000) != 0)
+      return true if directory == '/'
+
+      directory = File.dirname(directory)
+    end
+  rescue Errno::ENOENT, Errno::ENOTDIR
+    false
+  end
+end
+
+if $PROGRAM_NAME == __FILE__
+  abort 'Expected the previous package BOM' unless ARGV.length == 1
+  RetirePackageGems.new('/opt/metasploit-framework').run(ARGV.fetch(0))
+end

@@ -4,3 +4,20 @@
 # before package is installed.
 #
 
+if [ "$(uname -s)" = Darwin ]; then
+    # Keep the previous receipt in this installer's temporary script directory.
+    # The receipt on disk will be replaced when the installation completes.
+    if [ "${3:-}" != / ]; then
+        echo "Skipping obsolete gem registration cleanup on an alternate volume."
+        exit 0
+    fi
+    receipt=/var/db/receipts/test.rapid7releaseengineeringr7rerapid7com.pkg.metasploit-framework
+    if [ -f "$receipt.bom" ]; then
+        set -e
+        test ! -L "$receipt.bom"
+        test ! -L "$receipt.plist"
+        test "$(/usr/libexec/PlistBuddy -c Print:InstallPrefixPath "$receipt.plist")" = opt/metasploit-framework
+        /bin/cp "$receipt.bom" "$(dirname "$0")/previous-gems.bom"
+    fi
+fi
+
