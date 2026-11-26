@@ -108,7 +108,20 @@ build do
       File.open(file_path, 'wb') { |f| f.puts(new_content) }
     end
   end
-  copy "#{project_dir}", "#{install_dir}/embedded/framework"
+  framework_dir = "#{install_dir}/embedded/framework"
+  copy project_dir, framework_dir
+
+  erb source: 'omnibus-runtime.rb',
+      dest: "#{framework_dir}/config/omnibus-runtime.rb",
+      mode: 0644,
+      vars: {}
+
+  block 'Configure packaged Rails runtime' do
+    File.open(File.join(framework_dir, 'config/application.rb'), 'a') do |file|
+      file.puts "\nrequire_relative 'omnibus-runtime'"
+    end
+  end
+
   major, minor, patch = Omnibus::BuildVersion.semver.split('.')
 
   erb source: 'version.yml.erb',
