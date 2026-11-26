@@ -108,7 +108,20 @@ build do
       File.open(file_path, 'wb') { |f| f.puts(new_content) }
     end
   end
-  copy "#{project_dir}", "#{install_dir}/embedded/framework"
+  framework_dir = "#{install_dir}/embedded/framework"
+  copy project_dir, framework_dir
+
+  erb source: 'omnibus-runtime.rb',
+      dest: "#{framework_dir}/config/omnibus-runtime.rb",
+      mode: 0644,
+      vars: {}
+
+  block 'Configure packaged Rails runtime' do
+    File.open(File.join(framework_dir, 'config/application.rb'), 'a') do |file|
+      file.puts "\nrequire_relative 'omnibus-runtime'"
+    end
+  end
+
   major, minor, patch = Omnibus::BuildVersion.semver.split('.')
 
   erb source: 'version.yml.erb',
@@ -160,7 +173,10 @@ build do
     # We copy them to embedded/bin (which is in PATH) before deleting msys64.
     msys_ucrt64_bin = "#{install_dir}/embedded/msys64/ucrt64/bin"
     block "Copy MSYS2 runtime DLLs to embedded/bin" do
+      # Use the OpenSSL 3 pair that linked the Bundler gem, not PostgreSQL's older pair.
       required_dlls = %w[
+        libcrypto-3-x64.dll
+        libssl-3-x64.dll
         libxml2-2.dll
         libiconv-2.dll
         liblzma-5.dll
