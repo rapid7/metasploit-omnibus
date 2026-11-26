@@ -35,10 +35,16 @@ RUN yum upgrade -y && yum clean all
 # --------------------
 # ERROR: failed to solve: process "/bin/sh -c yum install -y centos-release-SCL && yum clean all" did not complete successfully: exit code: 1
 
-RUN rpm --import http://mirrors.neterra.net/repoforge/RPM-GPG-KEY.dag.txt
-RUN curl -O http://mirrors.neterra.net/repoforge/redhat/el6/en/x86_64/rpmforge/RPMS/rpmforge-release-0.5.3-1.el6.rf.x86_64.rpm && \
+RUN curl --fail --location --output /tmp/RPM-GPG-KEY.dag.txt https://mirror.nodesdirect.com/rpmforge/RPM-GPG-KEY.dag.txt && \
+    echo '28729c1c1f2be845a6381c972ab06eb0d75e45f628de7d5b65318035c8a76302  /tmp/RPM-GPG-KEY.dag.txt' | sha256sum -c - && \
+    rpm --import /tmp/RPM-GPG-KEY.dag.txt && \
+    rm /tmp/RPM-GPG-KEY.dag.txt
+RUN curl --fail --location --output rpmforge-release-0.5.3-1.el6.rf.x86_64.rpm https://mirror.nodesdirect.com/rpmforge/redhat/el6/en/x86_64/rpmforge/RPMS/rpmforge-release-0.5.3-1.el6.rf.x86_64.rpm && \
+    echo '1f98252908e397f70a216964ed836e93ba4e80550eac343586895a993a41afb7  rpmforge-release-0.5.3-1.el6.rf.x86_64.rpm' | sha256sum -c - && \
     rpm -i rpmforge-release-0.5.3-1.el6.rf.x86_64.rpm && \
-    rm rpmforge-release-0.5.3-1.el6.rf.x86_64.rpm
+    rm rpmforge-release-0.5.3-1.el6.rf.x86_64.rpm && \
+    sed -i -e 's|http://apt.sw.be/|https://mirror.nodesdirect.com/rpmforge/|' \
+      -e '/^mirrorlist = /d' /etc/yum.repos.d/rpmforge.repo
 
 RUN yum --enablerepo=rpmforge-extras install -y \
     autoconf \
