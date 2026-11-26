@@ -43,21 +43,16 @@ RUN echo "jenkins    ALL=NOPASSWD: ALL" > /etc/sudoers.d/jenkins
 RUN chmod 440 /etc/sudoers.d/jenkins
 RUN apt-get remove -y libpq-dev libpq5
 
-# Update certs as the current ones have expired
-RUN mkdir -p /tmp/updated_certs && \
-    cd /tmp/updated_certs && \
-    curl --location --insecure --output cacert-2023-08-22.pem https://curl.se/ca/cacert-2023-08-22.pem && \
-    echo '23c2469e2a568362a62eecf1b49ed90a15621e6fa30e29947ded3436422de9b9  cacert-2023-08-22.pem' > cacert-2023-08-22.pem.sha256 && \
-    sha256sum -c cacert-2023-08-22.pem.sha256 && \
-    mv cacert-2023-08-22.pem /etc/ssl/certs/ca-certificates.crt && \
-    rm -rf /tmp/updated_certs
+# The legacy base image has expired CA roots. Vendor the repository-maintained
+# bundle into this Docker build context rather than downloading it insecurely.
+COPY ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 
 RUN su jenkins -c 'command curl -sSL https://rvm.io/mpapis.asc | gpg --import - && \
     command curl -sSL https://rvm.io/pkuczynski.asc | gpg --import - && \
-    curl --insecure --output /tmp/rvm-installer -sSL https://raw.githubusercontent.com/rvm/rvm/1.29.12/binscripts/rvm-installer && \
-    echo "fea24461e98d41528d6e28684aa4c216dbe903869bc3fcdb3493b6518fae2e7e  /tmp/rvm-installer" | sha256sum -c && \
-    command cat /tmp/rvm-installer | bash -s stable && \
-    rm /tmp/rvm-installer'
+    curl --fail --location --silent --show-error --output /tmp/rvm-installer https://raw.githubusercontent.com/rvm/rvm/1.29.12/binscripts/rvm-installer && \
+    echo "fea24461e98d41528d6e28684aa4c216dbe903869bc3fcdb3493b6518fae2e7e  /tmp/rvm-installer" | sha256sum -c - && \
+    /bin/bash /tmp/rvm-installer stable && \
+    rm -f /tmp/rvm-installer'
 
 RUN curl -O ftp://ftp.tcl.tk/pub/tcl/tcl8_6/tcl8.6.9-src.tar.gz && \
   tar zxf tcl8.6.9-src.tar.gz && \

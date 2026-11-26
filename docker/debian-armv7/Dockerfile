@@ -34,7 +34,10 @@ RUN git config --global user.email "packager@example.com" && \
 
 RUN command curl -sSL https://rvm.io/mpapis.asc | gpg --import - && \
     command curl -sSL https://rvm.io/pkuczynski.asc | gpg --import - && \
-    curl -L -sSL https://raw.githubusercontent.com/rvm/rvm/1.29.12/binscripts/rvm-installer | bash -s stable
+    curl --fail --location --silent --show-error --output /tmp/rvm-installer https://raw.githubusercontent.com/rvm/rvm/1.29.12/binscripts/rvm-installer && \
+    echo 'fea24461e98d41528d6e28684aa4c216dbe903869bc3fcdb3493b6518fae2e7e  /tmp/rvm-installer' | sha256sum -c - && \
+    /bin/bash /tmp/rvm-installer stable && \
+    rm -f /tmp/rvm-installer
 RUN /bin/bash -l -c "rvm requirements"
 RUN /bin/bash -l -c "rvm install 3.0.6"
 RUN /bin/bash -l -c "gem install bundler -v 2.2.4 --no-document"
